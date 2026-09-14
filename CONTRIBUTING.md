@@ -29,5 +29,5 @@ check a change.
 ## Releases
 
 Maintainers: bump the version in `build.yaml` and the `.csproj`, move the
-*Unreleased* notes in `CHANGELOG.md` under the new version, tag `vX.Y.Z.W`
+*Unreleased* notes in `CHANGELOG.md` under the new version, tag `X.Y.Z`
 and push the tag. The Release workflow does the rest.
