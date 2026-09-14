@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using Jellyfin.Plugin.Jellycanvas.Configuration;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
+
+namespace Jellyfin.Plugin.Jellycanvas;
+
+/// <summary>
+/// The plugin's entry point. At startup Jellyfin finds the class in our DLL
+/// that derives from <see cref="BasePlugin{T}"/>, instantiates it, and from
+/// then on knows the plugin exists.
+///
+/// By itself it does almost nothing - it holds the configuration (saved by
+/// the server as XML in plugins/configurations/) and tells the server which
+/// page to show in the Dashboard. The real work is in <c>Theme/</c> (CSS
+/// generation) and <c>Api/</c> (what the settings page's buttons call).
+/// </summary>
+public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+{
+    /// <summary>
+    /// Jellyfin creates the plugin through dependency injection, so extra
+    /// services can simply be asked for here; the base class only needs the
+    /// first two.
+    /// </summary>
+    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IServerConfigurationManager configurationManager)
+        : base(applicationPaths, xmlSerializer)
+    {
+        Instance = this;
+        ConfigurationManager = configurationManager;
+    }
+
+    /// <summary>Server configuration - used for the network base URL when the client script tag is built.</summary>
+    public IServerConfigurationManager ConfigurationManager { get; }
+
+    /// <summary>The name shown in the plugin list.</summary>
+    public override string Name => "Jellycanvas";
+
+    /// <summary>
+    /// The plugin's permanent identifier. Must match build.yaml and
+    /// configPage.js - the Dashboard loads and saves the configuration by it.
+    /// Never change it, or Jellyfin will see a "different" plugin.
+    /// </summary>
+    public override Guid Id => Guid.Parse("433e86f7-318f-4bd5-98e9-98fd3eea7d42");
+
+    /// <summary>
+    /// The single plugin instance for the server's lifetime. Other code (the
+    /// API controller, for example) reaches the current configuration through it.
+    /// </summary>
+    public static Plugin? Instance { get; private set; }
+
+    /// <summary>
+    /// Pages the plugin adds to the web UI. The first one (named after the
+    /// plugin) appears in the Dashboard under "My plugins"; the second is just
+    /// the JavaScript that page loads for itself.
+    /// </summary>
+    public IEnumerable<PluginPageInfo> GetPages()
+    {
+        var ns = GetType().Namespace;
+        return
+        [
+            new PluginPageInfo
+            {
+                Name = Name,
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.html", ns),
+                EnableInMainMenu = true,
+                MenuIcon = "palette",
+            },
+            new PluginPageInfo
+            {
+                Name = "JellycanvasJs",
+                EmbeddedResourcePath = string.Format(CultureInfo.InvariantCulture, "{0}.Configuration.configPage.js", ns),
+            },
+        ];
+    }
+}

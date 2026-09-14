@@ -1,0 +1,33 @@
+# Builds the plugin and runs the unit tests on every push and pull request.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Test
+        run: dotnet test --no-build -c Release
+
+      - name: Version numbers agree
+        run: |
+          yaml=$(sed -n 's/^version: *"\([0-9.]*\)"/\1/p' build.yaml)
+          csproj=$(sed -n 's/.*<AssemblyVersion>\([0-9.]*\)<.*/\1/p' Jellyfin.Plugin.Jellycanvas/Jellyfin.Plugin.Jellycanvas.csproj)
+          echo "build.yaml: $yaml, csproj: $csproj"
+          test "$yaml" = "$csproj"

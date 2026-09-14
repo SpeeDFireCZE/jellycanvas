@@ -1,0 +1,500 @@
+using System;
+using Jellyfin.Plugin.Jellycanvas.Configuration;
+using Jellyfin.Plugin.Jellycanvas.Theme;
+using Xunit;
+
+namespace Jellyfin.Plugin.Jellycanvas.Tests;
+
+/// <summary>
+/// CssBuilder is a pure function: settings in, text out. The tests ask about
+/// what would break most easily during edits - the markers, the @import
+/// order, derived colors, and that every option really shows up in the CSS.
+/// </summary>
+public class CssBuilderTests
+{
+    [Fact]
+    public void Default_settings_produce_a_marked_block()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        Assert.StartsWith(CssBuilder.StartMarker, css, StringComparison.Ordinal);
+        Assert.EndsWith(CssBuilder.EndMarker + Environment.NewLine, css, StringComparison.Ordinal);
+        Assert.Contains("--jf-palette-primary-main: #00a4dc !important", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Font_import_comes_before_any_rule()
+    {
+        var cfg = new PluginConfiguration { Typography = new TypographySettings { Family = FontFamily.Inter } };
+
+        var css = CssBuilder.Build(cfg);
+
+        var import = css.IndexOf("@import", StringComparison.Ordinal);
+        var firstRule = css.IndexOf('{', StringComparison.Ordinal);
+        Assert.True(import >= 0, "expected an @import for Inter");
+        Assert.True(import < firstRule, "@import must precede the first rule, otherwise browsers ignore it");
+        Assert.Contains("font-family: 'Inter', sans-serif !important", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Google_import_is_skipped_when_disabled()
+    {
+        var cfg = new PluginConfiguration { Typography = new TypographySettings { Family = FontFamily.Inter, LoadFromGoogle = false } };
+
+        Assert.DoesNotContain("@import", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Light_accent_gets_dark_contrast_text()
+    {
+        var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#ffee58" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("--jf-palette-primary-contrastText: rgba(0, 0, 0, 0.87)", css, StringComparison.Ordinal);
+        Assert.Contains("--jf-palette-primary-mainChannel: 255 238 88", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Invalid_color_falls_back_to_default_instead_of_throwing()
+    {
+        var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "not a color" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("--jf-palette-primary-main: #00a4dc", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Glass_header_uses_backdrop_filter_with_chosen_blur()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Style = SurfaceStyle.Glass, Blur = 22, Opacity = 60 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("backdrop-filter: blur(22px)", css, StringComparison.Ordinal);
+        Assert.Contains("rgba(32, 32, 32, 0.6)", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Dark_only_scopes_every_selector()
+    {
+        var cfg = new PluginConfiguration { ApplyTo = ApplyTo.DarkOnly, Cards = new CardSettings { Hover = CardHover.Lift } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html[data-theme]:not([data-theme=\"light\"]) {", css, StringComparison.Ordinal);
+        Assert.Contains("html:not([data-theme=\"light\"]) html:not(.layout-tv) .card-hoverable:hover", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Decimal_separator_is_a_dot_regardless_of_culture()
+    {
+        // A Czech locale writes 0,5 - in CSS that would be an error.
+        var previous = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("cs-CZ");
+            var cfg = new PluginConfiguration { Backdrop = new BackdropSettings { Dim = 35 }, Cards = new CardSettings { Spacing = 150 } };
+
+            var css = CssBuilder.Build(cfg);
+
+            Assert.Contains("opacity: 0.35 !important", css, StringComparison.Ordinal);
+            Assert.Contains("margin: 0.9em !important", css, StringComparison.Ordinal);
+            Assert.DoesNotContain("0,", css, StringComparison.Ordinal);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
+    public void Extra_css_is_appended_inside_the_block()
+    {
+        var cfg = new PluginConfiguration { ExtraCss = ".foo { color: red; }" };
+
+        var css = CssBuilder.Build(cfg);
+
+        var extra = css.IndexOf(".foo { color: red; }", StringComparison.Ordinal);
+        var end = css.IndexOf(CssBuilder.EndMarker, StringComparison.Ordinal);
+        Assert.True(extra > 0 && extra < end);
+    }
+
+    [Fact]
+    public void Every_preset_builds()
+    {
+        foreach (var preset in Presets.All)
+        {
+            var css = CssBuilder.Build(preset.Settings);
+            Assert.Contains(CssBuilder.EndMarker, css, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Sections_layout_makes_the_bar_transparent_and_styles_the_groups()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sections, Style = SurfaceStyle.Glass, Opacity = 60, SectionRadius = 999 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html header.MuiAppBar-root, html .skinHeader-withBackground, html .skinHeader.semiTransparent { background: transparent !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".MuiToolbar-root > .MuiStack-root, html header.MuiAppBar-root .MuiToolbar-root > .MuiBox-root { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("border-radius: 999px !important", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sidebar_layout_moves_the_bar_left_and_offsets_main()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, SidebarWidth = 240 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("header.MuiAppBar-root { top: 0px !important; left: 0px !important; bottom: 0px !important; right: auto !important; width: 240px !important;", css, StringComparison.Ordinal);
+        Assert.Contains("header.MuiAppBar-root + div { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("header.MuiAppBar-root ~ main { margin-left: calc(240px + 0px + 0px) !important; width: calc(100% - 240px - 0px - 0px) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.layout-mobile):not(:has(#loginPage:not(.hide)))", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Info_bar_text_is_escaped_and_pushes_pages_down()
+    {
+        var cfg = new PluginConfiguration { InfoBar = new InfoBarSettings { Enabled = true, Text = "Say \"hi\" \\ now", Height = 40 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("header.MuiAppBar-root::after { content: \"Say \\\"hi\\\" \\\\ now\";", css, StringComparison.Ordinal);
+        Assert.Contains("{ --jellycanvas-info: 40px; }", css, StringComparison.Ordinal);
+        Assert.Contains("main .mainAnimatedPage { top: var(--jellycanvas-info, 0px) !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Info_bar_with_sidebar_sits_above_the_content_and_shifts_the_second_toolbar()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar }, InfoBar = new InfoBarSettings { Enabled = true, Text = "Hello", Height = 30 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("main::before { content: \"Hello\";", css, StringComparison.Ordinal);
+        Assert.Contains("{ --jellycanvas-info: 30px; }", css, StringComparison.Ordinal);
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { position: fixed; top: var(--jellycanvas-info, 0px);", css, StringComparison.Ordinal);
+        Assert.Contains("~ main .mainAnimatedPage { top: calc(56px + var(--jellycanvas-info, 0px)) !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Blur_applies_to_any_translucent_bar_not_only_glass()
+    {
+        var solid = new PluginConfiguration { Header = new HeaderSettings { Style = SurfaceStyle.Solid, Opacity = 70, Blur = 12 } };
+        var opaque = new PluginConfiguration { Header = new HeaderSettings { Style = SurfaceStyle.Solid, Opacity = 100, Blur = 12 } };
+
+        Assert.Contains("backdrop-filter: blur(12px)", CssBuilder.Build(solid), StringComparison.Ordinal);
+        Assert.DoesNotContain("backdrop-filter: blur(12px)", CssBuilder.Build(opaque), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Custom_logo_url_is_quoted_and_escaped()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Logo = LogoImage.Custom, LogoUrl = "https://x/y.png\") } body { display:none" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("url(\"https://x/y.png\\\") } body { display:none\")", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Custom_google_font_is_imported_by_name()
+    {
+        var cfg = new PluginConfiguration { Typography = new TypographySettings { Family = FontFamily.Custom, CustomFamily = "Caacupé One" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("family=Caacup%C3%A9+One&display=swap", css, StringComparison.Ordinal);
+        Assert.Contains("font-family: 'Caacupé One', sans-serif !important", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Random_backdrop_sets_the_page_background_variable()
+    {
+        var cfg = new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, Blur = 20, Dim = 50 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .backgroundContainer { background-image: linear-gradient(rgba(16, 16, 16, 0.5), rgba(16, 16, 16, 0.5)), url(\"../Jellycanvas/Backdrop\") !important", css, StringComparison.Ordinal);
+        Assert.Contains("html .backgroundContainer { filter: blur(20px)", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Played_dimmed_hides_the_badge_and_fades_the_poster()
+    {
+        var cfg = new PluginConfiguration { Cards = new CardSettings { Played = PlayedStyle.Dimmed } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .playedIndicator { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(".card:has(.playedIndicator) .cardImageContainer { opacity: 0.45 !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Backdrop_rotation_builds_two_alternating_layers()
+    {
+        var cfg = new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 10 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .backgroundContainer::before {", css, StringComparison.Ordinal);
+        Assert.Contains("html .backgroundContainer::after {", css, StringComparison.Ordinal);
+        Assert.Contains("jellycanvas-fade-a 20s linear infinite, jellycanvas-images-a 60s step-end infinite", css, StringComparison.Ordinal);
+        Assert.Contains("url(\"../Jellycanvas/Backdrop?n=6\")", css, StringComparison.Ordinal);
+        Assert.Contains("25% { background-image", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Play_button_options_produce_their_rules()
+    {
+        var cfg = new PluginConfiguration { Buttons = new ButtonSettings { Play = PlayStyle.Outline, PlayColor = "#ff0000", PlayRadius = 999, PlayLabel = true, DetailScale = 120, IconRadius = 8 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .detailButton.btnPlay { background: transparent !important; box-shadow: inset 0 0 0 2px #ff0000 !important; color: #ff0000 !important;", css, StringComparison.Ordinal);
+        Assert.Contains("border-radius: 999px !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .detailButton.btnPlay::after { content: attr(title);", css, StringComparison.Ordinal);
+        Assert.Contains("html .mainDetailButtons { font-size: 120% !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .paper-icon-button-light, html .MuiIconButton-root, html .cardOverlayButton { border-radius: 8px !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Top_bar_slots_order_the_groups_with_auto_margins()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { SlotLeft = "user", SlotCenter = "nav", SlotRight = "icons" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains(":has([aria-controls=\"app-user-menu\"]) { order: 1; }", css, StringComparison.Ordinal);
+        Assert.Contains("> .MuiStack-root { order: 10; margin-left: auto !important; margin-right: auto !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(":not(:has([aria-controls=\"app-user-menu\"])) { order: 20; margin-left: auto !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sidebar_slots_use_vertical_margins_and_collapsible_narrows_the_bar()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, SidebarCollapsible = true, SidebarCollapsedWidth = 60, SlotLeft = "nav", SlotCenter = "user", SlotRight = "icons" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("width: 60px !important;", css, StringComparison.Ordinal);
+        Assert.Contains(":has(.MuiToolbar-root:first-child :focus-visible), html:not(.layout-mobile):not(:has(#loginPage:not(.hide))):has(#app-user-menu", css, StringComparison.Ordinal);
+        // an open header menu keeps the bar out
+        Assert.Contains(":has(#app-user-menu:not(.MuiModal-hidden), #app-sync-play-menu:not(.MuiModal-hidden), #app-remote-play-menu:not(.MuiModal-hidden)) header.MuiAppBar-root { width: 220px !important; transition-delay: 0s; }", css, StringComparison.Ordinal);
+        // the library row is clipped under the slid-out bar
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { clip-path: inset(0 0 0 calc(220px - 60px)); }", css, StringComparison.Ordinal);
+        Assert.Contains(":has([aria-controls=\"app-user-menu\"]) { order: 10; margin-top: auto !important; margin-bottom: auto !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(":not(:has([aria-controls=\"app-user-menu\"])) { order: 20; margin-top: auto !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Login_gradient_uses_chosen_colors_angle_and_opacity()
+    {
+        var cfg = new PluginConfiguration { Login = new LoginSettings { GradientBackground = true, GradientFrom = "#102030", GradientTo = "#ff0000", GradientAngle = 45, GradientOpacity = 60 } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html #loginPage::before { content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, rgba(16, 32, 48, 0.6) 0%, rgba(255, 0, 0, 0.6) 100%); }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Login_fields_options_produce_their_rules()
+    {
+        var cfg = new PluginConfiguration { Login = new LoginSettings { FormWidth = 420, Inputs = LoginInputStyle.Glass, InputRadius = 20, InputScale = 130, HideQuickConnect = true, HideTitle = true } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("#loginPage .manualLoginForm, html #loginPage .readOnlyContent { max-width: 420px !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage .emby-input { background: rgba(255, 255, 255, 0.1) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("#loginPage .emby-input, #loginPage .emby-button { border-radius: 20px !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("padding-top: 0.52em !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage .btnQuick { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage h1.sectionTitle", css, StringComparison.Ordinal);
+        Assert.Contains("html:has(#loginPage:not(.hide)) header.MuiAppBar-root { background: transparent !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Login_heading_can_be_replaced()
+    {
+        var cfg = new PluginConfiguration { Login = new LoginSettings { Title = "Welcome \"home\"" } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("h1.sectionTitle, html #loginPage .visualLoginForm > h1 { font-size: 0 !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("h1.sectionTitle::after, html #loginPage .visualLoginForm > h1::after { content: \"Welcome \\\"home\\\"\"; font-size: 1.6rem;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Brutalist_bar_has_a_thick_border_and_a_hard_shadow()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Style = SurfaceStyle.NeoBrutalism, Shadow = true } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("background-color: #00a4dc !important; background-image: none !important; box-shadow: 4px 4px 0 #000000 !important; border: 3px solid #000000 !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".MuiButton-colorPrimary { text-decoration: underline !important;", css, StringComparison.Ordinal);
+        // The style's own shadow wins over the generic drop shadow.
+        Assert.DoesNotContain("0 6px 24px rgba(0, 0, 0, 0.35)", css, StringComparison.Ordinal);
+        Assert.Contains("border-bottom: 3px solid #000000;", css, StringComparison.Ordinal);
+        // The content moves down by the inset and the shadow.
+        Assert.Contains("header.MuiAppBar-root + div { padding-bottom: 22px !important; }", css, StringComparison.Ordinal);
+        // Brutalism detaches the bar from the edges so the frame and shadow are visible.
+        Assert.Contains("left: 12px !important; right: 12px !important; top: 8px !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sidebar_publishes_its_resting_edge_for_the_script()
+    {
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, SidebarCollapsible = true, SidebarCollapsedWidth = 64, Floating = true } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("{ --jellycanvas-sidebar-edge: 76px; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Info_bar_next_to_a_collapsible_sidebar_starts_at_its_resting_width()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, SidebarCollapsible = true, SidebarCollapsedWidth = 64 },
+            InfoBar = new InfoBarSettings { Enabled = true, Text = "Hello", Position = InfoBarPosition.Top, Height = 36, Closable = true },
+        };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("main::before { content: \"Hello\";", css, StringComparison.Ordinal);
+        Assert.Contains("left: calc(64px + 0px + 0px + 0px); right: 0px; z-index: 3; }", css, StringComparison.Ordinal);
+        Assert.Contains("{ --jellycanvas-info: 36px; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.jellycanvas-infobar-closed { --jellycanvas-info: 0px; }", css, StringComparison.Ordinal);
+        Assert.Contains("padding: 0 2.6em 0 1em;", css, StringComparison.Ordinal);
+        // the library row and the pages read the variable, not a literal
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { position: fixed; top: var(--jellycanvas-info, 0px);", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Library_row_can_be_styled_and_hidden()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, LibraryRow = LibraryRowStyle.Glass, LibraryRowColor = "#123456", LibraryRowOpacity = 60, LibraryRowHeight = 40, LibraryRowRadius = 12 } });
+
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { background-color: rgba(18, 52, 86, 0.6) !important;", css, StringComparison.Ordinal);
+        // 40px asked, 44px is the least the controls fit in
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { min-height: 44px !important; height: 44px !important; padding-top: 0 !important;", css, StringComparison.Ordinal);
+        Assert.Contains("left: calc(220px + 0px + 10px) !important; right: 10px !important;", css, StringComparison.Ordinal);
+        // under a top bar the row simply shares the bar's look
+        Assert.DoesNotContain("html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) { background-color", CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { LibraryRow = LibraryRowStyle.Glass } }), StringComparison.Ordinal);
+
+        var hidden = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, LibraryRow = LibraryRowStyle.Hidden } });
+
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { display: none !important; }", hidden, StringComparison.Ordinal);
+        // with the sidebar the hidden row gives its 52px back to the page
+        Assert.Contains(":has(.MuiToolbar-root:nth-child(2)) ~ main .mainAnimatedPage { top: var(--jellycanvas-info, 0px) !important; }", hidden, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Ribbon_and_up_next_take_their_own_surfaces()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Detail = new DetailSettings { Ribbon = RibbonStyle.Glass, RibbonColor = "#123456", RibbonOpacity = 50, RibbonBlur = 8 },
+            Dialogs = new DialogSettings { Style = SurfaceStyle.Glass, Opacity = 70, Blur = 10, Radius = 12, UpNext = true },
+        };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .detailRibbon { background-color: rgba(18, 52, 86, 0.5) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("backdrop-filter: blur(8px)", css, StringComparison.Ordinal);
+        Assert.Contains("html .upNextContainer { background-color: rgba(32, 32, 32, 0.7) !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".upNextDialog-button.btnStartNow { background: #00a4dc !important;", css, StringComparison.Ordinal);
+
+        // the old checkbox still means "transparent"
+        var legacy = CssBuilder.Build(new PluginConfiguration { Detail = new DetailSettings { TransparentRibbon = true } });
+        Assert.Contains("html .detailRibbon { background: transparent !important;", legacy, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Cast_cards_can_be_circles()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Detail = new DetailSettings { People = PeopleShape.Circle, PeopleScale = 80, PeopleRing = true } });
+
+        Assert.Contains("html .personCard .cardPadder-overflowPortrait { padding-bottom: 100% !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .personCard .cardOverlayContainer { border-radius: 50% !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .personCard { font-size: 80% !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("inset 0 0 0 3px #00a4dc", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Sidebar_keeps_the_backdrop_filter_off_the_header()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, Style = SurfaceStyle.Glass, Opacity = 60, Blur = 18 } });
+
+        // the header itself: no fill and no filter (it would swallow the fixed library row)
+        Assert.Contains("header.MuiAppBar-root { background-color: transparent !important; background-image: none !important; backdrop-filter: none !important;", css, StringComparison.Ordinal);
+        // the column inside carries the glass
+        Assert.Contains(".MuiToolbar-root:first-child { background-color: rgba(32, 32, 32, 0.6) !important; background-image: none !important; box-shadow: none !important; backdrop-filter: blur(18px)", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Fill_progress_tints_the_poster()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Progress = ProgressStyle.Fill, ProgressFillOpacity = 40 } });
+
+        Assert.Contains("html .itemProgressBarForeground { height: 100% !important; background: rgba(0, 164, 220, 0.4) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html .itemLinearProgress { position: absolute !important; top: 0 !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Detail_blocks_become_chips_and_sections_get_titles()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Detail = new DetailSettings { Tags = DetailBlockStyle.Chips, Genres = DetailBlockStyle.Hidden, TrackSelections = DetailBlockStyle.AccentChips, SectionTitles = SectionTitleStyle.AccentLine, HideSimilar = true } });
+
+        Assert.Contains("html #itemDetailPage .itemTags a { font-size: 0.85rem !important; background: rgba(255, 255, 255, 0.1) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #itemDetailPage .itemGenres { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(".trackSelections .emby-select-withcolor { background: rgba(0, 164, 220, 0.22) !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".detailVerticalSection .sectionTitle::after { content: \"\";", css, StringComparison.Ordinal);
+        Assert.Contains("html #similarCollapsible { display: none !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Login_buttons_get_their_own_style()
+    {
+        var cfg = new PluginConfiguration { Login = new LoginSettings { Buttons = LoginInputStyle.Outline } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html #loginPage .readOnlyContent .emby-button { background: transparent !important; border: 2px solid rgba(255, 255, 255, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage .manualLoginForm .emby-button.button-submit { border-color: #00a4dc !important; color: #00a4dc !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Neumorphic_dialogs_and_glow_login_form_get_their_shadows()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Dialogs = new DialogSettings { Style = SurfaceStyle.Neumorphism },
+            Login = new LoginSettings { Form = LoginFormStyle.Glowmorphism, Inputs = LoginInputStyle.NeoBrutalism },
+        };
+
+        var css = CssBuilder.Build(cfg);
+
+        // Neumorphic dialogs take the page color: the look needs the same fill as the surroundings.
+        Assert.Contains("html .MuiDialog-paper { background-color: #101010 !important; background-image: none !important; box-shadow: 8px 8px 18px #060606, -8px -8px 18px #3b3b3b !important;", css, StringComparison.Ordinal);
+        Assert.Contains("#loginPage .visualLoginForm:not(.hide) { background-color: rgba(32, 32, 32, 0.55) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("0 0 24px rgba(0, 164, 220, 0.45)", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage .emby-input { background: #202020 !important; border: 3px solid #000000 !important; box-shadow: 3px 3px 0 #000000 !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Rounded_info_bar_is_inset_from_the_edges()
+    {
+        var cfg = new PluginConfiguration { InfoBar = new InfoBarSettings { Enabled = true, Text = "Hi", Radius = 12, Position = InfoBarPosition.Bottom } };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("border-radius: 12px; position: fixed; left: 10px; right: 10px; bottom: 10px;", css, StringComparison.Ordinal);
+    }
+}

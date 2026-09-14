@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Jellycanvas</title>
+</head>
+<body>
+<!--
+    The plugin's settings page. Jellyfin inserts it into the Dashboard as a
+    "page" of its SPA - so the <html>/<head> here play no role, only the div
+    with data-role="page" matters. The controls are Jellyfin's own
+    (is="emby-input" and friends) so the page looks like the rest of the
+    Dashboard.
+
+    Rows with data-slider / data-color are placeholders; configPage.js turns
+    them into real sliders (with an editable number) and color pickers.
+    Every control carries data-path="Section.Property" - the path into the
+    configuration object.
+
+    The logic is in configPage.js, loaded through
+    configurationpage?name=JellycanvasJs - the same way as this HTML, just
+    under another name (see Plugin.GetPages).
+-->
+<div id="JellycanvasPage" data-role="page" class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-select,emby-checkbox,emby-slider">
+    <div data-role="content">
+        <div class="content-primary jc-root">
+
+            <style>
+                /* Layout of this page only. The controls' look comes from Jellyfin. */
+                .jc-root { max-width: none; }
+                /* Jellyfin gives the page wrapper overflow: hidden, which kills
+                   position: sticky on the preview (sticky attaches to the nearest
+                   ancestor with overflow). Release it for our page only. */
+                #JellycanvasPage > div[data-role="content"] { overflow: visible !important; }
+                .jc-layout { display: flex; gap: 1.5em; align-items: flex-start; }
+                .jc-controls { flex: 0 0 28em; min-width: 0; }
+                .jc-preview { flex: 1 1 auto; min-width: 0; position: sticky; top: 5.5em; }
+                @media (max-width: 70em) {
+                    .jc-layout { flex-direction: column; }
+                    .jc-controls { flex-basis: auto; width: 100%; }
+                    .jc-preview { position: static; width: 100%; }
+                }
+                .jc-toolbar { display: flex; flex-wrap: wrap; gap: .5em; align-items: center; margin-bottom: 1em; }
+                .jc-toolbar .emby-button { margin: 0; }
+                .jc-toolbar select { width: auto; min-width: 8em; }
+                .jc-status { font-size: 90%; opacity: .8; margin: 0 0 1em; }
+                .jc-status.jc-status-on { color: #7bd88f; opacity: 1; }
+
+                /* Groups of sections */
+                .jc-group { margin: 0 0 1.4em; }
+                .jc-group-title { font-size: .78em; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin: 0 0 .5em .2em; }
+                .jc-section { border: 1px solid rgba(255,255,255,.08); border-radius: .6em; margin-bottom: .5em; background: rgba(255,255,255,.025); }
+                .jc-section > summary { cursor: pointer; padding: .75em 1em; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .6em; }
+                .jc-section > summary::-webkit-details-marker { display: none; }
+                .jc-section > summary .material-icons { font-size: 1.2em; opacity: .75; }
+                .jc-section > summary .jc-caret { margin-left: auto; font-family: "Material Icons"; font-size: 1.3em; opacity: .6; }
+                .jc-section > summary .jc-caret::after { content: "expand_more"; }
+                .jc-section[open] > summary { border-bottom: 1px solid rgba(255,255,255,.08); }
+                .jc-section[open] > summary .jc-caret::after { content: "expand_less"; }
+                .jc-section.jc-flash > summary { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); border-radius: .6em .6em 0 0; }
+                .jc-sub.jc-flash, .jc-row.jc-flash, .checkboxContainer.jc-flash, .jc-color.jc-flash { outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 4px; border-radius: .3em; }
+                .jc-section-body { padding: .5em 1em 1em; }
+                .jc-sub { font-size: .8em; letter-spacing: .06em; text-transform: uppercase; color: #7ec8f2; margin: 1.2em 0 .4em; }
+                .jc-hint { font-size: 85%; opacity: .7; margin: .2em 0 .6em; line-height: 1.4; }
+
+                /* Rows */
+                .jc-row { display: grid; grid-template-columns: minmax(0, 1fr) 6.5em; grid-template-areas: "label value" "slider slider"; align-items: center; column-gap: .8em; row-gap: .15em; margin: .6em 0 .9em; }
+                .jc-row > label { grid-area: label; font-size: .95em; }
+                .jc-row .jc-slider { grid-area: slider; width: 100%; margin: 0; }
+                .jc-row .jc-num { grid-area: value; display: flex; align-items: center; gap: .25em; justify-content: flex-end; }
+                .jc-row .jc-num input { width: 4.2em; text-align: right; padding: .2em .35em; font-size: .9em; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+                .jc-row .jc-num input::-webkit-outer-spin-button, .jc-row .jc-num input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+                .jc-row .jc-num span { font-size: .85em; opacity: .7; min-width: 1.4em; }
+                .jc-color { display: flex; align-items: center; gap: .6em; margin: .6em 0; }
+                .jc-color input[type=color] { width: 2.6em; height: 2.2em; padding: 0; border: 0; border-radius: .35em; background: none; cursor: pointer; }
+                .jc-color .jc-hex { width: 6.5em; font-family: monospace; }
+                .jc-color .jc-reset { opacity: .6; cursor: pointer; font-size: 85%; }
+                .jc-section-body .checkboxContainer { margin: .35em 0; }
+                .jc-section-body .selectContainer, .jc-section-body .inputContainer { margin: .7em 0; }
+
+                /* Presets */
+                .jc-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(9em, 1fr)); gap: .5em; margin-bottom: 1em; }
+                .jc-preset { border: 1px solid rgba(255,255,255,.12); border-radius: .5em; padding: .6em .7em; cursor: pointer; background: rgba(255,255,255,.03); text-align: left; color: inherit; font: inherit; }
+                .jc-preset:hover { border-color: rgba(255,255,255,.4); }
+                .jc-preset strong { display: block; margin-bottom: .2em; }
+                .jc-preset small { opacity: .7; display: block; line-height: 1.3; }
+                .jc-preset .jc-swatches { display: flex; gap: .25em; margin-top: .5em; }
+                .jc-preset .jc-swatches span { width: 1.1em; height: 1.1em; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); }
+
+                /* Top bar slots (drag & drop) */
+                .jc-slots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .4em; margin: .4em 0 .8em; }
+                .jc-corners { grid-template-columns: 1fr 1fr; }
+                .jc-corners .jc-slot-off { grid-column: 1 / -1; min-height: 3em; flex-direction: row; flex-wrap: wrap; align-items: center; }
+                .jc-corners .jc-slot-off .jc-slot-title { width: 100%; }
+                .jc-slot { min-height: 4.4em; border: 1px dashed rgba(255,255,255,.25); border-radius: .5em; padding: .35em; display: flex; flex-direction: column; gap: .3em; }
+                .jc-slot.is-over { border-color: var(--jf-palette-primary-main, #00a4dc); background: rgba(255,255,255,.05); }
+                .jc-slot-title { font-size: .7em; text-transform: uppercase; letter-spacing: .08em; opacity: .55; text-align: center; }
+                .jc-chip { display: flex; align-items: center; gap: .35em; padding: .35em .5em; border-radius: .4em; background: rgba(255,255,255,.1); font-size: .85em; cursor: grab; user-select: none; }
+                .jc-chip .material-icons { font-size: 1.1em; opacity: .8; }
+                .jc-chip.is-dragging { opacity: .4; }
+
+                /* Toolbar buttons (script) */
+                .jc-btn { border: 1px solid rgba(255,255,255,.1); border-radius: .5em; padding: .6em .8em; margin: .6em 0; }
+                .jc-btn .jc-btn-head { display: flex; align-items: center; gap: .6em; margin-bottom: .3em; }
+                .jc-btn .jc-btn-head .emby-checkbox-label { flex: 1; }
+                .jc-btn .emby-button { margin: 0; padding: .4em .8em; }
+                .jc-btn .inputContainer, .jc-btn .selectContainer { margin: .5em 0; }
+                .jc-icon-field { display: flex; align-items: center; gap: .5em; }
+                .jc-icon-field .emby-input { flex: 1; }
+                .jc-icon-preview { font-size: 1.6em; width: 1.2em; text-align: center; opacity: .9; }
+                .jc-picker { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; }
+                /* display: flex above would beat the browser's [hidden] rule, so hide explicitly. */
+                .jc-picker[hidden] { display: none; }
+                .jc-picker-box { background: var(--jf-palette-background-paper, #202020); color: inherit; border-radius: .6em; width: min(44em, 92vw); max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+                .jc-picker-head { display: flex; gap: .6em; align-items: center; padding: .8em 1em; border-bottom: 1px solid rgba(255,255,255,.08); }
+                .jc-picker-head .emby-input { flex: 1; }
+                .jc-picker-head .emby-button { margin: 0; padding: .5em .9em; }
+                .jc-picker-grid { overflow: auto; padding: .6em; display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5em, 1fr)); gap: .3em; }
+                .jc-picker-item { border: 1px solid transparent; border-radius: .4em; padding: .6em .2em; text-align: center; cursor: pointer; background: none; color: inherit; font: inherit; }
+                .jc-picker-item:hover, .jc-picker-item:focus { border-color: var(--jf-palette-primary-main, #00a4dc); background: rgba(255,255,255,.05); outline: none; }
+                .jc-picker-item .material-icons { font-size: 1.8em; display: block; margin-bottom: .2em; }
+                .jc-picker-item small { font-size: 70%; opacity: .75; word-break: break-all; }
+                .jc-picker-empty { padding: 2em; text-align: center; opacity: .7; }
+
+                /* Preview */
+                .jc-devices { display: flex; gap: .4em; flex-wrap: wrap; align-items: center; margin-bottom: .6em; }
+                .jc-devices .emby-button { margin: 0; padding: .5em .9em; }
+                .jc-devices .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
+                .jc-devices .jc-spacer { flex: 1; }
+                .jc-devices select { width: auto; min-width: 11em; }
+                .jc-devices .jc-follow { width: auto; margin: 0 0 0 .4em; font-size: .9em; }
+                [data-when][hidden] { display: none !important; }
+                .jc-actions { display: flex; gap: .5em; flex-wrap: wrap; margin: .4em 0 .8em; }
+                .jc-actions .emby-button { margin: 0; }
+                .jc-stage { position: relative; width: 100%; background: #000; border-radius: .6em; overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
+                .jc-frame-wrap { position: absolute; left: 0; top: 0; transform-origin: top left; }
+                .jc-frame { border: 0; background: #101010; display: block; }
+                .jc-css { width: 100%; min-height: 14em; font-family: monospace; font-size: 85%; white-space: pre; }
+                .fieldDescription { margin-top: .2em; }
+            </style>
+
+            <div class="jc-toolbar">
+                <h2 style="margin:0 auto 0 0;">Jellycanvas</h2>
+                <select is="emby-select" id="jcLang" class="emby-select-withcolor emby-select" title="Language">
+                    <option value="en">English</option>
+                    <option value="cs">Čeština</option>
+                </select>
+                <button is="emby-button" type="button" class="raised emby-button" id="jcBtnReset"><span data-i18n="reset">Reset</span></button>
+                <button is="emby-button" type="button" class="raised emby-button" id="jcBtnSave"><span data-i18n="save">Save draft</span></button>
+                <button is="emby-button" type="button" class="raised button-submit emby-button" id="jcBtnApply"><span data-i18n="apply">Apply to server</span></button>
+                <button is="emby-button" type="button" class="raised button-delete emby-button" id="jcBtnDisable"><span data-i18n="disable">Remove from server</span></button>
+            </div>
+            <p class="jc-status" id="jcStatus"></p>
+
+            <div class="jc-layout">
+                <!-- ================= LEFT COLUMN: CONTROLS ================= -->
+                <div class="jc-controls">
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupStart">Start</h3>
+                        <details class="jc-section" data-section="presets" open>
+                            <summary><span class="material-icons" aria-hidden="true">auto_awesome</span><span data-i18n="presets">Presets</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-presets" id="jcPresets"></div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcApplyTo" data-i18n="applyTo">Apply to</label>
+                                    <select is="emby-select" id="jcApplyTo" data-path="ApplyTo" class="emby-select-withcolor emby-select">
+                                        <option value="All" data-i18n="applyAll">All Jellyfin themes</option>
+                                        <option value="DarkOnly" data-i18n="applyDark">Dark themes only (leave Light alone)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="share">
+                            <summary><span class="material-icons" aria-hidden="true">swap_horiz</span><span data-i18n="share">Share / import</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file: everything on this page except the uploaded logo (upload that separately). Copy it to share, paste one to try it - nothing is applied until you click Apply.</div>
+                                <h4 class="jc-sub" data-i18n="exportHeading">Export</h4>
+                                <div class="jc-actions">
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy"><span data-i18n="exportCopy">Copy theme JSON</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportFile"><span data-i18n="exportFile">Download .json</span></button>
+                                </div>
+                                <h4 class="jc-sub" data-i18n="importHeading">Import</h4>
+                                <div class="inputContainer">
+                                    <textarea is="emby-textarea" id="jcImportText" class="emby-textarea" rows="4" data-i18n-placeholder="importPlaceholder" placeholder="Paste a theme JSON here"></textarea>
+                                </div>
+                                <div class="jc-actions">
+                                    <button is="emby-button" type="button" class="raised button-submit emby-button" id="jcBtnImport"><span data-i18n="importApply">Load into the designer</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnImportFile"><span data-i18n="importFile">Open .json file…</span></button>
+                                    <input type="file" id="jcImportFileInput" accept=".json,application/json" hidden>
+                                </div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="colors" open>
+                            <summary><span class="material-icons" aria-hidden="true">palette</span><span data-i18n="colors">Colors</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-color" data-color="Colors.Accent" data-i18n-label="accent">Accent</div>
+                                <div class="jc-color" data-color="Colors.Background" data-i18n-label="background">Background</div>
+                                <div class="jc-color" data-color="Colors.Surface" data-i18n-label="surface">Surfaces (bars, dialogs)</div>
+                                <div class="jc-color" data-color="Colors.Text" data-i18n-label="text">Text</div>
+                                <div class="jc-color" data-color="Colors.Outline" data-optional="1" data-i18n-label="outline">Frame &amp; hard shadow of neo-brutalism (empty = black)</div>
+                                <div class="jc-row" data-slider="Colors.SecondaryTextOpacity" data-min="30" data-max="100" data-unit="%" data-i18n-label="secondaryText">Secondary text opacity</div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="typography">
+                            <summary><span class="material-icons" aria-hidden="true">text_fields</span><span data-i18n="typography">Font</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcFont" data-i18n="family">Family</label>
+                                    <select is="emby-select" id="jcFont" data-path="Typography.Family" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="fontDefault">Jellyfin default (Noto Sans)</option>
+                                        <option value="System" data-i18n="fontSystem">System font</option>
+                                        <option value="Inter">Inter</option>
+                                        <option value="Roboto">Roboto</option>
+                                        <option value="Poppins">Poppins</option>
+                                        <option value="Nunito">Nunito</option>
+                                        <option value="Custom" data-i18n="fontCustom">Custom name…</option>
+                                    </select>
+                                </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcFontCustom" data-i18n="fontCustomName">Custom font name (exactly as on Google Fonts)</label>
+                                    <input is="emby-input" type="text" id="jcFontCustom" data-path="Typography.CustomFamily">
+                                </div>
+                                <div class="checkboxContainer checkboxContainer-withDescription">
+                                    <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Typography.LoadFromGoogle"><span data-i18n="googleFonts">Load from Google Fonts</span></label>
+                                    <div class="fieldDescription" data-i18n="googleFontsHint">Inter, Roboto, Poppins, Nunito and custom names. Turn off if browsers must not reach the internet.</div>
+                                </div>
+                                <div class="jc-row" data-slider="Typography.Scale" data-min="80" data-max="125" data-unit="%" data-i18n-label="fontScale">Size</div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupBars">Bars &amp; navigation</h3>
+                        <details class="jc-section" data-section="header">
+                            <summary><span class="material-icons" aria-hidden="true">web_asset</span><span data-i18n="header">Bar</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcHeaderLayout" data-i18n="layout">Layout</label>
+                                    <select is="emby-select" id="jcHeaderLayout" data-path="Header.Layout" class="emby-select-withcolor emby-select">
+                                        <option value="Full" data-i18n="layoutFull">One full-width bar at the top</option>
+                                        <option value="Sections" data-i18n="layoutSections">Top bar split into sections (islands)</option>
+                                        <option value="Sidebar" data-i18n="layoutSidebar">Vertical sidebar on the left (pre-12 feel; not on phones)</option>
+                                    </select>
+                                </div>
+                                <h4 class="jc-sub" data-when="Header.Layout=Full|Sections" data-i18n="topBarHeading">Top bar</h4>
+                                <div class="jc-row" data-when="Header.Layout=Sections" data-slider="Header.SectionRadius" data-min="0" data-max="999" data-unit="px" data-i18n-label="sectionRadius">Section radius (999 = pill)</div>
+                                <div class="jc-row" data-when="Header.Layout=Full|Sections" data-slider="Header.Height" data-min="0" data-max="96" data-unit="px" data-i18n-label="height">Height (0 = default)</div>
+                                <h4 class="jc-sub" data-when="Header.Layout=Sidebar" data-i18n="sidebarHeading">Sidebar</h4>
+                                <div class="jc-row" data-when="Header.Layout=Sidebar" data-slider="Header.SidebarWidth" data-min="140" data-max="360" data-unit="px" data-i18n-label="sidebarWidth">Sidebar width</div>
+                                <div class="checkboxContainer" data-when="Header.Layout=Sidebar"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.SidebarCollapsible"><span data-i18n="sidebarCollapsible">Collapsible sidebar (icons only, slides out on hover)</span></label></div>
+                                <div class="jc-row" data-when="Header.Layout=Sidebar" data-slider="Header.SidebarCollapsedWidth" data-min="48" data-max="120" data-unit="px" data-i18n-label="sidebarCollapsed">Collapsed width</div>
+
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcHeaderStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcHeaderStyle" data-path="Header.Style" class="emby-select-withcolor emby-select">
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="Transparent" data-i18n="transparent">Transparent</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-hint" data-i18n="styleHint">Neo-brutalism fills the bar with the accent color (set a bar color to change it), moves it off the window edges so its frame and shadow show, and looks the part with rounding at 0; glow, clay and neumorphism show best on islands or a floating bar with some rounding; neumorphism uses the page background color unless a bar color is set.</div>
+                                <div class="jc-color" data-color="Header.Color" data-optional="1" data-i18n-label="barColor">Bar color (empty = surface color)</div>
+                                <div class="jc-row" data-slider="Header.Opacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-slider="Header.Blur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div class="jc-row" data-slider="Header.Radius" data-min="0" data-max="32" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.Floating"><span data-i18n="floating">Floating (detached from edges)</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.Shadow"><span data-i18n="shadow">Shadow</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.BottomBorder"><span data-i18n="bottomBorder">Thin bottom line</span></label></div>
+                                <h4 class="jc-sub" data-i18n="slotsHeading">Arrangement</h4>
+                                <div class="jc-hint" data-i18n="slotsHint">Drag the groups between the left, center and right parts of the bar (top, middle and bottom of a sidebar).</div>
+                                <div class="jc-slots" id="jcSlots">
+                                    <div class="jc-slot" data-slot="SlotLeft"><div class="jc-slot-title" data-i18n="slotLeft">Left</div></div>
+                                    <div class="jc-slot" data-slot="SlotCenter"><div class="jc-slot-title" data-i18n="slotCenter">Center</div></div>
+                                    <div class="jc-slot" data-slot="SlotRight"><div class="jc-slot-title" data-i18n="slotRight">Right</div></div>
+                                </div>
+
+                                <h4 class="jc-sub" data-when="Header.Layout=Sidebar" data-i18n="libraryRowHeading">Library bar (title, sort, filter, view - next to the sidebar; under a top bar it shares the bar's look)</h4>
+                                <div class="selectContainer" data-when="Header.Layout=Sidebar">
+                                    <label class="selectLabel" for="jcLibraryRow" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcLibraryRow" data-path="Header.LibraryRow" class="emby-select-withcolor emby-select">
+                                        <option value="SameAsBar" data-i18n="libraryRowSame">Same as the top bar / sidebar</option>
+                                        <option value="Hidden" data-i18n="libraryRowHidden">Hidden</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="Transparent" data-i18n="transparent">Transparent</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Header.LibraryRow=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-color="Header.LibraryRowColor" data-optional="1" data-i18n-label="libraryRowColor">Row color (empty = surface color; accent for neo-brutalism)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=Glass|Gradient|Transparent|Glowmorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowHeight" data-min="44" data-max="96" data-unit="px" data-i18n-label="libraryRowHeight">Row height (52 = Jellyfin default, 44 = the least the controls fit in)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="libraryRowRadius">Row corner radius (inset from the edges when rounded)</div>
+
+                                <h4 class="jc-sub" data-i18n="navHeading">Links &amp; icons</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcNav" data-i18n="nav">Navigation links</label>
+                                    <select is="emby-select" id="jcNav" data-path="Header.Nav" class="emby-select-withcolor emby-select">
+                                        <option value="Text" data-i18n="navText">Text (default)</option>
+                                        <option value="Pill" data-i18n="navPill">Pills, active filled</option>
+                                        <option value="Underline" data-i18n="navUnderline">Underlined active link</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.HideSyncPlay"><span data-i18n="hideSyncPlay">Hide SyncPlay icon</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.HideCast"><span data-i18n="hideCast">Hide Cast icon</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.HideSearch"><span data-i18n="hideSearch">Hide Search icon</span></label></div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="logo">
+                            <summary><span class="material-icons" aria-hidden="true">image</span><span data-i18n="logo">Logo</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="logoTextHeading">Server name</h4>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.HideLogo"><span data-i18n="hideLogo">Hide logo and server name entirely</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.ShowServerName"><span data-i18n="showServerName">Show server name next to the logo</span></label></div>
+                                <h4 class="jc-sub" data-i18n="logoImageHeading">Image</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcLogo" data-i18n="logoImage">Logo image</label>
+                                    <select is="emby-select" id="jcLogo" data-path="Header.Logo" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="logoDefault">Jellyfin icon</option>
+                                        <option value="Custom" data-i18n="logoCustom">Custom image</option>
+                                        <option value="Hidden" data-i18n="logoHidden">No image</option>
+                                    </select>
+                                </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcLogoUrl" data-i18n="logoUrl">Custom image URL</label>
+                                    <input is="emby-input" type="text" id="jcLogoUrl" data-path="Header.LogoUrl" placeholder="https://... or upload below">
+                                </div>
+                                <div class="jc-toolbar">
+                                    <input type="file" id="jcLogoFile" accept=".png,.svg,.webp,.jpg,.jpeg,.gif" hidden>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnLogoUpload"><span data-i18n="logoUpload">Upload image...</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnLogoDelete"><span data-i18n="logoDelete">Delete uploaded</span></button>
+                                </div>
+                                <div class="fieldDescription" data-i18n="logoHint">PNG, SVG, WebP, JPG or GIF up to 2 MB. Uploading fills in the URL and switches the image to Custom.</div>
+                                <div class="jc-row" data-slider="Header.LogoHeight" data-min="12" data-max="80" data-unit="px" data-i18n-label="logoHeight">Logo height</div>
+                                <div class="jc-row" data-slider="Header.LogoWidth" data-min="0" data-max="400" data-unit="px" data-i18n-label="logoWidth">Custom logo width (0 = auto)</div>
+                            </div>
+                        </details>
+
+                        <p class="fieldDescription" id="jcScriptsMissing" hidden></p>
+                        <details class="jc-section" data-section="scripts" id="jcScriptsSection" hidden>
+                            <summary><span class="material-icons" aria-hidden="true">smart_button</span><span data-i18n="scripts">Custom toolbar buttons</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="scriptsHint">Custom buttons in the top bar - for example "Requests" opening Seerr in an overlay under the bar. They show up in the preview after Save or Apply.</div>
+                                <p class="jc-status" id="jcScriptsNote"></p>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="jcScriptsEnabled" data-path="Scripts.Enabled"><span data-i18n="scriptsEnabled">Enable script features (buttons, slideshow)</span></label></div>
+                                <div id="jcButtons"></div>
+                                <div class="jc-toolbar">
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnAddButton"><span data-i18n="scriptsAdd">Add button</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnCopyScript" hidden><span data-i18n="scriptsCopy">Copy script for the injector</span></button>
+                                </div>
+                                <textarea class="jc-css emby-textarea" id="jcScriptOut" readonly rows="6"></textarea>
+                            </div>
+                        </details>
+                        <template id="jcButtonTemplate">
+                            <div class="jc-btn">
+                                <div class="jc-btn-head">
+                                    <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="Enabled"><span data-i18n="btnEnabled">Enabled</span></label>
+                                    <button is="emby-button" type="button" class="raised emby-button jc-btn-remove"><span data-i18n="btnRemove">Remove</span></button>
+                                </div>
+                                <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" data-i18n="btnLabel">Label</label><input is="emby-input" type="text" data-field="Label"></div>
+                                <div class="inputContainer jc-icon-row">
+                                    <label class="inputLabel inputLabelUnfocused" data-i18n="btnIcon">Icon (Material Icons name)</label>
+                                    <div class="jc-icon-field">
+                                        <span class="material-icons jc-icon-preview" aria-hidden="true"></span>
+                                        <input is="emby-input" type="text" data-field="Icon" placeholder="playlist_add">
+                                        <button is="emby-button" type="button" class="raised emby-button jc-icon-pick"><span data-i18n="iconPick">Pick…</span></button>
+                                    </div>
+                                </div>
+                                <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" data-i18n="btnUrl">URL</label><input is="emby-input" type="text" data-field="Url" placeholder="https://requests.example.com/"></div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" data-i18n="btnAction">Action</label>
+                                    <select is="emby-select" class="emby-select-withcolor emby-select" data-field="Action">
+                                        <option value="Overlay" data-i18n="btnOverlay">Open in an overlay under the bar</option>
+                                        <option value="NewTab" data-i18n="btnNewTab">Open in a new tab</option>
+                                        <option value="Navigate" data-i18n="btnNavigate">Navigate to the URL</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" data-i18n="btnPlacement">Placement</label>
+                                    <select is="emby-select" class="emby-select-withcolor emby-select" data-field="Placement">
+                                        <option value="Icons" data-i18n="btnIcons">Among the icons on the right</option>
+                                        <option value="Nav" data-i18n="btnNav">After the links on the left</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="HideOnTv"><span data-i18n="btnHideTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="KeepAlive"><span data-i18n="btnKeepAlive">Keep the overlay loaded after closing</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowBeforeLogin"><span data-i18n="btnBeforeLogin">Show before login too (login page)</span></label></div>
+                            </div>
+                        </template>
+
+
+                        <details class="jc-section" data-section="infobar">
+                            <summary><span class="material-icons" aria-hidden="true">campaign</span><span data-i18n="infobar">Info bar</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="infobarTextHeading">Text &amp; placement</h4>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Enabled"><span data-i18n="infobarEnabled">Show an announcement strip</span></label></div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcInfoText" data-i18n="infobarText">Text</label>
+                                    <input is="emby-input" type="text" id="jcInfoText" data-path="InfoBar.Text" placeholder="Maintenance on Sunday 22:00 - 23:00">
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcInfoPos" data-i18n="infobarPosition">Position</label>
+                                    <select is="emby-select" id="jcInfoPos" data-path="InfoBar.Position" class="emby-select-withcolor emby-select">
+                                        <option value="Top" data-i18n="infobarTop">Top (under the top bar / above the content with a sidebar)</option>
+                                        <option value="Bottom" data-i18n="infobarBottom">Bottom edge</option>
+                                    </select>
+                                </div>
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="jc-color" data-color="InfoBar.Color" data-optional="1" data-i18n-label="infobarColor">Background (empty = accent)</div>
+                                <div class="jc-color" data-color="InfoBar.TextColor" data-optional="1" data-i18n-label="infobarTextColor">Text color (empty = auto)</div>
+                                <div class="jc-row" data-slider="InfoBar.Height" data-min="20" data-max="80" data-unit="px" data-i18n-label="infobarHeight">Height</div>
+                                <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
+                                <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script; stays closed until the text changes)</span></label></div>
+                                <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupContent">Content</h3>
+                        <details class="jc-section" data-section="cards">
+                            <summary><span class="material-icons" aria-hidden="true">grid_view</span><span data-i18n="cards">Cards (posters)</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="jc-row" data-slider="Cards.Radius" data-min="0" data-max="32" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.Shadow"><span data-i18n="shadow">Shadow</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.Border"><span data-i18n="border">Thin border</span></label></div>
+                                <div class="jc-row" data-slider="Cards.Spacing" data-min="40" data-max="200" data-unit="%" data-i18n-label="spacing">Spacing</div>
+                                <h4 class="jc-sub" data-i18n="cardsHoverHeading">Hover &amp; text</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcCardHover" data-i18n="hover">Hover effect</label>
+                                    <select is="emby-select" id="jcCardHover" data-path="Cards.Hover" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="none">None</option>
+                                        <option value="Lift" data-i18n="lift">Lift</option>
+                                        <option value="Zoom" data-i18n="zoom">Zoom</option>
+                                        <option value="Glow" data-i18n="glow">Glow</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcCardText" data-i18n="cardText">Title &amp; text</label>
+                                    <select is="emby-select" id="jcCardText" data-path="Cards.Text" class="emby-select-withcolor emby-select">
+                                        <option value="Below" data-i18n="below">Below the image</option>
+                                        <option value="Overlay" data-i18n="overlay">Over the image</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtons"><span data-i18n="hideOverlay">Hide hover buttons (play, menu)</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtonsOnFolders"><span data-i18n="hideOverlayFolders">Hide hover buttons only on whole series, seasons and collections (movies and episodes keep them)</span></label></div>
+                                <h4 class="jc-sub" data-i18n="playedHeading">Watched &amp; progress</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcPlayed" data-i18n="played">Watched items</label>
+                                    <select is="emby-select" id="jcPlayed" data-path="Cards.Played" class="emby-select-withcolor emby-select">
+                                        <option value="Badge" data-i18n="playedBadge">Check badge (default)</option>
+                                        <option value="CornerBadge" data-i18n="playedCorner">Check badge tucked in the corner</option>
+                                        <option value="Dimmed" data-i18n="playedDimmed">Dimmed poster, no badge</option>
+                                        <option value="Grayscale" data-i18n="playedGray">Black &amp; white poster, no badge</option>
+                                        <option value="Hidden" data-i18n="playedHidden">No indication</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-color="Cards.PlayedColor" data-optional="1" data-i18n-label="playedColor">Badge color (empty = accent)</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcProgress" data-i18n="progress">Progress bar</label>
+                                    <select is="emby-select" id="jcProgress" data-path="Cards.Progress" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="progressDefault">Thin line at the bottom (default)</option>
+                                        <option value="Floating" data-i18n="progressFloating">Floating rounded bar</option>
+                                        <option value="Bold" data-i18n="progressBold">Bold bar at the bottom</option>
+                                        <option value="Top" data-i18n="progressTop">Thin line at the top</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                        <option value="Fill" data-i18n="progressFill">Translucent tint over the poster, as far as watched</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-color="Cards.ProgressColor" data-optional="1" data-i18n-label="progressColor">Progress color (empty = accent)</div>
+                                <div class="jc-row" data-when="Cards.Progress=Fill" data-slider="Cards.ProgressFillOpacity" data-min="10" data-max="80" data-unit="%" data-i18n-label="progressFillOpacity">Tint opacity</div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="buttons">
+                            <summary><span class="material-icons" aria-hidden="true">smart_button</span><span data-i18n="buttons">Buttons &amp; inputs</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="buttonsHint">Affects the flat buttons on item pages, dialogs and settings, and the Play all / filter buttons in libraries.</div>
+                                <h4 class="jc-sub" data-i18n="buttonsAllHeading">All buttons</h4>
+                                <div class="jc-row" data-slider="Buttons.Radius" data-min="0" data-max="999" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcButtonStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcButtonStyle" data-path="Buttons.Style" class="emby-select-withcolor emby-select">
+                                        <option value="Filled" data-i18n="filled">Filled</option>
+                                        <option value="Outline" data-i18n="outline">Outline</option>
+                                        <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HoverLift"><span data-i18n="hoverLift">Lift on hover</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.Uppercase"><span data-i18n="uppercase">Uppercase text</span></label></div>
+                                <div class="jc-row" data-slider="Buttons.IconRadius" data-min="-1" data-max="24" data-unit="px" data-i18n-label="iconRadius">Icon buttons radius (-1 = round)</div>
+                                <h4 class="jc-sub" data-i18n="buttonsDetailHeading">Item-page buttons</h4>
+                                <div class="jc-row" data-slider="Buttons.DetailScale" data-min="70" data-max="150" data-unit="%" data-i18n-label="detailScale">Size of item-page buttons</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.DetailLabels"><span data-i18n="detailLabels">Show text labels next to the icons on item pages</span></label></div>
+                                <h4 class="jc-sub" data-i18n="playHeading">Play button (item page)</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcPlayStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcPlayStyle" data-path="Buttons.Play" class="emby-select-withcolor emby-select">
+                                        <option value="Inherit" data-i18n="playInherit">Same as the other buttons</option>
+                                        <option value="Accent" data-i18n="playAccent">Filled</option>
+                                        <option value="Outline" data-i18n="outline">Outline</option>
+                                        <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
+                                <div class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="dialogs">
+                            <summary><span class="material-icons" aria-hidden="true">web</span><span data-i18n="dialogs">Dialogs &amp; menus</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcDialogStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcDialogStyle" data-path="Dialogs.Style" class="emby-select-withcolor emby-select">
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Dialogs.Opacity" data-min="30" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-slider="Dialogs.Blur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur</div>
+                                <div class="jc-row" data-slider="Dialogs.Radius" data-min="0" data-max="32" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dialogs.UpNext"><span data-i18n="dialogsUpNext">Also the player's "Up next" prompt (next episode countdown)</span></label></div>
+                                <div class="jc-hint" data-i18n="dialogsHint">Open a menu in the preview (the three dots on a card, or the user menu) to see it; the preview's page list has the player's "Up next" and "Still watching?" prompts too.</div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="detail">
+                            <summary><span class="material-icons" aria-hidden="true">movie</span><span data-i18n="detail">Item detail page</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="ribbonHeading">Title ribbon under the backdrop</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcRibbon" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcRibbon" data-path="Detail.Ribbon" class="emby-select-withcolor emby-select">
+                                        <option value="SameAsBar" data-i18n="ribbonSame">Same as the bar</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="Transparent" data-i18n="transparent">Transparent</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.Ribbon=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.RibbonColor" data-optional="1" data-i18n-label="ribbonColor">Ribbon color (empty = bar color)</div>
+                                <div class="jc-row" data-when="Detail.Ribbon=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-slider="Detail.RibbonOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-when="Detail.Ribbon=Glass|Gradient|Glowmorphism" data-slider="Detail.RibbonBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <h4 class="jc-sub" data-i18n="posterHeading">Poster &amp; logo</h4>
+                                <div class="jc-row" data-slider="Detail.PosterRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="posterRadius">Poster radius (-1 = same as cards)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PosterShadow"><span data-i18n="posterShadow">Poster shadow</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideTitleLogo"><span data-i18n="hideTitleLogo">Hide the title logo image</span></label></div>
+                                <h4 class="jc-sub" data-i18n="peopleHeading">Cast &amp; crew</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcPeople" data-i18n="peopleShape">Photo shape</label>
+                                    <select is="emby-select" id="jcPeople" data-path="Detail.People" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="peopleDefault">Portrait cards (default)</option>
+                                        <option value="Circle" data-i18n="peopleCircle">Circles, name centered</option>
+                                        <option value="Square" data-i18n="peopleSquare">Squares</option>
+                                        <option value="Rounded" data-i18n="peopleRounded">Portraits with large rounding</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Detail.PeopleScale" data-min="60" data-max="150" data-unit="%" data-i18n-label="peopleScale">Card size</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PeopleRing"><span data-i18n="peopleRing">Accent ring around the photo</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PeopleGrayscale"><span data-i18n="peopleGray">Black &amp; white, color on hover</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideCast"><span data-i18n="hideCastSection">Hide the cast &amp; crew section</span></label></div>
+                                <h4 class="jc-sub" data-i18n="detailBlocksHeading">Description &amp; info blocks</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcTrackSel" data-i18n="trackSelections">Version / Video / Audio / Subtitles selectors</label>
+                                    <select is="emby-select" id="jcTrackSel" data-path="Detail.TrackSelections" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="blockDefault">Default</option>
+                                        <option value="Chips" data-i18n="blockChips">Chips</option>
+                                        <option value="AccentChips" data-i18n="blockAccentChips">Accent chips</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcGenres" data-i18n="genresRow">Genres</label>
+                                    <select is="emby-select" id="jcGenres" data-path="Detail.Genres" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="blockDefault">Default</option>
+                                        <option value="Chips" data-i18n="blockChips">Chips</option>
+                                        <option value="AccentChips" data-i18n="blockAccentChips">Accent chips</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcTags" data-i18n="tagsRow">Tags</label>
+                                    <select is="emby-select" id="jcTags" data-path="Detail.Tags" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="blockDefault">Default</option>
+                                        <option value="Chips" data-i18n="blockChips">Chips</option>
+                                        <option value="AccentChips" data-i18n="blockAccentChips">Accent chips</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcExtLinks" data-i18n="externalLinksRow">External links (IMDb, TMDB...)</label>
+                                    <select is="emby-select" id="jcExtLinks" data-path="Detail.ExternalLinks" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="blockDefault">Default</option>
+                                        <option value="Chips" data-i18n="blockChips">Chips</option>
+                                        <option value="AccentChips" data-i18n="blockAccentChips">Accent chips</option>
+                                        <option value="Hidden" data-i18n="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Detail.OverviewScale" data-min="80" data-max="140" data-unit="%" data-i18n-label="overviewScale">Overview text size</div>
+                                <div class="jc-row" data-slider="Detail.OverviewMaxWidth" data-min="0" data-max="1400" data-step="20" data-unit="px" data-i18n-label="overviewMaxWidth">Overview max width (0 = no limit)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideTagline"><span data-i18n="hideTagline">Hide the tagline</span></label></div>
+                                <h4 class="jc-sub" data-i18n="detailSectionsHeading">Sections below</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSectionTitles" data-i18n="sectionTitles">Section titles</label>
+                                    <select is="emby-select" id="jcSectionTitles" data-path="Detail.SectionTitles" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="blockDefault">Default</option>
+                                        <option value="Uppercase" data-i18n="titleUppercase">Small uppercase</option>
+                                        <option value="AccentLine" data-i18n="titleAccentLine">Accent line underneath</option>
+                                        <option value="AccentBar" data-i18n="titleAccentBar">Accent bar on the left</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideSimilar"><span data-i18n="hideSimilar">Hide "Similar items"</span></label></div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupPages">Background &amp; pages</h3>
+                        <details class="jc-section" data-section="backdrop">
+                            <summary><span class="material-icons" aria-hidden="true">wallpaper</span><span data-i18n="backdrop">Background image</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="sourceHeading">Source</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcBackdropMode" data-i18n="backdropMode">Source</label>
+                                    <select is="emby-select" id="jcBackdropMode" data-path="Backdrop.Mode" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="backdropDefault">Jellyfin default (per-user "show backdrops" setting)</option>
+                                        <option value="RandomLibrary" data-i18n="backdropRandom">Random backdrop from the library, on every page</option>
+                                        <option value="Custom" data-i18n="backdropCustom">Custom image URL</option>
+                                    </select>
+                                </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcBackdropUrl" data-i18n="backdropUrl">Custom image URL</label>
+                                    <input is="emby-input" type="text" id="jcBackdropUrl" data-path="Backdrop.Url" placeholder="https://...">
+                                </div>
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="jc-row" data-slider="Backdrop.Dim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dim">Dimming</div>
+                                <div class="jc-row" data-slider="Backdrop.Blur" data-min="0" data-max="60" data-unit="px" data-i18n-label="blur">Blur</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
+                                <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
+                                <div class="jc-row" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
+                                <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="badges" id="jcBadgesSection" hidden>
+                            <summary><span class="material-icons" aria-hidden="true">sell</span><span data-i18n="badges">Card badges (resolution, languages)</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="badgesHint">Resolution, HDR and the audio / subtitle languages on movie and episode cards, read from the media streams by the client script (one request per batch of cards, cached). Needs the script features enabled. Shows in the preview after Save or Apply.</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.Enabled"><span data-i18n="badgesEnabled">Show badges on cards</span></label></div>
+                                <h4 class="jc-sub" data-i18n="badgesCornersHeading">Corners</h4>
+                                <div class="jc-hint" data-i18n="badgesCornersHint">Drag each badge into a corner of the card, or into "Off" to drop it.</div>
+                                <div class="jc-slots jc-corners" id="jcBadgeZones">
+                                    <div class="jc-slot" data-badge-slot="TopLeft"><div class="jc-slot-title" data-i18n="cornerTl">Top left</div></div>
+                                    <div class="jc-slot" data-badge-slot="TopRight"><div class="jc-slot-title" data-i18n="cornerTr">Top right</div></div>
+                                    <div class="jc-slot" data-badge-slot="BottomLeft"><div class="jc-slot-title" data-i18n="cornerBl">Bottom left</div></div>
+                                    <div class="jc-slot" data-badge-slot="BottomRight"><div class="jc-slot-title" data-i18n="cornerBr">Bottom right</div></div>
+                                    <div class="jc-slot jc-slot-off" data-badge-slot="Off"><div class="jc-slot-title" data-i18n="cornerOff">Off</div></div>
+                                </div>
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcBadgeStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcBadgeStyle" data-path="Scripts.CardBadges.Style" class="emby-select-withcolor emby-select">
+                                        <option value="Dark" data-i18n="badgeDark">Dark pills</option>
+                                        <option value="Accent" data-i18n="badgeAccent">Accent pills</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Scripts.CardBadges.Scale" data-min="50" data-max="200" data-unit="%" data-i18n-label="badgeScale">Size</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.HideOnMobile"><span data-i18n="badgesMobile">Hide on phones</span></label></div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="slideshow" id="jcSlideshowSection" hidden>
+                            <summary><span class="material-icons" aria-hidden="true">slideshow</span><span data-i18n="slideshow">Home slideshow</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="slideshowHint">A hero carousel at the top of the home page: backdrop, logo or title, overview and a button to the item. Needs the script features enabled (Custom toolbar buttons section). Shows in the preview after Save or Apply.</div>
+                                <h4 class="jc-sub" data-i18n="contentHeading">Content</h4>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.Enabled"><span data-i18n="slideshowEnabled">Show the slideshow</span></label></div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSsSource" data-i18n="slideshowSource">What to show</label>
+                                    <select is="emby-select" id="jcSsSource" data-path="Scripts.Slideshow.Source" class="emby-select-withcolor emby-select">
+                                        <option value="Random" data-i18n="ssRandom">Random items</option>
+                                        <option value="Latest" data-i18n="ssLatest">Recently added</option>
+                                        <option value="ContinueWatching" data-i18n="ssContinue">Continue watching</option>
+                                        <option value="Favorites" data-i18n="ssFavorites">Favorites</option>
+                                        <option value="Genre" data-i18n="ssGenre">A genre (name below)</option>
+                                        <option value="Tag" data-i18n="ssTag">A tag (name below)</option>
+                                    </select>
+                                </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSsFilter" data-i18n="slideshowFilter">Genre / tag name</label>
+                                    <input is="emby-input" type="text" id="jcSsFilter" data-path="Scripts.Slideshow.Filter" placeholder="Science Fiction">
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSsTypes" data-i18n="slideshowTypes">Item types</label>
+                                    <select is="emby-select" id="jcSsTypes" data-path="Scripts.Slideshow.Types" class="emby-select-withcolor emby-select">
+                                        <option value="MoviesAndSeries" data-i18n="ssBoth">Movies and series</option>
+                                        <option value="Movies" data-i18n="ssMovies">Movies</option>
+                                        <option value="Series" data-i18n="ssSeries">Series</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Scripts.Slideshow.Count" data-min="1" data-max="30" data-unit="" data-i18n-label="slideshowCount">Number of items</div>
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="jc-row" data-slider="Scripts.Slideshow.IntervalSeconds" data-min="3" data-max="120" data-unit="s" data-i18n-label="slideshowInterval">Seconds per slide</div>
+                                <div class="jc-row" data-slider="Scripts.Slideshow.Height" data-min="25" data-max="90" data-unit="%" data-i18n-label="slideshowHeight">Height (% of the window)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowLogo"><span data-i18n="slideshowLogo">Use the title logo image when there is one</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowOverview"><span data-i18n="slideshowOverview">Show the overview</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowButton"><span data-i18n="slideshowButton">Show a button to the item</span></label></div>
+                                <h4 class="jc-sub" data-i18n="devicesHeading">Devices</h4>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.HideOnTv"><span data-i18n="btnHideTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
+                            </div>
+                        </details>
+
+                        <details class="jc-section" data-section="login">
+                            <summary><span class="material-icons" aria-hidden="true">login</span><span data-i18n="login">Login page</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <h4 class="jc-sub" data-i18n="backgroundHeading">Background</h4>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcLoginBg" data-i18n="loginBg">Background image URL (empty = none)</label>
+                                    <input is="emby-input" type="text" id="jcLoginBg" data-path="Login.BackgroundUrl" placeholder="https://...">
+                                </div>
+                                <div class="jc-row" data-slider="Login.BackgroundBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.GradientBackground"><span data-i18n="loginGradient">Gradient background</span></label></div>
+                                <div class="jc-color" data-when="Login.GradientBackground=true" data-color="Login.GradientFrom" data-optional="1" data-i18n-label="gradientFrom">Gradient from (empty = background color)</div>
+                                <div class="jc-color" data-when="Login.GradientBackground=true" data-color="Login.GradientTo" data-optional="1" data-i18n-label="gradientTo">Gradient to (empty = dark accent)</div>
+                                <div class="jc-row" data-when="Login.GradientBackground=true" data-slider="Login.GradientAngle" data-min="0" data-max="360" data-step="5" data-unit="°" data-i18n-label="gradientAngle">Gradient direction</div>
+                                <div class="jc-row" data-when="Login.GradientBackground=true" data-slider="Login.GradientOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="gradientOpacity">Gradient opacity (below 100 the backdrop shows through)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.TransparentBar"><span data-i18n="loginTransparentBar">No bar on the login page - just the logo over the background</span></label></div>
+                                <div class="jc-hint" data-i18n="loginGradientHint">A background image URL above takes precedence over the gradient.</div>
+                                <h4 class="jc-sub" data-i18n="loginFormHeading">Form</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcLoginForm" data-i18n="loginForm">Form</label>
+                                    <select is="emby-select" id="jcLoginForm" data-path="Login.Form" class="emby-select-withcolor emby-select">
+                                        <option value="Plain" data-i18n="loginPlain">Plain (default)</option>
+                                        <option value="Card" data-i18n="loginCard">Card</option>
+                                        <option value="Glass" data-i18n="loginGlass">Glass card</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Login.Radius" data-min="0" data-max="32" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="jc-row" data-slider="Login.FormWidth" data-min="0" data-max="900" data-step="10" data-unit="px" data-i18n-label="loginFormWidth">Form width (0 = default)</div>
+                                <h4 class="jc-sub" data-i18n="loginFieldsHeading">Fields &amp; buttons</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcLoginInputs" data-i18n="loginInputs">Text fields</label>
+                                    <select is="emby-select" id="jcLoginInputs" data-path="Login.Inputs" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="loginInputsDefault">Jellyfin default</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Outline" data-i18n="outline">Outline</option>
+                                        <option value="Filled" data-i18n="filled">Filled</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcLoginButtons" data-i18n="loginButtons">Buttons</label>
+                                    <select is="emby-select" id="jcLoginButtons" data-path="Login.Buttons" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="loginInputsDefault">Jellyfin default</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Outline" data-i18n="outline">Outline</option>
+                                        <option value="Filled" data-i18n="filled">Filled</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Login.InputRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="loginInputRadius">Fields &amp; buttons radius (-1 = form radius)</div>
+                                <div class="jc-row" data-slider="Login.InputScale" data-min="70" data-max="160" data-unit="%" data-i18n-label="loginInputScale">Field height</div>
+                                <h4 class="jc-sub" data-i18n="loginTextsHeading">Texts &amp; extra buttons</h4>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcLoginTitle" data-i18n="loginTitle">Heading text (empty = "Please sign in")</label>
+                                    <input is="emby-input" type="text" id="jcLoginTitle" data-path="Login.Title" placeholder="Welcome to SPEEDFIRE">
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.HideTitle"><span data-i18n="loginHideTitle">Hide the heading</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.HideQuickConnect"><span data-i18n="loginHideQuick">Hide the Quick Connect button</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.HideForgotPassword"><span data-i18n="loginHideForgot">Hide the Forgot password button</span></label></div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupDevices">Devices</h3>
+                        <details class="jc-section" data-section="tv">
+                            <summary><span class="material-icons" aria-hidden="true">tv</span><span data-i18n="tv">TV layout</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-color" data-color="Tv.FocusColor" data-optional="1" data-i18n-label="focusColor">Focus color (empty = accent)</div>
+                                <div class="jc-row" data-slider="Tv.FocusWidth" data-min="1" data-max="8" data-unit="px" data-i18n-label="focusWidth">Focus ring width</div>
+                                <div class="jc-row" data-slider="Tv.FocusScale" data-min="100" data-max="120" data-unit="%" data-i18n-label="focusScale">Focused card zoom</div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="mobile">
+                            <summary><span class="material-icons" aria-hidden="true">smartphone</span><span data-i18n="mobile">Mobile layout</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-row" data-slider="Mobile.CardRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="cardRadiusMobile">Card radius (-1 = same as web)</div>
+                                <div class="jc-row" data-slider="Mobile.FontScale" data-min="0" data-max="125" data-unit="%" data-i18n-label="fontScaleMobile">Font size (0 = same as web)</div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="drawer">
+                            <summary><span class="material-icons" aria-hidden="true">menu_open</span><span data-i18n="drawer">Side menu (phone / narrow window)</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="drawerHint">The hamburger menu that opens from the left in the mobile layout (and in narrow windows). On the desktop the links live in the top bar.</div>
+                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcDrawerStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcDrawerStyle" data-path="Drawer.Style" class="emby-select-withcolor emby-select">
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="Transparent" data-i18n="transparent">Transparent</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-color="Drawer.Color" data-optional="1" data-i18n-label="menuColor">Menu color (empty = background color)</div>
+                                <div class="jc-row" data-slider="Drawer.Opacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-slider="Drawer.Blur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Blur (glass)</div>
+                                <h4 class="jc-sub" data-i18n="shapeHeading">Shape</h4>
+                                <div class="jc-row" data-slider="Drawer.ItemRadius" data-min="0" data-max="999" data-unit="px" data-i18n-label="itemRadius">Menu item radius</div>
+                                <div class="jc-row" data-slider="Drawer.Width" data-min="0" data-max="420" data-unit="px" data-i18n-label="width">Width (0 = default)</div>
+                                <div class="jc-row" data-slider="Drawer.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="drawerRadius">Rounded outer edge</div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="jc-group">
+                        <h3 class="jc-group-title" data-i18n="groupAdvanced">Advanced</h3>
+                        <details class="jc-section" data-section="misc">
+                            <summary><span class="material-icons" aria-hidden="true">tune</span><span data-i18n="misc">Misc</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.HideScrollbars"><span data-i18n="hideScrollbars">Hide scrollbars</span></label></div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="extra">
+                            <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS &amp; export</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="extraHint">Anything the controls above cannot do. Appended after the generated CSS.</div>
+                                <textarea is="emby-textarea" class="jc-css" data-path="ExtraCss" rows="6"></textarea>
+                                <br><br>
+                                <div class="jc-hint" data-i18n="exportHint">Generated CSS - read-only. Copy it if you want to use it elsewhere.</div>
+                                <textarea class="jc-css emby-textarea" id="jcCssOut" readonly rows="10"></textarea>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- ================= RIGHT COLUMN: PREVIEW ================= -->
+                <div class="jc-preview">
+                    <div class="jc-devices">
+                        <button is="emby-button" type="button" class="raised emby-button jc-device" data-device="web"><span data-i18n="devWeb">Web</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button jc-device" data-device="tv"><span data-i18n="devTv">TV</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button jc-device" data-device="mobile"><span data-i18n="devMobile">Mobile</span></button>
+                        <span class="jc-spacer"></span>
+                        <select is="emby-select" id="jcPage" class="emby-select-withcolor emby-select">
+                            <option value="home" data-i18n="pageHome">Home</option>
+                            <option value="library" data-i18n="pageLibrary">Library</option>
+                            <option value="detail" data-i18n="pageDetail">Item detail</option>
+                            <option value="login" data-i18n="pageLogin">Login</option>
+                            <option value="upnext" data-i18n="pageUpNext">Player: next episode prompt</option>
+                            <option value="stillwatching" data-i18n="pageStillWatching">Player: "Still watching?"</option>
+                        </select>
+                        <button is="emby-button" type="button" class="raised emby-button" id="jcBtnReload" title="Reload preview"><span class="material-icons refresh" aria-hidden="true"></span></button>
+                        <label class="emby-checkbox-label jc-follow" title="Switch the preview to the page where the setting being changed is visible"><input is="emby-checkbox" type="checkbox" id="jcFollow" checked><span data-i18n="follow">Follow settings</span></label>
+                    </div>
+                    <div class="jc-stage" id="jcStage">
+                        <div class="jc-frame-wrap" id="jcFrameWrap">
+                            <iframe class="jc-frame" id="jcFrame" title="Preview"></iframe>
+                        </div>
+                    </div>
+                    <p class="jc-hint" data-i18n="previewHint">The preview is the real web client with your CSS injected - you can click around in it; Ctrl+click an element to jump to its settings. Custom CSS reaches browser-based clients (web, Jellyfin Media Player, the Android app); native TV apps ignore it.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="configurationpage?name=JellycanvasJs"></script>
+</div>
+</body>
+</html>

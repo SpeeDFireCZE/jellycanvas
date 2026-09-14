@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Plugin project for Jellyfin 12.
+
+    Jellyfin 12 runs on .NET 10, so the plugin has to target the same version -
+    the server loads our DLL into its own process and they must share a runtime.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Jellyfin.Plugin.Jellycanvas</RootNamespace>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Copy only our DLL, not all of Jellyfin - the server already has it. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Jellyfin.Controller and Jellyfin.Model are the server's "headers":
+      interfaces such as IServerConfigurationManager, BasePlugin and the data
+      classes. They are not copied next to our DLL (ExcludeAssets) - the
+      server has them.
+    -->
+    <PackageReference Include="Jellyfin.Controller" Version="12.0.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Jellyfin.Model" Version="12.0.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!--
+      Newtonsoft.Json ships with the server; only needed for the JObject
+      payload the File Transformation plugin expects (see Scripts/FileTransformation.cs).
+    -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The settings page's HTML and JS are packed into the DLL as embedded
+      resources. Jellyfin serves them through /web/configurationpage?name=...
+      The resource path is namespace + folder + file, dot-separated:
+      Jellyfin.Plugin.Jellycanvas.Configuration.configPage.html
+    -->
+    <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="Configuration\configPage.js" />
+    <!-- The client script template, served from /Jellycanvas/Script.js with the configuration baked in. -->
+    <EmbeddedResource Include="Scripts\inject.js" />
+  </ItemGroup>
+
+</Project>

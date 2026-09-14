@@ -1,0 +1,17 @@
+# Build outputs
+bin/
+obj/
+*.user
+.vs/
+
+# Local Jellyfin 12 test instance (portable server, its data, logs, media, packages)
+test/jellyfin/
+test/data/
+test/media/
+test/ft/
+test/*.zip
+test/*.log
+test/*.log.prev
+
+# Packaged plugin
+dist/

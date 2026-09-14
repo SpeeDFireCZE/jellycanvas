@@ -1,0 +1,11 @@
+[
+  {
+    "guid": "433e86f7-318f-4bd5-98e9-98fd3eea7d42",
+    "name": "Jellycanvas",
+    "description": "Theme designer for Jellyfin 12: colors, bar layouts and styles, cards, fonts, login page and more, with a live preview for web, TV and mobile. The result is plain CSS written to Branding > Custom CSS; optional script features (toolbar buttons, slideshow, card badges) through File Transformation.",
+    "overview": "Visual theme builder - customize the Jellyfin web UI without writing CSS",
+    "owner": "SpeeDFireCZE",
+    "category": "General",
+    "versions": []
+  }
+]
