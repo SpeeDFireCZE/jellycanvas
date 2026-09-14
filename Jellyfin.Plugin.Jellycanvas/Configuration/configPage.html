@@ -132,6 +132,15 @@
                 .jc-devices .jc-follow { width: auto; margin: 0 0 0 .4em; font-size: .9em; }
                 [data-when][hidden] { display: none !important; }
                 .jc-actions { display: flex; gap: .5em; flex-wrap: wrap; margin: .4em 0 .8em; }
+                .jc-plugins { display: flex; flex-direction: column; gap: .5em; }
+                .jc-plugin { display: grid; grid-template-columns: auto 1fr; gap: .2em .7em; align-items: start; padding: .6em .8em; border-radius: .5em; background: rgba(255,255,255,.05); }
+                .jc-plugin .material-icons { font-size: 1.3em; grid-row: span 3; margin-top: .1em; }
+                .jc-plugin.is-on .material-icons { color: #7ed957; }
+                .jc-plugin.is-off .material-icons { color: rgba(255,255,255,.35); }
+                .jc-plugin-name { font-weight: 600; }
+                .jc-plugin-name a { color: inherit; text-decoration: none; border-bottom: 1px dotted rgba(255,255,255,.4); }
+                .jc-plugin-state { font-size: .8em; opacity: .75; }
+                .jc-plugin-desc { font-size: .85em; opacity: .8; }
                 .jc-actions .emby-button { margin: 0; }
                 .jc-stage { position: relative; width: 100%; background: #000; border-radius: .6em; overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
                 .jc-frame-wrap { position: absolute; left: 0; top: 0; transform-origin: top left; }
@@ -159,6 +168,13 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupStart">Start</h3>
+                        <details class="jc-section" data-section="plugins" open>
+                            <summary><span class="material-icons" aria-hidden="true">extension</span><span data-i18n="plugins">Companion plugins</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="pluginsHint">Everything in the theme is plain CSS and needs nothing else. A few features need JavaScript in the web client; their sections appear only while one of these plugins is installed.</div>
+                                <div class="jc-plugins" id="jcPlugins"></div>
+                            </div>
+                        </details>
                         <details class="jc-section" data-section="presets" open>
                             <summary><span class="material-icons" aria-hidden="true">auto_awesome</span><span data-i18n="presets">Presets</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
@@ -425,7 +441,7 @@
                                 <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
                                 <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script; stays closed until the text changes)</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script; stays closed until the text changes)</span></label></div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
                             </div>
                         </details>

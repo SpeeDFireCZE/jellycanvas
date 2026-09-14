@@ -50,6 +50,7 @@
             scriptsInjector: 'A JavaScript injector plugin is installed - copy the generated script into it.',
             scriptsNone: 'Toolbar buttons and the home slideshow need JavaScript in the web client. Install the File Transformation plugin (recommended, automatic) or a JavaScript injector plugin to unlock them.',
             chipNav: 'Logo & links', chipIcons: 'Icons', chipUser: 'User', slotTop: 'Top', slotMiddle: 'Middle', slotBottom: 'Bottom', slotLeft: 'Left', slotCenter: 'Center', slotRight: 'Right',
+            pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
             chipResolution: 'Resolution', chipHdr: 'HDR', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
@@ -100,6 +101,7 @@
             backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON: vše z této stránky kromě nahraného loga (to nahraj zvlášť). Zkopíruj ho pro sdílení, vlož cizí a vyzkoušej ho – na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
+            plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky',
             infobar: 'Informační lišta', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript; zůstane zavřené, dokud se text nezmění)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
@@ -783,11 +785,53 @@
     });
 
     /** Shows the script section only when the server reports a plugin that can inject the script. */
+    // The plugins Jellycanvas can work with, what each one unlocks here,
+    // and where it comes from. Shown as a status list at the top of the page.
+    var COMPANIONS = [
+        { key: 'FileTransformation', name: 'File Transformation', url: 'https://github.com/IAmParadox27/jellyfin-plugin-file-transformation', descKey: 'pluginFtDesc' },
+        { key: 'JsInjector', name: 'JavaScript Injector', url: 'https://github.com/n00bcodr/Jellyfin-JavaScript-Injector', descKey: 'pluginInjectorDesc' }
+    ];
+
+    function renderPlugins() {
+        var box = page.querySelector('#jcPlugins');
+        box.textContent = '';
+        COMPANIONS.forEach(function (c) {
+            var on = !!(status && status[c.key]);
+            var row = document.createElement('div');
+            row.className = 'jc-plugin ' + (on ? 'is-on' : 'is-off');
+            var icon = document.createElement('span');
+            icon.className = 'material-icons';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = on ? 'check_circle' : 'radio_button_unchecked';
+            var name = document.createElement('div');
+            name.className = 'jc-plugin-name';
+            var link = document.createElement('a');
+            link.href = c.url;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = c.name;
+            name.appendChild(link);
+            var state = document.createElement('div');
+            state.className = 'jc-plugin-state';
+            state.textContent = on ? t('pluginInstalled') : t('pluginMissing');
+            var desc = document.createElement('div');
+            desc.className = 'jc-plugin-desc';
+            desc.textContent = t(c.descKey);
+            row.appendChild(icon);
+            row.appendChild(name);
+            row.appendChild(state);
+            row.appendChild(desc);
+            box.appendChild(row);
+        });
+    }
+
     function refreshScriptSection() {
         var available = !!(status && (status.FileTransformation || status.JsInjector));
+        renderPlugins();
         page.querySelector('#jcScriptsSection').hidden = !available;
         page.querySelector('#jcSlideshowSection').hidden = !available;
         page.querySelector('#jcBadgesSection').hidden = !available;
+        page.querySelectorAll('.jc-needs-script').forEach(function (el) { el.hidden = !available; });
         page.querySelector('#jcScriptsMissing').hidden = available;
         if (!available) {
             page.querySelector('#jcScriptsMissing').textContent = t('scriptsNone');

@@ -12,6 +12,9 @@ First public release, for Jellyfin 12.0.
 
 ### Designer
 
+- Companion plugins panel at the top: which of File Transformation /
+  JavaScript Injector is installed and what each unlocks; the sections
+  that need one stay hidden without it.
 - Settings page in the Dashboard with a live preview of the real web
   client for the web, TV and mobile layouts; the preview follows the
   setting being changed and can show the player's "Up next" and "Still
