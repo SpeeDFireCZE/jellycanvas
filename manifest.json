@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/SpeeDFireCZE/jellycanvas/main/images/logo.png",
     "versions": [
       {
+        "version": "1.0.2",
+        "changelog": "- Card badges: audio and subtitle languages each have their own style -\n  audio as flags and subtitles as codes by default, so the flags are not\n  repeated for the subtitles.",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/SpeeDFireCZE/jellycanvas/releases/download/1.0.2/jellycanvas_1.0.2.zip",
+        "checksum": "9baddd4aceeaaf2b7acf94198fed7867",
+        "timestamp": "2026-09-14T14:19:25Z"
+      },
+      {
         "version": "1.0.1",
         "changelog": "- Plugin logo, shown in the catalog and the plugin list.\n- Card badges: video codec and sound (Dolby Digital+ 5.1, DTS-HD 7.1...)\n  badges; badges of a corner stacked under each other; a color-per-kind\n  style; languages as bare flags (each language its own flag), codes, or\n  both.\n- Item page: description & info blocks - every block (selectors,\n  overview, genres, tags, external links) can sit on a background of its\n  own with its own color; a chip color for the whole section.\n- Fixed: a glow or neo-brutalist title ribbon made the title, year and\n  rating vanish (the surface now sits on a layer behind the content);\n  Jellyfin's played / count indicators and the badges keep clear of\n  rounded card corners; the search link on library pages no longer moves\n  custom toolbar buttons.\n- Versions are three-part from now on (1.0.1).",
         "targetAbi": "12.0.0.0",
