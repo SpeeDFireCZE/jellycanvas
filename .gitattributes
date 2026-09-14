@@ -1,0 +1,3 @@
+# Normalize line endings: LF in the repository, native on checkout.
+* text=auto eol=lf
+*.ps1 text eol=crlf
