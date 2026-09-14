@@ -33,6 +33,7 @@ public class ScriptBuilderTests
 
         Assert.Contains("\"corners\":{\"tl\":[\"resolution\",\"hdr\"],\"tr\":[],\"bl\":[],\"br\":[\"audio\",\"subtitles\"]}", js, StringComparison.Ordinal);
         Assert.Contains("\"style\":\"Dark\"", js, StringComparison.Ordinal);
+        Assert.Contains("\"languages\":\"Flags\"", js, StringComparison.Ordinal);
     }
 
     [Fact]

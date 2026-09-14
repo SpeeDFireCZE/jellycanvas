@@ -169,10 +169,10 @@ scripts/update-manifest.py       adds a release to manifest.json (used by CI)
 1. Bump the version in `build.yaml` and in the `.csproj`
    (`AssemblyVersion` / `FileVersion`), move the *Unreleased* notes in
    `CHANGELOG.md` under the new version, commit.
-2. Tag it: `git tag 1.2.3 && git push --tags` (the plugin version in
-   `build.yaml` is the four-part `1.2.3.0`; either form of tag works).
+2. Tag it: `git tag 1.2.3 && git push --tags` (the tag must equal the
+   version in `build.yaml`).
 3. The *Release* workflow builds the plugin, attaches
-   `jellycanvas_1.2.3.0.zip` to a GitHub release and adds the version to
+   `jellycanvas_1.2.3.zip` to a GitHub release and adds the version to
    `manifest.json` on `main` - Jellyfin servers with the repository added
    see the update in their catalog.
 

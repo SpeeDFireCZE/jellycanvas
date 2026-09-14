@@ -1,12 +1,26 @@
 # Changelog
 
 All notable changes to Jellycanvas. The format follows
-[Keep a Changelog](https://keepachangelog.com/); versions are the four-part
-numbers Jellyfin plugins use.
+[Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+## 1.0.1 - 2026-09-14
+
 - Plugin logo, shown in the catalog and the plugin list.
+- Card badges: video codec and sound (Dolby Digital+ 5.1, DTS-HD 7.1...)
+  badges; badges of a corner stacked under each other; a color-per-kind
+  style; languages as bare flags (each language its own flag), codes, or
+  both.
+- Item page: description & info blocks - every block (selectors,
+  overview, genres, tags, external links) can sit on a background of its
+  own with its own color; a chip color for the whole section.
+- Fixed: a glow or neo-brutalist title ribbon made the title, year and
+  rating vanish (the surface now sits on a layer behind the content);
+  Jellyfin's played / count indicators and the badges keep clear of
+  rounded card corners; the search link on library pages no longer moves
+  custom toolbar buttons.
+- Versions are three-part from now on (1.0.1).
 
 ## 1.0.0.0 - 2026-09-14
 

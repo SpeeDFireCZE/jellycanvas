@@ -10,7 +10,8 @@ Called by the Release workflow after the plugin zip is built:
 The version's changelog is taken from CHANGELOG.md (the section headed
 "## <version>"), the target ABI from build.yaml, and the checksum is the
 MD5 of the zip - the form Jellyfin's plugin catalog expects. Versions stay
-sorted newest first.
+sorted newest first. Versions are three-part (1.2.3); Jellyfin parses them
+with System.Version, which is fine with three parts.
 """
 import argparse
 import datetime as dt
@@ -44,7 +45,9 @@ def changelog_for(version: str) -> str:
 
 
 def version_key(v: str):
-    return tuple(int(p) for p in v.split("."))
+    # 1.2.3 and 1.2.3.0 sort as the same version
+    parts = [int(p) for p in v.split(".")]
+    return tuple(parts + [0] * (4 - len(parts)))
 
 
 def main() -> None:
@@ -54,8 +57,8 @@ def main() -> None:
     ap.add_argument("--url", required=True)
     args = ap.parse_args()
 
-    if not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", args.version):
-        sys.exit("version must have four parts, e.g. 1.2.3.0")
+    if not re.fullmatch(r"\d+\.\d+\.\d+(\.\d+)?", args.version):
+        sys.exit("version must look like 1.2.3 (or 1.2.3.0)")
 
     checksum = hashlib.md5(args.zip.read_bytes()).hexdigest()  # noqa: S324 - the catalog format wants MD5
     manifest_path = ROOT / "manifest.json"

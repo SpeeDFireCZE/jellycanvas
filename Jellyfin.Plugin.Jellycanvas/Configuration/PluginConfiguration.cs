@@ -423,6 +423,9 @@ public enum CardBadgeStyle
 
     /// <summary>Frosted glass pills.</summary>
     Glass,
+
+    /// <summary>A color per kind: blue resolution, teal codec, purple sound, dark languages.</summary>
+    Colorful,
 }
 
 /// <summary>
@@ -449,7 +452,29 @@ public class CardBadgeSettings
     public int Scale { get; set; } = 100;
 
     public bool HideOnMobile { get; set; } = false;
+
+    public LanguageBadgeStyle Languages { get; set; } = LanguageBadgeStyle.Flags;
+
+    /// <summary>Badges in a corner stacked under each other instead of in a row.</summary>
+    public bool Stacked { get; set; } = true;
 }
+
+/// <summary>How the audio / subtitle languages are shown on a card.</summary>
+public enum LanguageBadgeStyle
+{
+    /// <summary>Short codes: EN CS DE.</summary>
+    Codes,
+
+    /// <summary>Small flags (drawn by the script, no downloads; a language with no flag falls back to its code).</summary>
+    Flags,
+
+    /// <summary>Flag and code side by side.</summary>
+    FlagsAndCodes,
+}
+
+// Badge ids (comma-separated per corner): resolution, hdr, codec (H264 /
+// HEVC / AV1), sound (Dolby Digital+ 5.1, DTS-HD 7.1...), audio (languages),
+// subtitles (languages).
 
 /// <summary>Colors. All in "#rrggbb" notation.</summary>
 public class ColorSettings
@@ -726,6 +751,61 @@ public class DetailSettings
 
     /// <summary>Titles of the sections further down (Cast & crew, Similar items...).</summary>
     public SectionTitleStyle SectionTitles { get; set; } = SectionTitleStyle.Default;
+
+    /// <summary>Color of the chips (genres, tags, links, selectors as chips); empty = automatic (light tint, or accent for accent chips).</summary>
+    public string ChipColor { get; set; } = string.Empty;
+
+    /// <summary>Own background for the version / video / audio / subtitles selectors block.</summary>
+    public DetailBlockSurface SelectorsBlock { get; set; } = DetailBlockSurface.None;
+
+    /// <summary>Color of that block; empty = the surface color.</summary>
+    public string SelectorsBlockColor { get; set; } = string.Empty;
+
+    /// <summary>Own background for the overview (tagline + description) block.</summary>
+    public DetailBlockSurface OverviewBlock { get; set; } = DetailBlockSurface.None;
+
+    /// <summary>Color of that block; empty = the surface color.</summary>
+    public string OverviewBlockColor { get; set; } = string.Empty;
+
+    /// <summary>Own background for the genres block.</summary>
+    public DetailBlockSurface GenresBlock { get; set; } = DetailBlockSurface.None;
+
+    /// <summary>Color of that block; empty = the surface color.</summary>
+    public string GenresBlockColor { get; set; } = string.Empty;
+
+    /// <summary>Own background for the tags block.</summary>
+    public DetailBlockSurface TagsBlock { get; set; } = DetailBlockSurface.None;
+
+    /// <summary>Color of that block; empty = the surface color.</summary>
+    public string TagsBlockColor { get; set; } = string.Empty;
+
+    /// <summary>Own background for the external links block.</summary>
+    public DetailBlockSurface LinksBlock { get; set; } = DetailBlockSurface.None;
+
+    /// <summary>Color of that block; empty = the surface color.</summary>
+    public string LinksBlockColor { get; set; } = string.Empty;
+
+    /// <summary>Opacity of the block backgrounds in percent.</summary>
+    public int BlockOpacity { get; set; } = 75;
+
+    /// <summary>Background blur behind translucent blocks, in pixels.</summary>
+    public int BlockBlur { get; set; } = 12;
+
+    /// <summary>Corner radius of the blocks.</summary>
+    public int BlockRadius { get; set; } = 12;
+}
+
+/// <summary>A background of its own for one block of the item page; None = straight on the page.</summary>
+public enum DetailBlockSurface
+{
+    None,
+    Solid,
+    Glass,
+    Gradient,
+    NeoBrutalism,
+    Glowmorphism,
+    Claymorphism,
+    Neumorphism,
 }
 
 /// <summary>How one block of the item page (selectors, genres, tags, links) is shown.</summary>

@@ -604,6 +604,7 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PeopleGrayscale"><span data-i18n="peopleGray">Black &amp; white, color on hover</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideCast"><span data-i18n="hideCastSection">Hide the cast &amp; crew section</span></label></div>
                                 <h4 class="jc-sub" data-i18n="detailBlocksHeading">Description &amp; info blocks</h4>
+                                <div class="jc-color" data-color="Detail.ChipColor" data-optional="1" data-i18n-label="chipColor">Chip color (empty = automatic)</div>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcTrackSel" data-i18n="trackSelections">Version / Video / Audio / Subtitles selectors</label>
                                     <select is="emby-select" id="jcTrackSel" data-path="Detail.TrackSelections" class="emby-select-withcolor emby-select">
@@ -643,6 +644,81 @@
                                 <div class="jc-row" data-slider="Detail.OverviewScale" data-min="80" data-max="140" data-unit="%" data-i18n-label="overviewScale">Overview text size</div>
                                 <div class="jc-row" data-slider="Detail.OverviewMaxWidth" data-min="0" data-max="1400" data-step="20" data-unit="px" data-i18n-label="overviewMaxWidth">Overview max width (0 = no limit)</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideTagline"><span data-i18n="hideTagline">Hide the tagline</span></label></div>
+                                <h4 class="jc-sub" data-i18n="detailBlockSurfacesHeading">Block backgrounds</h4>
+                                <div class="jc-hint" data-i18n="detailBlockSurfacesHint">Give any part of the page a background of its own - a card, glass or one of the looks - each with its own color.</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSelectorsBlock" data-i18n="blockSelectors">Version / Video / Audio / Subtitles selectors</label>
+                                    <select is="emby-select" id="jcSelectorsBlock" data-path="Detail.SelectorsBlock" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="blockNone">None (straight on the page)</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.SelectorsBlock=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.SelectorsBlockColor" data-optional="1" data-i18n-label="blockColor">Block color (empty = surface; accent for neo-brutalism)</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcOverviewBlock" data-i18n="blockOverview">Overview (tagline + description)</label>
+                                    <select is="emby-select" id="jcOverviewBlock" data-path="Detail.OverviewBlock" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="blockNone">None (straight on the page)</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.OverviewBlock=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.OverviewBlockColor" data-optional="1" data-i18n-label="blockColor">Block color (empty = surface; accent for neo-brutalism)</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcGenresBlock" data-i18n="blockGenres">Genres</label>
+                                    <select is="emby-select" id="jcGenresBlock" data-path="Detail.GenresBlock" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="blockNone">None (straight on the page)</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.GenresBlock=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.GenresBlockColor" data-optional="1" data-i18n-label="blockColor">Block color (empty = surface; accent for neo-brutalism)</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcTagsBlock" data-i18n="blockTags">Tags</label>
+                                    <select is="emby-select" id="jcTagsBlock" data-path="Detail.TagsBlock" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="blockNone">None (straight on the page)</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.TagsBlock=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.TagsBlockColor" data-optional="1" data-i18n-label="blockColor">Block color (empty = surface; accent for neo-brutalism)</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcLinksBlock" data-i18n="blockLinks">External links</label>
+                                    <select is="emby-select" id="jcLinksBlock" data-path="Detail.LinksBlock" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="blockNone">None (straight on the page)</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Detail.LinksBlock=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Detail.LinksBlockColor" data-optional="1" data-i18n-label="blockColor">Block color (empty = surface; accent for neo-brutalism)</div>
+                                <div class="jc-row" data-slider="Detail.BlockOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="blockOpacity">Block opacity</div>
+                                <div class="jc-row" data-slider="Detail.BlockBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div class="jc-row" data-slider="Detail.BlockRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="blockRadius">Block corner radius</div>
                                 <h4 class="jc-sub" data-i18n="detailSectionsHeading">Sections below</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcSectionTitles" data-i18n="sectionTitles">Section titles</label>
@@ -707,6 +783,16 @@
                                         <option value="Dark" data-i18n="badgeDark">Dark pills</option>
                                         <option value="Accent" data-i18n="badgeAccent">Accent pills</option>
                                         <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Colorful" data-i18n="badgeColorful">A color per kind (blue resolution, teal codec, purple sound)</option>
+                                    </select>
+                                </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.Stacked"><span data-i18n="badgeStacked">Stack the badges of a corner under each other</span></label></div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcBadgeLang" data-i18n="badgeLanguages">Languages as</label>
+                                    <select is="emby-select" id="jcBadgeLang" data-path="Scripts.CardBadges.Languages" class="emby-select-withcolor emby-select">
+                                        <option value="Flags" data-i18n="badgeLangFlags">Flags only (drawn by the script, no downloads)</option>
+                                        <option value="Codes" data-i18n="badgeLangCodes">Codes (EN, CS, DE)</option>
+                                        <option value="FlagsAndCodes" data-i18n="badgeLangBoth">Flags and codes</option>
                                     </select>
                                 </div>
                                 <div class="jc-row" data-slider="Scripts.CardBadges.Scale" data-min="50" data-max="200" data-unit="%" data-i18n-label="badgeScale">Size</div>

@@ -271,6 +271,11 @@ public static class CssBuilder
         if (h.Style != SurfaceStyle.Transparent && x.RibbonStyle == RibbonStyle.SameAsBar)
         {
             sb.AppendLine($"{x.P}html .detailRibbon {{ background: {color.Rgba(0.8)} !important; }}");
+            if (h.Style == SurfaceStyle.NeoBrutalism)
+            {
+                // The ribbon follows the (accent-filled) bar, so its text follows the bar's contrast color too.
+                sb.AppendLine($"{x.P}html .detailRibbon, {x.P}html .detailRibbon .detailButton, {x.P}html .detailRibbon h1, {x.P}html .detailRibbon .mediaInfoItem {{ color: {color.ContrastText} !important; }}");
+            }
         }
 
         var headers = $"{x.P}{AppBar}, {x.P}html .skinHeader";
@@ -805,6 +810,19 @@ public static class CssBuilder
             sb.AppendLine($"{image} {{ box-shadow: {effects} !important; border-radius: {Px(k.Radius)} !important; }}");
         }
 
+        if (k.Radius > 10)
+        {
+            // Jellyfin parks its indicators (unplayed count, played tick) in
+            // the very corner; with a large radius they would sit on the
+            // curve, half outside the card. The curve gives up about 0.3 r at
+            // 45 degrees, so that is how far they move in. Both card
+            // generations position .cardIndicators absolutely in the image
+            // container (the React cards' .indicators wrapper is static and
+            // does not take part).
+            var inset = Px((int)Math.Round(k.Radius * 0.3));
+            sb.AppendLine($"{x.P}html .card .cardIndicators {{ top: calc(0.225em + {inset}) !important; right: calc(0.225em + {inset}) !important; }}");
+        }
+
         if (k.Hover != CardHover.None)
         {
             // The effect must stay off on TV - there the card already grows
@@ -1227,11 +1245,18 @@ public static class CssBuilder
         {
             var ribbonStyle = Enum.Parse<SurfaceStyle>(x.RibbonStyle.ToString());
             var ribbonColor = Color.Parse(d.RibbonColor, ribbonStyle == SurfaceStyle.Neumorphism ? x.Background : x.HeaderColor);
-            sb.AppendLine($"{x.P}html .detailRibbon {{ {Surface(ribbonStyle, ribbonColor, d.RibbonOpacity, d.RibbonBlur, x, "90deg")} }}");
+            // The surface goes on a ::before layer behind the content, not on
+            // the ribbon itself: a backdrop-filter on the ribbon would make it
+            // the containing block of its absolutely positioned title block,
+            // which then collapses to nothing (the title, year and rating
+            // vanish). The ribbon only isolates the stacking so the layer
+            // stays above the page background.
+            sb.AppendLine($"{x.P}html .detailRibbon {{ background: transparent !important; position: relative; isolation: isolate; }}");
+            sb.AppendLine($"{x.P}html .detailRibbon::before {{ content: ''; position: absolute; inset: 0; z-index: -1; box-sizing: border-box; pointer-events: none; {Surface(ribbonStyle, ribbonColor, d.RibbonOpacity, d.RibbonBlur, x, "90deg")} }}");
             if (ribbonStyle == SurfaceStyle.NeoBrutalism)
             {
-                sb.AppendLine($"{x.P}html .detailRibbon {{ border-left: 0 !important; border-right: 0 !important; }}");
-                sb.AppendLine($"{x.P}html .detailRibbon, {x.P}html .detailRibbon .detailButton, {x.P}html .detailRibbon h1 {{ color: {ribbonColor.ContrastText} !important; }}");
+                sb.AppendLine($"{x.P}html .detailRibbon::before {{ border-left: 0 !important; border-right: 0 !important; }}");
+                sb.AppendLine($"{x.P}html .detailRibbon, {x.P}html .detailRibbon .detailButton, {x.P}html .detailRibbon h1, {x.P}html .detailRibbon .mediaInfoItem {{ color: {ribbonColor.ContrastText} !important; }}");
             }
         }
 
@@ -1268,8 +1293,10 @@ public static class CssBuilder
                     break;
                 case DetailBlockStyle.Chips:
                 case DetailBlockStyle.AccentChips:
-                    var bg = style == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
-                    var fg = style == DetailBlockStyle.AccentChips ? x.Accent.Lighten(0.3).Hex : x.Text.Hex;
+                    var chip = Color.Parse(d.ChipColor, style == DetailBlockStyle.AccentChips ? x.Accent : x.Text);
+                    var custom = !string.IsNullOrWhiteSpace(d.ChipColor);
+                    var bg = custom ? chip.Hex : style == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
+                    var fg = custom ? chip.ContrastText : style == DetailBlockStyle.AccentChips ? x.Accent.Lighten(0.3).Hex : x.Text.Hex;
                     sb.AppendLine($"{row} {{ display: flex !important; flex-wrap: wrap !important; gap: 6px !important; align-items: center !important; font-size: 0 !important; }}");
                     sb.AppendLine($"{link} {{ font-size: 0.85rem !important; background: {bg} !important; color: {fg} !important; padding: 3px 10px !important; border-radius: 999px !important; margin: 0 !important; text-decoration: none !important; line-height: 1.4 !important; }}");
                     sb.AppendLine($"{link}:hover {{ background: {x.Accent.Rgba(0.4)} !important; color: {x.Text.Hex} !important; }}");
@@ -1292,12 +1319,46 @@ public static class CssBuilder
             case DetailBlockStyle.AccentChips:
                 // The four selectors side by side as compact pills instead of
                 // full-width rows.
-                var bg = d.TrackSelections == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
+                var bg = !string.IsNullOrWhiteSpace(d.ChipColor) ? Color.Parse(d.ChipColor, x.Text).Hex : d.TrackSelections == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
                 sb.AppendLine($"{selects} {{ display: flex !important; flex-wrap: wrap !important; gap: 8px 12px !important; margin-bottom: 1em !important; }}");
                 sb.AppendLine($"{selects} .selectContainer {{ flex: 0 1 auto !important; width: auto !important; min-width: 12em !important; margin: 0 !important; }}");
                 sb.AppendLine($"{selects} .emby-select-withcolor {{ background: {bg} !important; border: 0 !important; border-radius: 999px !important; padding: 0.45em 2.4em 0.45em 1em !important; }}");
                 sb.AppendLine($"{selects} .selectLabel {{ font-size: 0.75em !important; opacity: 0.75; margin-left: 1em !important; }}");
                 break;
+        }
+
+        // Blocks: any part of the page can sit on a surface of its own.
+        void Block(string selector, DetailBlockSurface surface, string colorSetting)
+        {
+            if (surface == DetailBlockSurface.None)
+            {
+                return;
+            }
+
+            var style = Enum.Parse<SurfaceStyle>(surface.ToString());
+            var color = Color.Parse(colorSetting, style switch
+            {
+                SurfaceStyle.Neumorphism => x.Background,
+                SurfaceStyle.NeoBrutalism => x.Accent,
+                _ => x.Surface,
+            });
+            sb.AppendLine($"{selector} {{ {Surface(style, color, d.BlockOpacity, d.BlockBlur, x, "135deg")} border-radius: {Px(d.BlockRadius)} !important; padding: 0.8em 1em !important; margin: 0.6em 0 !important; }}");
+            if (style == SurfaceStyle.NeoBrutalism)
+            {
+                sb.AppendLine($"{selector}, {selector} a, {selector} .selectLabel {{ color: {color.ContrastText} !important; }}");
+            }
+        }
+
+        Block($"{x.P}html #itemDetailPage .trackSelections", d.SelectorsBlock, d.SelectorsBlockColor);
+        Block($"{x.P}html #itemDetailPage .itemGenres", d.GenresBlock, d.GenresBlockColor);
+        Block($"{x.P}html #itemDetailPage .itemTags", d.TagsBlock, d.TagsBlockColor);
+        Block($"{x.P}html #itemDetailPage .itemExternalLinks", d.LinksBlock, d.LinksBlockColor);
+        // The overview block wraps the tagline, the text and its "show more" control.
+        Block($"{x.P}html #itemDetailPage .tagline, {x.P}html #itemDetailPage .overview", d.OverviewBlock, d.OverviewBlockColor);
+        if (d.OverviewBlock != DetailBlockSurface.None)
+        {
+            sb.AppendLine($"{x.P}html #itemDetailPage .tagline {{ margin-bottom: 0 !important; border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }}");
+            sb.AppendLine($"{x.P}html #itemDetailPage .tagline + .overview {{ margin-top: 0 !important; border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; }}");
         }
 
         var overview = $"{x.P}html #itemDetailPage .overview";

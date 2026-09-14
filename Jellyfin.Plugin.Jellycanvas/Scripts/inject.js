@@ -99,15 +99,33 @@
             case 'Glass':
                 look = 'background: rgba(255, 255, 255, 0.18); color: #fff; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25);';
                 break;
+            case 'Colorful':
+                look = 'background: rgba(0, 0, 0, 0.68); color: #fff;';
+                break;
             default:
                 look = 'background: rgba(0, 0, 0, 0.68); color: #fff;';
         }
+        var colorful = badges.style === 'Colorful'
+            ? '.jellycanvas-badge-resolution { background: #1e88e5 !important; } .jellycanvas-badge-hdr { background: #f9a825 !important; color: #1b1b1b !important; }' +
+              '.jellycanvas-badge-codec { background: #00897b !important; } .jellycanvas-badge-sound { background: #5e35b1 !important; }'
+            : '';
         var size = (11 * badges.scale / 100).toFixed(1);
+        // Stacked: one badge per line, hugging the corner's side; the flags
+        // of a language badge then form a little column like a flag pole.
+        var stacked = badges.stacked
+            ? '.jellycanvas-badges { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; } .jellycanvas-badges-tr, .jellycanvas-badges-br { align-items: flex-end; }'
+            : '';
         return '.jellycanvas-badges { position: absolute; z-index: 3; display: flex; flex-wrap: wrap; gap: 3px; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
+            stacked +
             '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.02em; white-space: nowrap; ' + look + ' }' +
-            '.jellycanvas-badge .material-icons { font-size: 1.15em; }';
+            colorful +
+            '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
+            '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
+            '.jellycanvas-badge .material-icons { font-size: 1.15em; }' +
+            '.jellycanvas-badge .jellycanvas-flag { height: 1.15em; width: auto; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }' +
+            '.jellycanvas-badge > span:not(.material-icons) + span, .jellycanvas-badge .jellycanvas-flag + span { margin-left: 1px; }';
     }
 
     function badgeLang(code) {
@@ -124,10 +142,14 @@
         var video = null;
         var audio = [];
         var subs = [];
+        var sound = null;
         streams.forEach(function (st) {
             if (st.Type === 'Video' && !video) {
                 video = st;
             } else if (st.Type === 'Audio') {
+                if (!sound || st.IsDefault) {
+                    sound = st;
+                }
                 var a = badgeLang(st.Language);
                 if (a && audio.indexOf(a) < 0) {
                     audio.push(a);
@@ -147,25 +169,199 @@
         var res = w >= 3800 || h >= 2100 ? '4K' : w >= 1900 || h >= 1000 ? '1080p' : w >= 1260 || h >= 700 ? '720p' : 'SD';
         var range = (video.VideoRangeType || video.VideoRange || '').toUpperCase();
         var hdr = /DOVI|DOLBY/.test(range) ? 'DV' : /HLG/.test(range) ? 'HLG' : /HDR/.test(range) ? 'HDR' : '';
-        return { resolution: res, hdr: hdr, audio: audio.join(' '), subtitles: subs.join(' ') };
+        var codec = (video.Codec || '').toLowerCase();
+        var codecName = codec === 'h264' ? 'H264' : codec === 'hevc' || codec === 'h265' ? 'HEVC' : codec === 'av1' ? 'AV1' : codec === 'vp9' ? 'VP9' : codec === 'mpeg4' ? 'MPEG-4' : codec.toUpperCase();
+        return { resolution: res, hdr: hdr, codec: codecName, sound: soundName(sound), audio: audio, subtitles: subs };
+    }
+
+    // "Dolby Digital+ 5.1", "DTS-HD 7.1", "AAC 2.0" - the way a receiver would say it.
+    function soundName(st) {
+        if (!st) {
+            return '';
+        }
+        var c = (st.Codec || '').toLowerCase();
+        var profile = (st.Profile || '').toLowerCase();
+        var name = c === 'eac3' ? 'Dolby Digital+' : c === 'ac3' ? 'Dolby Digital' : c === 'truehd' ? 'Dolby TrueHD'
+            : c === 'dts' ? (/hd|x|ma/.test(profile) ? 'DTS-HD' : 'DTS') : c === 'aac' ? 'AAC' : c === 'flac' ? 'FLAC' : c === 'opus' ? 'Opus'
+            : c === 'mp3' ? 'MP3' : c === 'pcm' || /pcm/.test(c) ? 'PCM' : c.toUpperCase();
+        if (/atmos/.test(profile)) {
+            name += ' Atmos';
+        }
+        var ch = st.Channels || 0;
+        var layout = ch >= 8 ? '7.1' : ch >= 6 ? '5.1' : ch === 2 ? '2.0' : ch === 1 ? '1.0' : '';
+        return layout ? name + ' ' + layout : name;
+    }
+
+    // ------------------------------------------------------------------
+    // Flags, drawn as tiny inline SVGs so nothing is downloaded and they
+    // show the same everywhere (Windows has no flag emoji). A flag is a
+    // few stripes plus at most one figure; a language without a flag here
+    // shows its code. Language -> country is a rough call (en -> GB,
+    // es -> ES, pt -> PT), like every "language as flag" list.
+    // ------------------------------------------------------------------
+    var FLAGS = {
+        EN: { h: ['#012169'], gb: true },
+        CS: { h: ['#fff', '#d7141a'], tri: '#11457e' },
+        SK: { h: ['#fff', '#0b4ea2', '#ee1c25'] },
+        DE: { h: ['#000', '#dd0000', '#ffce00'] },
+        FR: { v: ['#0055a4', '#fff', '#ef4135'] },
+        ES: { h: ['#aa151b', '#f1bf00', '#f1bf00', '#aa151b'] },
+        IT: { v: ['#009246', '#fff', '#ce2b37'] },
+        PT: { v: ['#006600', '#ff0000', '#ff0000'], dot: '#ffe000', dx: 0.36 },
+        RU: { h: ['#fff', '#0039a6', '#d52b1e'] },
+        PL: { h: ['#fff', '#dc143c'] },
+        HU: { h: ['#cd2a3e', '#fff', '#436f4d'] },
+        NL: { h: ['#ae1c28', '#fff', '#21468b'] },
+        JA: { h: ['#fff'], dot: '#bc002d' },
+        KO: { h: ['#fff'], dot: '#cd2e3a', dot2: '#0047a0' },
+        ZH: { h: ['#de2910'], star: '#ffde00', sx: 0.22, sy: 0.35 },
+        SV: { h: ['#006aa7'], cross: '#fecc00' },
+        NO: { h: ['#ba0c2f'], cross: '#fff', cross2: '#00205b' },
+        DA: { h: ['#c8102e'], cross: '#fff' },
+        FI: { h: ['#fff'], cross: '#002f6c' },
+        TR: { h: ['#e30a17'], dot: '#fff', dx: 0.38, dot2: '#e30a17', dx2: 0.46 },
+        AR: { h: ['#006c35'], bar: '#fff' },
+        HI: { h: ['#ff9933', '#fff', '#138808'], ring: '#000080' },
+        UK: { h: ['#0057b7', '#ffd700'] },
+        EL: { h: ['#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf'], canton: '#0d5eaf' },
+        RO: { v: ['#002b7f', '#fcd116', '#ce1126'] },
+        BG: { h: ['#fff', '#00966e', '#d62612'] },
+        HR: { h: ['#ff0000', '#fff', '#171796'] },
+        SR: { h: ['#c6363c', '#0c4076', '#fff'] },
+        SL: { h: ['#fff', '#005da4', '#ed1c24'] },
+        TH: { h: ['#a51931', '#f4f5f8', '#2d2a4a', '#2d2a4a', '#f4f5f8', '#a51931'] },
+        VI: { h: ['#da251d'], star: '#ffff00', sx: 0.5, sy: 0.5 },
+        ID: { h: ['#ff0000', '#fff'] },
+        HE: { h: ['#fff', '#0038b8', '#fff', '#fff', '#0038b8', '#fff'], hex: '#0038b8' },
+        LT: { h: ['#fdb913', '#006a44', '#c1272d'] },
+        LV: { h: ['#9e3039', '#9e3039', '#fff', '#9e3039', '#9e3039'] },
+        ET: { h: ['#0072ce', '#000', '#fff'] },
+        CA: { h: ['#fcdd09', '#da121a', '#fcdd09', '#da121a', '#fcdd09', '#da121a', '#fcdd09', '#da121a', '#fcdd09'] }
+    };
+    var NS = 'http://www.w3.org/2000/svg';
+
+    function svgEl(name, attrs) {
+        var el = document.createElementNS(NS, name);
+        Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+        return el;
+    }
+
+    function flagSvg(code) {
+        var f = FLAGS[code];
+        if (!f) {
+            return null;
+        }
+        var W = 30;
+        var H = 20;
+        var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, 'class': 'jellycanvas-flag', 'aria-label': code });
+        var stripes = f.h || f.v;
+        var n = stripes.length;
+        stripes.forEach(function (color, i) {
+            svg.appendChild(f.h
+                ? svgEl('rect', { x: 0, y: (H * i / n).toFixed(2), width: W, height: (H / n + 0.3).toFixed(2), fill: color })
+                : svgEl('rect', { x: (W * i / n).toFixed(2), y: 0, width: (W / n + 0.3).toFixed(2), height: H, fill: color }));
+        });
+        if (f.gb) {
+            svg.appendChild(svgEl('path', { d: 'M0 0 L30 20 M30 0 L0 20', stroke: '#fff', 'stroke-width': 5 }));
+            svg.appendChild(svgEl('path', { d: 'M0 0 L30 20 M30 0 L0 20', stroke: '#c8102e', 'stroke-width': 2 }));
+            svg.appendChild(svgEl('path', { d: 'M15 0 V20 M0 10 H30', stroke: '#fff', 'stroke-width': 6 }));
+            svg.appendChild(svgEl('path', { d: 'M15 0 V20 M0 10 H30', stroke: '#c8102e', 'stroke-width': 3.5 }));
+        }
+        if (f.tri) {
+            svg.appendChild(svgEl('path', { d: 'M0 0 L15 10 L0 20 Z', fill: f.tri }));
+        }
+        if (f.cross) {
+            svg.appendChild(svgEl('path', { d: 'M11 0 V20 M0 10 H30', stroke: f.cross, 'stroke-width': f.cross2 ? 5 : 4 }));
+            if (f.cross2) {
+                svg.appendChild(svgEl('path', { d: 'M11 0 V20 M0 10 H30', stroke: f.cross2, 'stroke-width': 2.5 }));
+            }
+        }
+        if (f.dot) {
+            svg.appendChild(svgEl('circle', { cx: W * (f.dx || 0.5), cy: H / 2, r: 5.5, fill: f.dot }));
+            if (f.dot2) {
+                svg.appendChild(f.dx2
+                    ? svgEl('circle', { cx: W * f.dx2, cy: H / 2, r: 4.5, fill: f.dot2 })
+                    : svgEl('path', { d: 'M9.5 10 A5.5 5.5 0 0 0 20.5 10 Z', fill: f.dot2 }));
+            }
+        }
+        if (f.star) {
+            var cx = W * f.sx;
+            var cy = H * f.sy;
+            var pts = [];
+            for (var i = 0; i < 10; i++) {
+                var r = i % 2 ? 2.3 : 5.5;
+                var a = -Math.PI / 2 + i * Math.PI / 5;
+                pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1));
+            }
+            svg.appendChild(svgEl('polygon', { points: pts.join(' '), fill: f.star }));
+        }
+        if (f.bar) {
+            svg.appendChild(svgEl('rect', { x: 7, y: 8, width: 16, height: 4, fill: f.bar }));
+        }
+        if (f.ring) {
+            svg.appendChild(svgEl('circle', { cx: W / 2, cy: H / 2, r: 3, fill: 'none', stroke: f.ring, 'stroke-width': 1.5 }));
+        }
+        if (f.canton) {
+            svg.appendChild(svgEl('rect', { x: 0, y: 0, width: 12, height: 11.2, fill: f.canton }));
+            svg.appendChild(svgEl('path', { d: 'M6 0 V11.2 M0 5.6 H12', stroke: '#fff', 'stroke-width': 2.2 }));
+        }
+        if (f.hex) {
+            svg.appendChild(svgEl('path', { d: 'M15 5 L19.5 13 H10.5 Z M15 15 L10.5 7 H19.5 Z', fill: 'none', stroke: f.hex, 'stroke-width': 1.3 }));
+        }
+        return svg;
     }
 
     function badgeHtml(id, info) {
-        var text = info[id];
-        if (!text) {
+        var value = info[id];
+        if (!value || !value.length) {
             return '';
         }
-        var icon = id === 'audio' ? 'volume_up' : id === 'subtitles' ? 'subtitles' : '';
+        var isLang = id === 'audio' || id === 'subtitles';
         var el = document.createElement('span');
         el.className = 'jellycanvas-badge jellycanvas-badge-' + id;
-        if (icon) {
+        if (isLang && (badges.languages || 'Codes') === 'Flags') {
+            var flags = [];
+            var rest = [];
+            value.forEach(function (code) {
+                var f = flagSvg(code);
+                if (f) {
+                    var holder = document.createElement('span');
+                    holder.className = 'jellycanvas-badge jellycanvas-badge-' + id + ' jellycanvas-flagonly';
+                    holder.appendChild(f);
+                    flags.push(holder);
+                } else {
+                    rest.push(code);
+                }
+            });
+            if (rest.length) {
+                var pill = document.createElement('span');
+                pill.className = 'jellycanvas-badge jellycanvas-badge-' + id;
+                pill.textContent = rest.join(' ');
+                flags.push(pill);
+            }
+            return flags.length ? flags : '';
+        }
+        if (isLang) {
             var i = document.createElement('span');
             i.className = 'material-icons';
             i.setAttribute('aria-hidden', 'true');
-            i.textContent = icon;
+            i.textContent = id === 'audio' ? 'volume_up' : 'subtitles';
             el.appendChild(i);
+            var mode = badges.languages || 'Codes';
+            value.forEach(function (code) {
+                var flag = mode === 'Codes' ? null : flagSvg(code);
+                if (flag) {
+                    el.appendChild(flag);
+                }
+                if (!flag || mode === 'FlagsAndCodes') {
+                    var t = document.createElement('span');
+                    t.textContent = code;
+                    el.appendChild(t);
+                }
+            });
+            return el;
         }
-        el.appendChild(document.createTextNode(text));
+        el.appendChild(document.createTextNode(value));
         return el;
     }
 
@@ -178,19 +374,26 @@
         if (!host) {
             return;
         }
+        // Rounded cards: a badge in the very corner would stick out past
+        // the curve, so the inset grows with the radius (the curve gives
+        // up about 0.3 r at 45 degrees).
+        var image = card.querySelector('.cardImageContainer') || host;
+        var radius = parseFloat(getComputedStyle(image).borderTopLeftRadius) || 0;
+        var inset = Math.round(5 + radius * 0.3);
         Object.keys(badges.corners).forEach(function (corner) {
             var ids = badges.corners[corner];
             var box = null;
             ids.forEach(function (id) {
-                var el = badgeHtml(id, info);
-                if (!el) {
+                var els = badgeHtml(id, info);
+                if (!els) {
                     return;
                 }
                 if (!box) {
                     box = document.createElement('div');
                     box.className = 'jellycanvas-badges jellycanvas-badges-' + corner;
+                    box.style.padding = inset + 'px';
                 }
-                box.appendChild(el);
+                (els.length === undefined ? [els] : els).forEach(function (el) { box.appendChild(el); });
             });
             if (box) {
                 host.appendChild(box);

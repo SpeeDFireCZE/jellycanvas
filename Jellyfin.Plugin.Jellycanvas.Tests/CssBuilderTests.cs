@@ -406,7 +406,7 @@ public class CssBuilderTests
 
         var css = CssBuilder.Build(cfg);
 
-        Assert.Contains("html .detailRibbon { background-color: rgba(18, 52, 86, 0.5) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html .detailRibbon::before { content: ''; position: absolute; inset: 0; z-index: -1; box-sizing: border-box; pointer-events: none; background-color: rgba(18, 52, 86, 0.5) !important;", css, StringComparison.Ordinal);
         Assert.Contains("backdrop-filter: blur(8px)", css, StringComparison.Ordinal);
         Assert.Contains("html .upNextContainer { background-color: rgba(32, 32, 32, 0.7) !important;", css, StringComparison.Ordinal);
         Assert.Contains(".upNextDialog-button.btnStartNow { background: #00a4dc !important;", css, StringComparison.Ordinal);
@@ -457,6 +457,16 @@ public class CssBuilderTests
         Assert.Contains(".trackSelections .emby-select-withcolor { background: rgba(0, 164, 220, 0.22) !important;", css, StringComparison.Ordinal);
         Assert.Contains(".detailVerticalSection .sectionTitle::after { content: \"\";", css, StringComparison.Ordinal);
         Assert.Contains("html #similarCollapsible { display: none !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Detail_blocks_get_their_own_surfaces_and_chip_color()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Detail = new DetailSettings { SelectorsBlock = DetailBlockSurface.Glass, SelectorsBlockColor = "#123456", BlockOpacity = 60, OverviewBlock = DetailBlockSurface.Solid, Tags = DetailBlockStyle.Chips, ChipColor = "#ff0000" } });
+
+        Assert.Contains("html #itemDetailPage .trackSelections { background-color: rgba(18, 52, 86, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #itemDetailPage .tagline, html #itemDetailPage .overview { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #itemDetailPage .itemTags a { font-size: 0.85rem !important; background: #ff0000 !important; color: #ffffff !important;", css, StringComparison.Ordinal);
     }
 
     [Fact]

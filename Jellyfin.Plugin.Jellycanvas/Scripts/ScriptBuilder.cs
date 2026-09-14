@@ -93,6 +93,8 @@ public static class ScriptBuilder
                 style = cb.Style.ToString(),
                 scale = Math.Clamp(cb.Scale, 50, 200),
                 hideOnMobile = cb.HideOnMobile,
+                languages = cb.Languages.ToString(),
+                stacked = cb.Stacked,
             }
             : null;
 
@@ -120,7 +122,7 @@ public static class ScriptBuilder
         return text;
     }
 
-    private static readonly string[] BadgeIds = { "resolution", "hdr", "audio", "subtitles" };
+    private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles" };
 
     /// <summary>The known badge ids in a corner's list, in the order given.</summary>
     private static string[] BadgeList(string? value)

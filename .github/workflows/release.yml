@@ -1,6 +1,5 @@
-# Publishes a release when a version tag is pushed - "1.2.3" (or "v1.2.3",
-# or the full four-part "1.2.3.0"; the plugin's four-part version comes from
-# build.yaml and must agree with the tag):
+# Publishes a release when a version tag is pushed - "1.2.3" (or "v1.2.3");
+# the version in build.yaml must agree with the tag:
 #   1. builds the plugin and zips the DLL as jellycanvas_<version>.zip,
 #   2. creates the GitHub release with the zip attached,
 #   3. adds the version to manifest.json on main, so every Jellyfin server
@@ -31,8 +30,7 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME#v}"
           yaml=$(sed -n 's/^version: *"\([0-9.]*\)"/\1/p' build.yaml)
-          # a three-part tag stands for the four-part version with a trailing .0
-          if [ "$tag" != "$yaml" ] && [ "$tag.0" != "$yaml" ]; then
+          if [ "$tag" != "$yaml" ]; then
             echo "tag $GITHUB_REF_NAME does not match build.yaml version $yaml" >&2
             exit 1
           fi
