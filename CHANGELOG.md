@@ -5,6 +5,12 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.0.2 - 2026-09-14
+
+- Card badges: audio and subtitle languages each have their own style -
+  audio as flags and subtitles as codes by default, so the flags are not
+  repeated for the subtitles.
+
 ## 1.0.1 - 2026-09-14
 
 - Plugin logo, shown in the catalog and the plugin list.
