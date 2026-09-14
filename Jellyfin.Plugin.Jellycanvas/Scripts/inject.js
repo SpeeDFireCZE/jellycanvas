@@ -319,7 +319,9 @@
         var isLang = id === 'audio' || id === 'subtitles';
         var el = document.createElement('span');
         el.className = 'jellycanvas-badge jellycanvas-badge-' + id;
-        if (isLang && (badges.languages || 'Codes') === 'Flags') {
+        // Audio and subtitle languages each have their own way of showing.
+        var mode = (id === 'subtitles' ? badges.subtitleLanguages : badges.languages) || 'Codes';
+        if (isLang && mode === 'Flags') {
             var flags = [];
             var rest = [];
             value.forEach(function (code) {
@@ -347,7 +349,6 @@
             i.setAttribute('aria-hidden', 'true');
             i.textContent = id === 'audio' ? 'volume_up' : 'subtitles';
             el.appendChild(i);
-            var mode = badges.languages || 'Codes';
             value.forEach(function (code) {
                 var flag = mode === 'Codes' ? null : flagSvg(code);
                 if (flag) {

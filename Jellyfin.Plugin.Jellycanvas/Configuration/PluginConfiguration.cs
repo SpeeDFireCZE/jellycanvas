@@ -453,7 +453,11 @@ public class CardBadgeSettings
 
     public bool HideOnMobile { get; set; } = false;
 
+    /// <summary>How the audio languages are shown.</summary>
     public LanguageBadgeStyle Languages { get; set; } = LanguageBadgeStyle.Flags;
+
+    /// <summary>How the subtitle languages are shown - codes by default, so they do not repeat the audio flags.</summary>
+    public LanguageBadgeStyle SubtitleLanguages { get; set; } = LanguageBadgeStyle.Codes;
 
     /// <summary>Badges in a corner stacked under each other instead of in a row.</summary>
     public bool Stacked { get; set; } = true;

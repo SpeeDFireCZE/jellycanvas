@@ -94,6 +94,7 @@ public static class ScriptBuilder
                 scale = Math.Clamp(cb.Scale, 50, 200),
                 hideOnMobile = cb.HideOnMobile,
                 languages = cb.Languages.ToString(),
+                subtitleLanguages = cb.SubtitleLanguages.ToString(),
                 stacked = cb.Stacked,
             }
             : null;

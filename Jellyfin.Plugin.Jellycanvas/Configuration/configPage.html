@@ -788,10 +788,18 @@
                                 </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.Stacked"><span data-i18n="badgeStacked">Stack the badges of a corner under each other</span></label></div>
                                 <div class="selectContainer">
-                                    <label class="selectLabel" for="jcBadgeLang" data-i18n="badgeLanguages">Languages as</label>
+                                    <label class="selectLabel" for="jcBadgeLang" data-i18n="badgeLanguages">Audio languages as</label>
                                     <select is="emby-select" id="jcBadgeLang" data-path="Scripts.CardBadges.Languages" class="emby-select-withcolor emby-select">
                                         <option value="Flags" data-i18n="badgeLangFlags">Flags only (drawn by the script, no downloads)</option>
                                         <option value="Codes" data-i18n="badgeLangCodes">Codes (EN, CS, DE)</option>
+                                        <option value="FlagsAndCodes" data-i18n="badgeLangBoth">Flags and codes</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcBadgeSubLang" data-i18n="badgeSubLanguages">Subtitle languages as</label>
+                                    <select is="emby-select" id="jcBadgeSubLang" data-path="Scripts.CardBadges.SubtitleLanguages" class="emby-select-withcolor emby-select">
+                                        <option value="Codes" data-i18n="badgeLangCodes">Codes (EN, CS, DE)</option>
+                                        <option value="Flags" data-i18n="badgeLangFlags">Flags only (drawn by the script, no downloads)</option>
                                         <option value="FlagsAndCodes" data-i18n="badgeLangBoth">Flags and codes</option>
                                     </select>
                                 </div>
