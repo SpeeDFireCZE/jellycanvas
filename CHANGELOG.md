@@ -6,6 +6,8 @@ numbers Jellyfin plugins use.
 
 ## Unreleased
 
+- Plugin logo, shown in the catalog and the plugin list.
+
 ## 1.0.0.0 - 2026-09-14
 
 First public release, for Jellyfin 12.0.

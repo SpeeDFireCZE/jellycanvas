@@ -6,6 +6,7 @@
     "overview": "Visual theme builder - customize the Jellyfin web UI without writing CSS",
     "owner": "SpeeDFireCZE",
     "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/SpeeDFireCZE/jellycanvas/main/images/logo.png",
     "versions": [
       {
         "version": "1.0.0.0",

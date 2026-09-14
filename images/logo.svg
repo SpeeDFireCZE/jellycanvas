@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="jf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#aa5cc3"/><stop offset="1" stop-color="#00a4dc"/></linearGradient>
+    <linearGradient id="paint" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#aa5cc3"/><stop offset="1" stop-color="#00a4dc"/></linearGradient>
+  </defs>
+  <!-- Jellyfin mark: rounded triangular ring + inner triangle -->
+  <path fill="url(#jf)" fill-rule="evenodd" d="M48.8 29.7 Q55.2 18.4 61.6 29.7 L92.0 83.9 Q98.4 95.2 85.4 95.2 L25.0 95.2 Q12.0 95.2 18.4 83.9 Z M52.0 49.7 Q55.2 44.0 58.4 49.7 L75.2 79.1 Q78.4 84.8 71.9 84.8 L38.5 84.8 Q32.0 84.8 35.2 79.1 Z"/>
+  <path fill="url(#jf)" d="M52.7 61.9 Q55.2 57.6 57.7 61.9 L65.5 75.7 Q68.0 80.0 63.0 80.0 L47.4 80.0 Q42.4 80.0 44.9 75.7 Z"/>
+  <!-- the drip: fresh paint running off the bottom edge where the brush touches -->
+  <path fill="#00a4dc" d="M81.4 94.2 c0 8 4 12 4 18 c0 3.2-1.8 5-4 5 s-4-1.8-4-5 c0-6 4-10 4-18 z"/>
+  <!-- artist's round brush: tip on the mark where the drip starts, handle up to the top right.
+       Drawn tip-up at the origin, then turned so the handle points up-right. -->
+  <g transform="translate(81.4 92.2) rotate(-135) scale(0.74)">
+    <path d="M-5.5 24 L5.5 24 L4 80 Q4 86 0 86 Q-4 86 -4 80 Z" fill="#6b7386" stroke="#2f3442" stroke-width="1.6" stroke-linejoin="round"/>
+    <rect x="-6.5" y="15" width="13" height="10" rx="1.5" fill="#d3d7e0" stroke="#2f3442" stroke-width="1.6"/>
+    <path d="M0 -1 C-9 5 -10 12 -7 16 L7 16 C9 10 7 4 0 -1 Z" fill="#e6d3ad" stroke="#2f3442" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M0 -1 C-9 5 -10 12 -8.4 14.5 Q0 9 8 12 C8 7 6 3 0 -1 Z" fill="url(#paint)" stroke="#2f3442" stroke-width="1.6" stroke-linejoin="round"/>
+  </g>
+</svg>

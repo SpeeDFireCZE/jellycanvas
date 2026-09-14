@@ -1,3 +1,5 @@
+<p align="center"><img src="images/logo.png" alt="Jellycanvas" width="160"></p>
+
 # Jellycanvas
 
 A theme designer for **Jellyfin 12**, delivered as a server plugin. Pick
