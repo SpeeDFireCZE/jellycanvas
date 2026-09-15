@@ -117,8 +117,9 @@ other browsers may need a reload a little later.
   white poster; progress as a thin line, floating bar, bold bar, top line
   or a translucent fill over the poster; hover buttons off everywhere or
   only on series, seasons and collections.
-- **Card badges** (script) - resolution, HDR, audio and subtitle languages
-  in the corners of movie and episode cards.
+- **Card badges** (script) - resolution, HDR, codec, sound, audio and
+  subtitle languages (flags or codes) in the corners of movie and episode
+  cards; dark, accent, glass, or a color per value from a chosen range.
 - **Buttons & inputs**, **dialogs & menus** (and the player's "Up next"
   prompt), **item detail page** (title ribbon, poster, cast & crew as
   circles or squares, selectors / genres / tags / links as chips, section

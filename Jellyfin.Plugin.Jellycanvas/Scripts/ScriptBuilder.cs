@@ -87,14 +87,16 @@ public static class ScriptBuilder
             }
             : null;
 
-        // The text identifies a dismissal: a new announcement shows again.
-        var infoBar = hasInfoBar ? new { text = ib.Text.Trim() } : null;
+        // The text identifies a dismissal: a new announcement shows again
+        // (when the dismissal is remembered at all).
+        var infoBar = hasInfoBar ? new { text = ib.Text.Trim(), remember = ib.RememberClose } : null;
 
         var badges = hasBadges
             ? new
             {
                 corners,
                 style = cb.Style.ToString(),
+                palette = cb.Palette.ToString(),
                 scale = Math.Clamp(cb.Scale, 50, 200),
                 hideOnMobile = cb.HideOnMobile,
                 languages = cb.Languages.ToString(),

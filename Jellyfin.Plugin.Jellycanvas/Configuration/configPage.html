@@ -191,7 +191,7 @@
                         <details class="jc-section" data-section="share">
                             <summary><span class="material-icons" aria-hidden="true">swap_horiz</span><span data-i18n="share">Share / import</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
-                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the info bar text, the login title, the uploaded logo, image links on private addresses. Copy it to share, paste one to try it - nothing is applied until you click Apply.</div>
+                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the info bar text, the login title, the uploaded logo, image links on private addresses. Copy it to share; paste one - or a link to one (a raw GitHub file, for example) - to try it. Nothing is applied until you click Apply.</div>
                                 <h4 class="jc-sub" data-i18n="exportHeading">Export</h4>
                                 <div class="jc-actions">
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy"><span data-i18n="exportCopy">Copy theme JSON</span></button>
@@ -441,7 +441,9 @@
                                 <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
                                 <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
-                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script; stays closed until the text changes)</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
                             </div>
                         </details>
@@ -783,7 +785,17 @@
                                         <option value="Dark" data-i18n="badgeDark">Dark pills</option>
                                         <option value="Accent" data-i18n="badgeAccent">Accent pills</option>
                                         <option value="Glass" data-i18n="glass">Glass</option>
-                                        <option value="Colorful" data-i18n="badgeColorful">A color per kind (blue resolution, teal codec, purple sound)</option>
+                                        <option value="Colorful" data-i18n="badgeColorful">A color per value (4K, 1080p, HEVC, Atmos, each language...)</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer" data-when="Scripts.CardBadges.Style=Colorful">
+                                    <label class="selectLabel" for="jcBadgePalette" data-i18n="badgePalette">Color range</label>
+                                    <select is="emby-select" id="jcBadgePalette" data-path="Scripts.CardBadges.Palette" class="emby-select-withcolor emby-select">
+                                        <option value="Vivid" data-i18n="paletteVivid">Vivid (the whole wheel)</option>
+                                        <option value="Cool" data-i18n="paletteCool">Cool (teal, blue, purple)</option>
+                                        <option value="Warm" data-i18n="paletteWarm">Warm (red, orange, yellow)</option>
+                                        <option value="Pastel" data-i18n="palettePastel">Pastel (light, dark text)</option>
+                                        <option value="Neon" data-i18n="paletteNeon">Neon (bright, dark text)</option>
                                     </select>
                                 </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.Stacked"><span data-i18n="badgeStacked">Stack the badges of a corner under each other</span></label></div>
@@ -987,24 +999,13 @@
                             </div>
                         </details>
                         <details class="jc-section" data-section="extra">
-                            <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS, export &amp; import</span><span class="jc-caret"></span></summary>
+                            <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS &amp; export</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="extraHint">Anything the controls above cannot do. Appended after the generated CSS.</div>
                                 <textarea is="emby-textarea" class="jc-css" data-path="ExtraCss" rows="6"></textarea>
                                 <br><br>
                                 <div class="jc-hint" data-i18n="exportHint">Generated CSS - read-only. Copy it if you want to use it elsewhere.</div>
                                 <textarea class="jc-css emby-textarea" id="jcCssOut" readonly rows="10"></textarea>
-                                <h4 class="jc-sub" data-i18n="themeShareHeading">Share a theme</h4>
-                                <div class="jc-hint" data-i18n="themeShareHint">A whole theme is one JSON: paste one here - or a link to one (a raw GitHub file, for example) - and import it in one click. Nothing is applied until you click Apply. The export holds only the look: custom buttons and their addresses, the info bar text, the login title, the uploaded logo and image links on private addresses stay out of it.</div>
-                                <div class="inputContainer">
-                                    <textarea is="emby-textarea" id="jcImportText2" class="emby-textarea" rows="3" data-i18n-placeholder="importPlaceholder2" placeholder="Paste a theme JSON or a link to one"></textarea>
-                                </div>
-                                <div class="jc-actions">
-                                    <button is="emby-button" type="button" class="raised button-submit emby-button" id="jcBtnImport2"><span data-i18n="importApply">Load into the designer</span></button>
-                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnImportFile2"><span data-i18n="importFile">Open .json file…</span></button>
-                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy2"><span data-i18n="exportCopy">Copy theme JSON</span></button>
-                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportFile2"><span data-i18n="exportFile">Download .json</span></button>
-                                </div>
                             </div>
                         </details>
                     </div>

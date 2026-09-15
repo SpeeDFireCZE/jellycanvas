@@ -107,10 +107,8 @@
             default:
                 look = 'background: rgba(0, 0, 0, 0.68); color: #fff;';
         }
-        var colorful = badges.style === 'Colorful'
-            ? '.jellycanvas-badge-resolution { background: #1e88e5 !important; } .jellycanvas-badge-hdr { background: #f9a825 !important; color: #1b1b1b !important; }' +
-              '.jellycanvas-badge-codec { background: #00897b !important; } .jellycanvas-badge-sound { background: #5e35b1 !important; }'
-            : '';
+        // Colorful: every badge gets its own color from badgeColor() inline.
+        var colorful = '';
         var size = (11 * badges.scale / 100).toFixed(1);
         // Stacked: one badge per line, hugging the corner's side; the flags
         // of a language badge then form a little column like a flag pole.
@@ -313,6 +311,73 @@
         return svg;
     }
 
+    // ------------------------------------------------------------------
+    // Colorful style: a color per value, so 4K, 1080p, HEVC or Atmos can
+    // be told apart at a glance. Known values have a fixed rank, so the
+    // same thing is always the same color; anything else is hashed. The
+    // palette turns a rank into a hue within its range.
+    // ------------------------------------------------------------------
+
+    var BADGE_RANKS = {
+        '4K': 0, '1080p': 1, '720p': 2, 'SD': 3,
+        'DV': 4, 'HDR': 5, 'HLG': 6,
+        'HEVC': 7, 'H264': 8, 'AV1': 9, 'VP9': 10, 'MPEG-4': 11
+    };
+
+    // Hues by rank (see BADGE_RANKS and the sound families in badgeRank):
+    // 4K pink, 1080p blue, 720p green, SD grey; DV purple, HDR amber, HLG
+    // orange; HEVC teal, H264 indigo, AV1 red-orange, VP9 magenta, MPEG-4
+    // steel; then the sound families. Neighbours in a list are far apart
+    // on the wheel so the values a card is likely to show side by side
+    // never look alike. Hashed values (languages) spread over the wheel.
+    var VIVID_HUES = [335, 210, 130, -1, 275, 45, 25, 175, 240, 15, 300, 200, 265, 285, 255, 190, 205, 90, 65, 30, 145, 170, 0, 220];
+
+    function paletteHue(hues, r) {
+        return r < hues.length ? hues[r] : (r * 47) % 360;
+    }
+
+    var BADGE_PALETTES = {
+        Vivid: { hue: function (r) { return paletteHue(VIVID_HUES, r); }, s: 70, l: 46, text: '#fff' },
+        // teal to purple, neighbours 53 degrees apart
+        Cool: { hue: function (r) { return r === 3 ? -1 : 165 + (r * 53) % 125; }, s: 62, l: 44, text: '#fff' },
+        // magenta through red to yellow
+        Warm: { hue: function (r) { return r === 3 ? -1 : (330 + (r * 37) % 90) % 360; }, s: 80, l: 47, text: '#fff' },
+        Pastel: { hue: function (r) { return paletteHue(VIVID_HUES, r); }, s: 65, l: 78, text: '#1b1b1b' },
+        Neon: { hue: function (r) { return paletteHue(VIVID_HUES, r); }, s: 100, l: 58, text: '#111' }
+    };
+
+    function badgeRank(id, value) {
+        var key = String(value);
+        if (BADGE_RANKS.hasOwnProperty(key)) {
+            return BADGE_RANKS[key];
+        }
+        // Sound: the codec family decides, the channel layout does not.
+        if (id === 'sound') {
+            var fam = key.replace(/\s[0-9.]+$/, '');
+            var sounds = ['Dolby TrueHD Atmos', 'Dolby Digital+ Atmos', 'Dolby TrueHD', 'DTS-HD', 'DTS', 'Dolby Digital+', 'Dolby Digital', 'AAC', 'FLAC', 'Opus', 'MP3', 'PCM'];
+            var at = sounds.indexOf(fam);
+            if (at >= 0) {
+                return 12 + at;
+            }
+        }
+        var h = 0;
+        for (var i = 0; i < key.length; i++) {
+            h = (h * 31 + key.charCodeAt(i)) % 1000;
+        }
+        return 24 + h;
+    }
+
+    function badgeColor(el, id, value) {
+        if (badges.style !== 'Colorful') {
+            return;
+        }
+        var p = BADGE_PALETTES[badges.palette] || BADGE_PALETTES.Vivid;
+        var hue = p.hue(badgeRank(id, value));
+        // -1 = neutral grey (SD), so the plain thing does not shout.
+        el.style.background = hue < 0 ? 'hsl(0, 0%, ' + Math.round(p.l * 0.95) + '%)' : 'hsl(' + hue + ', ' + p.s + '%, ' + p.l + '%)';
+        el.style.color = p.text;
+    }
+
     function badgeHtml(id, info) {
         var value = info[id];
         if (!value || !value.length) {
@@ -341,6 +406,7 @@
                 var pill = document.createElement('span');
                 pill.className = 'jellycanvas-badge jellycanvas-badge-' + id;
                 pill.textContent = rest.join(' ');
+                badgeColor(pill, id, rest[0]);
                 flags.push(pill);
             }
             return flags.length ? flags : '';
@@ -351,6 +417,7 @@
             i.setAttribute('aria-hidden', 'true');
             i.textContent = id === 'audio' ? 'volume_up' : 'subtitles';
             el.appendChild(i);
+            badgeColor(el, id, value[0]);
             value.forEach(function (code) {
                 var flag = mode === 'Codes' ? null : flagSvg(code);
                 if (flag) {
@@ -365,6 +432,7 @@
             return el;
         }
         el.appendChild(document.createTextNode(value));
+        badgeColor(el, id, value);
         return el;
     }
 
@@ -383,6 +451,18 @@
         var image = card.querySelector('.cardImageContainer') || host;
         var radius = parseFloat(getComputedStyle(image).borderTopLeftRadius) || 0;
         var inset = Math.round(5 + radius * 0.3);
+        // Jellyfin's own indicators (played tick, unplayed count top right,
+        // media source top left) keep their corner; badges there start
+        // under them.
+        var hostTop = host.getBoundingClientRect().top;
+        function under(selector) {
+            var ind = card.querySelector(selector);
+            if (!ind || !ind.offsetHeight) {
+                return 0;
+            }
+            return Math.max(0, Math.round(ind.getBoundingClientRect().bottom - hostTop) - inset + 2);
+        }
+        var below = { tr: under('.playedIndicator, .countIndicator, .indicator'), tl: under('.mediaSourceIndicator') };
         Object.keys(badges.corners).forEach(function (corner) {
             var ids = badges.corners[corner];
             var box = null;
@@ -395,6 +475,9 @@
                     box = document.createElement('div');
                     box.className = 'jellycanvas-badges jellycanvas-badges-' + corner;
                     box.style.padding = inset + 'px';
+                    if (below[corner]) {
+                        box.style.marginTop = below[corner] + 'px';
+                    }
                 }
                 (els.length === undefined ? [els] : els).forEach(function (el) { box.appendChild(el); });
             });
@@ -588,7 +671,18 @@
     var INFO_KEY = 'jellycanvas.infobar.dismissed';
     var INFO_CLOSED = 'jellycanvas-infobar-closed';
 
+    // The designer's preview runs this script too, on the same origin as
+    // the real site: a close clicked there must not hide the strip for the
+    // admin everywhere, and a strip closed on the site must still show in
+    // the preview. The designer marks its frame.
+    function inPreview() {
+        return window.__jellycanvasPreview === true;
+    }
+
     function infoDismissed() {
+        if (inPreview() || !infoBar.remember) {
+            return false;
+        }
         try {
             return localStorage.getItem(INFO_KEY) === infoBar.text;
         } catch (e) {
@@ -598,7 +692,9 @@
 
     function closeInfoBar() {
         try {
-            localStorage.setItem(INFO_KEY, infoBar.text);
+            if (!inPreview() && infoBar.remember) {
+                localStorage.setItem(INFO_KEY, infoBar.text);
+            }
         } catch (e) {
             // private mode - closes for this page load only
         }
@@ -1101,7 +1197,11 @@
 
     // React moves foreign nodes to the end when it re-renders the toolbar,
     // so the position is checked, not just set once.
-    function placeButton(el, b, bar) {
+    // "next" is the custom button that follows this one on the same side
+    // (already in the bar), or null for the last one. Two buttons on one
+    // side used to fight for the same spot - each sync moved one of them,
+    // and a node moved between mousedown and mouseup never gets its click.
+    function placeButton(el, b, bar, next) {
         var group = b.placement === 'Nav' ? navGroup(bar) : iconGroup(bar);
         if (!group) {
             if (el.parentElement !== bar) {
@@ -1110,20 +1210,15 @@
             return;
         }
 
-        if (b.placement === 'Nav') {
-            if (el.parentElement !== group || el !== group.lastElementChild) {
-                group.appendChild(el);
-            }
-            return;
-        }
-
-        // Icons: right before Search when it exists, otherwise at the end.
-        // (Library pages link to "#/search?parentId=...", hence the prefix
-        // match; the TV header has a .headerSearchButton.)
-        var search = group.querySelector('a[href^="#/search"], .headerSearchButton');
-        var correct = search ? el.nextElementSibling === search && el.parentElement === group : el.parentElement === group && el === group.lastElementChild;
+        // Links go at the end of their group; icons right before Search
+        // when it exists (library pages link to "#/search?parentId=...",
+        // hence the prefix match; the TV header has a .headerSearchButton).
+        var anchor = next && next.parentElement === group ? next
+            : b.placement === 'Nav' ? null
+            : group.querySelector('a[href^="#/search"], .headerSearchButton');
+        var correct = el.parentElement === group && (anchor ? el.nextElementSibling === anchor : el === group.lastElementChild);
         if (!correct) {
-            group.insertBefore(el, search || null);
+            group.insertBefore(el, anchor);
         }
     }
 
@@ -1181,7 +1276,13 @@
             } else {
                 applyLook(el, b, bar);
             }
-            placeButton(el, b, bar);
+            var following = null;
+            for (var n = buttons.indexOf(b) + 1; n < buttons.length && !following; n++) {
+                if (buttons[n].placement === b.placement) {
+                    following = document.getElementById(buttonId(buttons[n]));
+                }
+            }
+            placeButton(el, b, bar, following);
         });
     }
 

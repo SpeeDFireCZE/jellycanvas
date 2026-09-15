@@ -60,7 +60,7 @@ public class ScriptBuilderTests
 
         var js = ScriptBuilder.Build(cfg);
 
-        Assert.Contains("\"infoBar\":{\"text\":\"Hello\"}", js, StringComparison.Ordinal);
+        Assert.Contains("\"infoBar\":{\"text\":\"Hello\",\"remember\":true}", js, StringComparison.Ordinal);
     }
 
     [Fact]

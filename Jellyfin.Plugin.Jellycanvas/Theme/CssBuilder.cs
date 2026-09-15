@@ -1825,7 +1825,7 @@ public static class CssBuilder
         // hangs off the top row instead (.headerTop::after at 100%); the
         // page's margin above accounts for it.
         var i = x.Config.InfoBar;
-        if (i.Enabled && !string.IsNullOrWhiteSpace(i.Text) && i.Position == InfoBarPosition.Top)
+        if (i.Enabled && !i.HideOnTv && !string.IsNullOrWhiteSpace(i.Text) && i.Position == InfoBarPosition.Top)
         {
             var bg = Color.Parse(i.Color, x.Accent);
             var fg = string.IsNullOrWhiteSpace(i.TextColor) ? bg.ContrastText : Color.Parse(i.TextColor, x.Text).Hex;

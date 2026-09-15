@@ -5,6 +5,25 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.0.4 - 2026-09-15
+
+- Card badges: the Colorful style gives every value its own color (4K
+  pink, 1080p blue, 720p green, SD grey; DV / HDR / HLG; HEVC, H264, AV1...;
+  a color per sound family; a color per language) with a choice of range:
+  vivid, cool, warm, pastel, neon. Badges in a corner that holds Jellyfin's
+  own indicator (played tick, unplayed count, media source) start under it.
+- Info bar: *Hide on TV*; the close button's memory is a choice - remember
+  the close until the text changes (as before), or show the strip again
+  on every page load.
+- Fixed: two custom buttons on the same side of the bar kept swapping
+  places on every sync and never received a click.
+- Fixed: closing the info bar in the designer's preview hid it for the
+  admin on the site as well (same browser storage); the preview now keeps
+  its closes to itself and *Apply* clears a remembered close in the
+  admin's browser.
+- The theme import lives in *Share / import* only (it was also in the
+  Extra CSS section for a while).
+
 ## 1.0.3 - 2026-09-15
 
 A bug-fix release, with the TV layout and theme sharing on top.

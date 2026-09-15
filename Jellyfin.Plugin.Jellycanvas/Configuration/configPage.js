@@ -58,7 +58,6 @@
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
             themeCurrent: 'current', themeOld: 'old (pre-12 format, {0} characters) - compensated by the generated CSS', themePatched: 'old, patched by Jellycanvas', themeNone: 'No theme files found in {0}.', themeRepairDone: 'Theme files patched.', themeRepairFailed: 'Could not write: {0}',
             importFetchFail: 'The link could not be loaded (the site has to allow cross-origin requests; raw GitHub links do).', importPlaceholder2: 'Paste a theme JSON or a link to one',
-            themeShareHeading: 'Share a theme', themeShareHint: 'A whole theme is one JSON: paste one here - or a link to one (a raw GitHub file, for example) - and import it in one click. Nothing is applied until you click Apply. The export holds only the look: custom buttons and their addresses, the info bar text, the login title, the uploaded logo and image links on private addresses stay out of it.',
             mockNext: 'Next episode starts in {0} s', mockEpisode: 'S1:E2 - Episode title', mockStartNow: 'Start now', mockHide: 'Hide', mockStill: 'Are you still watching?', mockStop: 'Stop watching', mockContinue: 'Continue watching'
         },
         cs: {
@@ -80,7 +79,7 @@
             tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek',
             tv: 'Rozložení TV', focusColor: 'Barva zaměření (prázdné = zvýraznění)', focusWidth: 'Tloušťka rámečku zaměření', focusScale: 'Zvětšení zaměřené karty',
             mobile: 'Rozložení mobil', cardRadiusMobile: 'Zaoblení karet (-1 = jako web)', fontScaleMobile: 'Velikost písma (0 = jako web)',
-            extra: 'Vlastní CSS, export a import', themeShareHeading: 'Sdílení tématu', themeShareHint: 'Celé téma je jeden JSON: vlož ho sem – nebo odkaz na něj (třeba raw soubor z GitHubu) – a jedním kliknutím ho naimportuj. Na server se nic nezapíše, dokud nedáš Použít. Export obsahuje jen vzhled: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo a odkazy na obrázky na privátních adresách v něm nejsou.', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
+            extra: 'Vlastní CSS a export', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
             exportHint: 'Vygenerované CSS - jen pro čtení. Zkopíruj, pokud ho chceš použít jinde.',
             devWeb: 'Web', devTv: 'TV', devMobile: 'Mobil', pageHome: 'Domů', pageLibrary: 'Knihovna', pageDetail: 'Detail položky', pageLogin: 'Přihlášení', pageUpNext: 'Přehrávač: další díl', pageStillWatching: 'Přehrávač: „Stále se díváte?“', mockNext: 'Další díl začne za {0} s', mockEpisode: 'S1:E2 – Název epizody', mockStartNow: 'Spustit hned', mockHide: 'Skrýt', mockStill: 'Stále se díváte?', mockStop: 'Přestat sledovat', mockContinue: 'Pokračovat ve sledování',
             previewHint: 'Náhled je skutečný webový klient s vloženým CSS - dá se v něm klikat. Ctrl+klik na prvek otevře jeho nastavení. Vlastní CSS se projeví v klientech založených na webu (prohlížeč, Jellyfin Media Player, aplikace pro Android); nativní TV aplikace ho ignorují.',
@@ -106,14 +105,14 @@
             backdropMode: 'Zdroj', backdropDefault: 'Výchozí Jellyfin (nastavení uživatele „Zobrazit pozadí“)', backdropRandom: 'Náhodný backdrop z knihovny, na každé stránce', backdropCustom: 'Vlastní adresa obrázku',
             backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
-            share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení, vlož cizí a vyzkoušej ho – na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
+            share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
-            infobar: 'Informační lišta', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript; zůstane zavřené, dokud se text nezmění)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
+            infobar: 'Informační lišta', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarTv: 'Schovat na TV', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript)', infobarRemember: 'Pamatovat si zavření do změny textu (vypnuto = lišta se ukáže při každém načtení stránky)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
             logoUploaded: 'Logo nahráno.', logoDeleted: 'Nahrané logo smazáno.', copied: 'Zkopírováno do schránky.',
             scripts: 'Vlastní tlačítka v liště',
             groupStart: 'Začátek', groupBars: 'Lišty a navigace', groupContent: 'Obsah', groupPages: 'Pozadí a stránky', groupDevices: 'Zařízení', groupAdvanced: 'Pokročilé',
@@ -121,7 +120,7 @@
             chipNav: 'Logo a odkazy', chipIcons: 'Ikony', chipUser: 'Uživatel', slotTop: 'Nahoře', slotMiddle: 'Uprostřed', slotBottom: 'Dole',
             sidebarCollapsible: 'Vysouvací panel (jen ikony, rozbalí se při najetí)', sidebarCollapsed: 'Šířka sbaleného panelu', drawerHint: 'Hamburger menu, které se vysouvá zleva v mobilním rozložení (a v úzkém okně). Na desktopu jsou odkazy v horní liště.', lookHeading: 'Vzhled', navHeading: 'Odkazy a ikony', playedHeading: 'Zhlédnuto a rozkoukáno',
             infobarRadius: 'Zaoblení rohů', follow: 'Sledovat nastavení',
-            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (Dolby Digital+ 5.1…)', badgeColorful: 'Barva podle druhu (modré rozlišení, zelený kodek, fialový zvuk)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu',
+            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (Dolby Digital+ 5.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu',
             slideshow: 'Slideshow na Domů', slideshowHint: 'Velký karusel nahoře na domovské stránce: backdrop, logo nebo název, popis a tlačítko na položku. Vyžaduje zapnuté skriptové funkce (sekce Vlastní tlačítka v liště). V náhledu se objeví po Uložit nebo Použít.',
             slideshowEnabled: 'Zobrazit slideshow', slideshowSource: 'Co ukazovat', ssRandom: 'Náhodné položky', ssLatest: 'Nedávno přidané', ssContinue: 'Pokračovat ve sledování', ssFavorites: 'Oblíbené', ssGenre: 'Žánr (název níže)', ssTag: 'Štítek (název níže)',
             slideshowFilter: 'Název žánru / štítku', slideshowTypes: 'Typy položek', ssBoth: 'Filmy a seriály', ssMovies: 'Filmy', ssSeries: 'Seriály', slideshowCount: 'Počet položek', slideshowInterval: 'Sekund na snímek', slideshowHeight: 'Výška (% okna)',
@@ -386,9 +385,12 @@
             var parts = cond.split('=');
             return parts[1].split('|').indexOf(String(getPath(state, parts[0]))) >= 0;
         };
+        var scriptAvailable = !!(status && (status.FileTransformation || status.JsInjector));
         page.querySelectorAll('[data-when]').forEach(function (el) {
-            // data-when2: a second condition that must hold as well.
-            el.hidden = !holds(el.getAttribute('data-when')) || (el.hasAttribute('data-when2') && !holds(el.getAttribute('data-when2')));
+            // data-when2: a second condition that must hold as well; a row
+            // that also needs the client script stays hidden without one.
+            el.hidden = !holds(el.getAttribute('data-when')) || (el.hasAttribute('data-when2') && !holds(el.getAttribute('data-when2')))
+                || (el.classList.contains('jc-needs-script') && !scriptAvailable);
         });
     }
 
@@ -840,7 +842,8 @@
         page.querySelector('#jcScriptsSection').hidden = !available;
         page.querySelector('#jcSlideshowSection').hidden = !available;
         page.querySelector('#jcBadgesSection').hidden = !available;
-        page.querySelectorAll('.jc-needs-script').forEach(function (el) { el.hidden = !available; });
+        page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
+        refreshConditions();
         page.querySelector('#jcScriptsMissing').hidden = available;
         if (!available) {
             page.querySelector('#jcScriptsMissing').textContent = t('scriptsNone');
@@ -898,6 +901,10 @@
         if (old) {
             old.remove();
         }
+        // Closing the info bar in the preview stays in the preview; the
+        // strip comes back on the next script preview.
+        doc.defaultView.__jellycanvasPreview = true;
+        doc.documentElement.classList.remove('jellycanvas-infobar-closed');
         var script = doc.createElement('script');
         script.id = 'jellycanvas-preview-script';
         script.textContent = lastScript;
@@ -1473,6 +1480,14 @@
     }
 
     page.querySelector('#jcBtnApply').addEventListener('click', function () {
+        // A strip the admin closed earlier on this browser shows again
+        // after an Apply - otherwise a freshly enabled close button looks
+        // like it hides the strip by itself.
+        try {
+            localStorage.removeItem('jellycanvas.infobar.dismissed');
+        } catch (e) {
+            // storage unavailable
+        }
         Dashboard.showLoadingMsg();
         post('Apply', state, true).then(function (r) {
             state.Enabled = true;
@@ -1646,7 +1661,6 @@
     }
 
     wireShare('');
-    wireShare('2');
 
     page.querySelector('#jcImportFileInput').addEventListener('change', function () {
         var file = this.files && this.files[0];

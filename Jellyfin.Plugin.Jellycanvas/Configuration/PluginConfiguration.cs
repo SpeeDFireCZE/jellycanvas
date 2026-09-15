@@ -413,6 +413,25 @@ public class ScriptSettings
 }
 
 /// <summary>Look of the badges the client script draws on cards.</summary>
+/// <summary>The color range of the Colorful badge style.</summary>
+public enum BadgePalette
+{
+    /// <summary>Saturated colors across the whole wheel.</summary>
+    Vivid,
+
+    /// <summary>Teals, blues and purples.</summary>
+    Cool,
+
+    /// <summary>Reds, oranges and yellows.</summary>
+    Warm,
+
+    /// <summary>Soft light colors with dark text.</summary>
+    Pastel,
+
+    /// <summary>Bright glowing colors with dark text.</summary>
+    Neon,
+}
+
 public enum CardBadgeStyle
 {
     /// <summary>Dark translucent pills with white text.</summary>
@@ -424,7 +443,7 @@ public enum CardBadgeStyle
     /// <summary>Frosted glass pills.</summary>
     Glass,
 
-    /// <summary>A color per kind: blue resolution, teal codec, purple sound, dark languages.</summary>
+    /// <summary>A color per value (4K, 1080p, HEVC, Atmos, each language...), from the chosen <see cref="BadgePalette"/>.</summary>
     Colorful,
 }
 
@@ -447,6 +466,9 @@ public class CardBadgeSettings
     public string BottomRight { get; set; } = string.Empty;
 
     public CardBadgeStyle Style { get; set; } = CardBadgeStyle.Dark;
+
+    /// <summary>Which range of colors the Colorful style draws from.</summary>
+    public BadgePalette Palette { get; set; } = BadgePalette.Vivid;
 
     /// <summary>Badge size in percent (100 = default).</summary>
     public int Scale { get; set; } = 100;
@@ -892,6 +914,9 @@ public class InfoBarSettings
     /// <summary>Hide on phones, where every pixel of height counts.</summary>
     public bool HideOnMobile { get; set; } = false;
 
+    /// <summary>Hide in the TV layout (no close button there - a remote cannot reach it).</summary>
+    public bool HideOnTv { get; set; } = false;
+
     /// <summary>Corner radius in pixels; with a radius the strip is inset from the edges so the rounding shows.</summary>
     public int Radius { get; set; } = 0;
 
@@ -901,6 +926,9 @@ public class InfoBarSettings
     /// strip stays closed in that browser until the text changes.
     /// </summary>
     public bool Closable { get; set; } = false;
+
+    /// <summary>A closed strip stays closed in that browser until the text changes; off = it is back on the next page load.</summary>
+    public bool RememberClose { get; set; } = true;
 }
 
 /// <summary>Small things that belong nowhere else.</summary>
