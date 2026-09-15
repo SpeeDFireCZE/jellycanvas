@@ -67,6 +67,7 @@ public static class CssBuilder
         AppendFontImport(sb, c.Typography);
 
         AppendPalette(sb, ctx);
+        ThemeBridge.Append(sb, ctx.P);
         AppendTypography(sb, ctx);
         AppendHeader(sb, ctx);
         AppendLibraryRow(sb, ctx);
@@ -83,14 +84,22 @@ public static class CssBuilder
         AppendTv(sb, ctx);
         AppendMobile(sb, ctx);
 
-        if (!string.IsNullOrWhiteSpace(c.ExtraCss))
+        var css = sb.ToString();
+        if (ctx.P.Length > 0)
         {
-            sb.AppendLine("/* --- extra CSS from the plugin page --- */");
-            sb.AppendLine(c.ExtraCss.Trim());
+            // The dark-only prefix is itself "html:not(...)"; a selector that
+            // starts with html (a third of them do) would become
+            // "html:not(...) html ..." - html under html, which matches
+            // nothing. Fold the two into one.
+            css = css.Replace(ctx.P + "html", ctx.P.TrimEnd(), StringComparison.Ordinal);
         }
 
-        sb.AppendLine(EndMarker);
-        return sb.ToString();
+        if (!string.IsNullOrWhiteSpace(c.ExtraCss))
+        {
+            css += "/* --- extra CSS from the plugin page --- */" + Environment.NewLine + c.ExtraCss.Trim() + Environment.NewLine;
+        }
+
+        return css + EndMarker + Environment.NewLine;
     }
 
     // ------------------------------------------------------------------
@@ -839,7 +848,9 @@ public static class CssBuilder
             sb.AppendLine($"{image} {{ box-shadow: {effects} !important; border-radius: {Px(k.Radius)} !important; }}");
         }
 
-        if (k.Radius > 10)
+        // (The corner-badge played style is the exception: it is shaped to
+        // sit in the corner, its own rule pins it there.)
+        if (k.Radius > 10 && k.Played != PlayedStyle.CornerBadge)
         {
             // Jellyfin parks its indicators (unplayed count, played tick) in
             // the very corner; with a large radius they would sit on the
@@ -947,7 +958,10 @@ public static class CssBuilder
             case PlayedStyle.CornerBadge:
                 var r = Px(k.Radius);
                 sb.AppendLine($"{x.P}html .cardIndicators, {x.P}html .indicators, {x.P}html .listItemIndicators {{ top: 0 !important; right: 0 !important; }}");
-                sb.AppendLine($"{x.P}html .playedIndicator, {x.P}html .countIndicator, {x.P}html .indicator {{ border-radius: 0 {r} 0 8px !important; box-shadow: -2px 1px 4px rgba(0, 0, 0, 0.6); }}");
+                // The card's rounded corner clips the badge's own corner; the
+                // icon moves down-left by a bit of the radius to stay clear.
+                var shift = Px(Math.Min(8, (int)Math.Round(k.Radius * 0.25)));
+                sb.AppendLine($"{x.P}html .playedIndicator, {x.P}html .countIndicator, {x.P}html .indicator {{ border-radius: 0 {r} 0 8px !important; box-shadow: -2px 1px 4px rgba(0, 0, 0, 0.6); box-sizing: content-box; padding: {shift} {shift} 0 0 !important; }}");
                 sb.AppendLine($"{x.P}html .mediaSourceIndicator {{ left: 0 !important; top: 0 !important; border-radius: {r} 0 8px 0 !important; }}");
                 break;
             case PlayedStyle.Dimmed:

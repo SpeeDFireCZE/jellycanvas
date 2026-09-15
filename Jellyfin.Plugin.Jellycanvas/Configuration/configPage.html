@@ -977,6 +977,13 @@
                             <summary><span class="material-icons" aria-hidden="true">tune</span><span data-i18n="misc">Misc</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.HideScrollbars"><span data-i18n="hideScrollbars">Hide scrollbars</span></label></div>
+                                <h4 class="jc-sub" data-i18n="themeFilesHeading">Theme files on the server</h4>
+                                <div class="jc-hint" data-i18n="themeFilesHint">Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.</div>
+                                <div id="jcThemeFiles" class="jc-hint"></div>
+                                <div class="jc-actions" id="jcThemeRepairRow" hidden>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnThemeRepair"><span data-i18n="themeRepair">Patch the old files</span></button>
+                                    <div class="jc-hint" data-i18n="themeRepairHint">Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.</div>
+                                </div>
                             </div>
                         </details>
                         <details class="jc-section" data-section="extra">

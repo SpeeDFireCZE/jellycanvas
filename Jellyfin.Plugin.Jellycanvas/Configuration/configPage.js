@@ -54,6 +54,9 @@
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (Dolby Digital+ 5.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
+            themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
+            themeCurrent: 'current', themeOld: 'old (pre-12 format, {0} characters) - compensated by the generated CSS', themePatched: 'old, patched by Jellycanvas', themeNone: 'No theme files found in {0}.', themeRepairDone: 'Theme files patched.', themeRepairFailed: 'Could not write: {0}',
             importFetchFail: 'The link could not be loaded (the site has to allow cross-origin requests; raw GitHub links do).', importPlaceholder2: 'Paste a theme JSON or a link to one',
             themeShareHeading: 'Share a theme', themeShareHint: 'A whole theme is one JSON: paste one here - or a link to one (a raw GitHub file, for example) - and import it in one click. Nothing is applied until you click Apply. The export holds only the look: custom buttons and their addresses, the info bar text, the login title, the uploaded logo and image links on private addresses stay out of it.',
             mockNext: 'Next episode starts in {0} s', mockEpisode: 'S1:E2 - Episode title', mockStartNow: 'Start now', mockHide: 'Hide', mockStill: 'Are you still watching?', mockStop: 'Stop watching', mockContinue: 'Continue watching'
@@ -107,6 +110,9 @@
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky',
+            themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
+            themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
+            themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
             infobar: 'Informační lišta', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript; zůstane zavřené, dokud se text nezmění)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
             logoUploaded: 'Logo nahráno.', logoDeleted: 'Nahrané logo smazáno.', copied: 'Zkopírováno do schránky.',
             scripts: 'Vlastní tlačítka v liště',
@@ -1413,6 +1419,41 @@
         toast(t('failed', msg));
     }
 
+    // Theme files on the server (Misc): listed for information; a repair
+    // button when old ones are around.
+    function renderThemeFiles(r) {
+        var box = page.querySelector('#jcThemeFiles');
+        box.textContent = '';
+        if (!r.Themes.length) {
+            box.textContent = t('themeNone', r.Path);
+            page.querySelector('#jcThemeRepairRow').hidden = true;
+            return;
+        }
+        var old = false;
+        r.Themes.forEach(function (f) {
+            var line = document.createElement('div');
+            var label = f.Error ? t('themeRepairFailed', f.Error) : f.Repaired ? t('themePatched') : f.Current ? t('themeCurrent') : t('themeOld', f.Size);
+            line.textContent = f.Name + ': ' + label;
+            line.style.color = f.Error ? '#ff8a80' : f.Current ? '' : '#ffd166';
+            box.appendChild(line);
+            if (!f.Current && !f.Repaired) {
+                old = true;
+            }
+        });
+        page.querySelector('#jcThemeRepairRow').hidden = !old;
+    }
+
+    function refreshThemeFiles() {
+        return ApiClient.getJSON(ApiClient.getUrl('Jellycanvas/Themes')).then(renderThemeFiles).catch(fail);
+    }
+
+    page.querySelector('#jcBtnThemeRepair').addEventListener('click', function () {
+        post('Themes/Repair', undefined, true).then(function (r) {
+            renderThemeFiles(r);
+            toast(r.Themes.some(function (f) { return f.Error; }) ? t('themeRepairFailed', r.Themes.filter(function (f) { return f.Error; }).map(function (f) { return f.Name; }).join(', ')) : t('themeRepairDone'));
+        }).catch(fail);
+    });
+
     function refreshStatus() {
         return ApiClient.getJSON(ApiClient.getUrl('Jellycanvas/Status')).then(function (s) {
             status = s;
@@ -1427,6 +1468,7 @@
             refreshScriptSection();
             // The first script preview may have arrived before the status did.
             injectScript();
+            refreshThemeFiles();
         });
     }
 

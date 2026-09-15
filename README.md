@@ -84,6 +84,12 @@ client with your theme injected.
   their addresses, the info bar text, the login title, the uploaded logo
   and image links on private addresses never leave your server.
 
+A server upgraded from Jellyfin 10.x can be left with old theme files
+(`web/themes/*/theme.css`) that ignore the theme's variables. Jellycanvas
+compensates in its own CSS; *Misc → Theme files on the server* shows which
+files are old and can patch them, though reinstalling `jellyfin-web` is
+the proper fix.
+
 Custom CSS you had in Branding before is preserved: the generated block
 sits between two marker comments, and the plugin never touches anything
 outside them.

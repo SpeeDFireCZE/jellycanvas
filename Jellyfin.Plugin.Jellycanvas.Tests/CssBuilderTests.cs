@@ -84,7 +84,10 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("html[data-theme]:not([data-theme=\"light\"]) {", css, StringComparison.Ordinal);
-        Assert.Contains("html:not([data-theme=\"light\"]) html:not(.layout-tv) .card-hoverable:hover", css, StringComparison.Ordinal);
+        Assert.Contains("html:not([data-theme=\"light\"]):not(.layout-tv) .card-hoverable:hover", css, StringComparison.Ordinal);
+        Assert.Contains("html:not([data-theme=\"light\"]) header.MuiAppBar-root", css, StringComparison.Ordinal);
+        // "html:not(...) html" is html under html - it can never match.
+        Assert.DoesNotContain("html:not([data-theme=\"light\"]) html", css, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -101,7 +104,7 @@ public class CssBuilderTests
 
             Assert.Contains("opacity: 0.35 !important", css, StringComparison.Ordinal);
             Assert.Contains("margin: 0.9em !important", css, StringComparison.Ordinal);
-            Assert.DoesNotContain("0,", css, StringComparison.Ordinal);
+            Assert.DoesNotMatch(@"\d,\d", css);
         }
         finally
         {
@@ -527,5 +530,37 @@ public class CssBuilderTests
 
         Assert.Contains("--jf-card-borderRadius: 18px !important;", css, StringComparison.Ordinal);
         Assert.Contains(".cardImageContainer, .cardOverlayContainer, .visualCardBox, .card:focus .cardBox:not(.visualCardBox) .cardScalable { border-radius: 18px !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Theme_bridge_repeats_the_theme_stylesheets_variable_rules()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration());
+        Assert.Contains(".cardImageContainer, .cardOverlayContainer, .itemDetailImage, .paperList, .visualCardBox { border-radius: var(--jf-card-borderRadius, .2em); }", css, StringComparison.Ordinal);
+        Assert.Contains(".backgroundContainer, .nowPlayingPlaylist, html { background-color: var(--jf-palette-background-default, #101010);", css, StringComparison.Ordinal);
+
+        var dark = CssBuilder.Build(new PluginConfiguration { ApplyTo = ApplyTo.DarkOnly });
+        Assert.Contains("html:not([data-theme=\"light\"]) .backgroundContainer, html:not([data-theme=\"light\"]) .nowPlayingPlaylist, html:not([data-theme=\"light\"]) {", dark, StringComparison.Ordinal);
+        Assert.DoesNotContain("html:not([data-theme=\"light\"]) html", dark, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Theme_bridge_repair_block_is_marked_and_unscoped()
+    {
+        var block = ThemeBridge.RepairBlock();
+        Assert.StartsWith(Environment.NewLine + ThemeBridge.RepairMarker, block, StringComparison.Ordinal);
+        Assert.EndsWith(ThemeBridge.RepairMarker + Environment.NewLine, block, StringComparison.Ordinal);
+        Assert.Contains(Environment.NewLine + ".dialog { background-color: var(--jf-palette-background-default, #101010); }", block, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Corner_badge_stays_in_the_corner_on_rounded_cards()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Radius = 20, Played = PlayedStyle.CornerBadge } });
+        Assert.DoesNotContain(".card .cardIndicators { top: calc(", css, StringComparison.Ordinal);
+        Assert.Contains("html .cardIndicators, html .indicators, html .listItemIndicators { top: 0 !important; right: 0 !important; }", css, StringComparison.Ordinal);
+
+        var badge = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Radius = 20, Played = PlayedStyle.Badge } });
+        Assert.Contains(".card .cardIndicators { top: calc(0.225em + 6px)", badge, StringComparison.Ordinal);
     }
 }

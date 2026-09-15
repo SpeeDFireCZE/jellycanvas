@@ -170,6 +170,88 @@ public class JellycanvasController : ControllerBase
     }
 
     // ------------------------------------------------------------------
+    // The theme files of the web client. An upgrade from 10.x can leave
+    // the old themes/*/theme.css behind; those do not read the --jf-*
+    // variables, so the palette (and the card rounding) is ignored there.
+    // The generated CSS carries the missing rules itself, this just tells
+    // the admin and can patch the files on disk on request.
+    // ------------------------------------------------------------------
+
+    private string ThemesDir => Path.Combine(_paths.WebPath, "themes");
+
+    /// <summary>Which theme files are current, old, or already patched.</summary>
+    [HttpGet("Themes")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<ThemesDto> GetThemes()
+    {
+        var list = new List<ThemeFileDto>();
+        if (Directory.Exists(ThemesDir))
+        {
+            foreach (var dir in Directory.GetDirectories(ThemesDir).OrderBy(d => d, StringComparer.Ordinal))
+            {
+                var file = Path.Combine(dir, "theme.css");
+                if (!System.IO.File.Exists(file))
+                {
+                    continue;
+                }
+
+                var css = System.IO.File.ReadAllText(file);
+                list.Add(new ThemeFileDto(
+                    Path.GetFileName(dir),
+                    css.Length,
+                    css.Contains(ThemeBridge.Signature, StringComparison.Ordinal) && !css.Contains(ThemeBridge.RepairMarker, StringComparison.Ordinal),
+                    css.Contains(ThemeBridge.RepairMarker, StringComparison.Ordinal),
+                    null));
+            }
+        }
+
+        return new ThemesDto(ThemesDir, list);
+    }
+
+    /// <summary>
+    /// Appends the bridge rules to every old theme.css (a copy is kept as
+    /// theme.css.jellycanvas-bak). Fails per file where the web folder is
+    /// not writable - a packaged install usually is not; then the reply
+    /// says so and the admin reinstalls jellyfin-web instead.
+    /// </summary>
+    [HttpPost("Themes/Repair")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<ThemesDto> RepairThemes()
+    {
+        var before = GetThemes().Value!;
+        var list = new List<ThemeFileDto>();
+        foreach (var theme in before.Themes)
+        {
+            if (theme.Current || theme.Repaired)
+            {
+                list.Add(theme);
+                continue;
+            }
+
+            var file = Path.Combine(ThemesDir, theme.Name, "theme.css");
+            try
+            {
+                var backup = file + ".jellycanvas-bak";
+                if (!System.IO.File.Exists(backup))
+                {
+                    System.IO.File.Copy(file, backup);
+                }
+
+                System.IO.File.AppendAllText(file, ThemeBridge.RepairBlock());
+                _logger.LogInformation("Jellycanvas: theme bridge appended to {File}", file);
+                list.Add(theme with { Repaired = true, Size = (int)new FileInfo(file).Length });
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogWarning(e, "Jellycanvas: could not patch {File}", file);
+                list.Add(theme with { Error = e.Message });
+            }
+        }
+
+        return new ThemesDto(ThemesDir, list);
+    }
+
+    // ------------------------------------------------------------------
     // Client script (File Transformation / injector).
     // ------------------------------------------------------------------
 
@@ -337,6 +419,19 @@ public sealed record StatusDto(bool Enabled, bool PresentInBranding, int Foreign
 
 /// <summary>Reply to /Apply.</summary>
 public sealed record ApplyResultDto(string Css, bool Applied);
+
+/// <summary>The web client's theme files.</summary>
+/// <param name="Path">The themes folder that was looked at.</param>
+/// <param name="Themes">One entry per theme.</param>
+public sealed record ThemesDto(string Path, IReadOnlyList<ThemeFileDto> Themes);
+
+/// <summary>One themes/NAME/theme.css.</summary>
+/// <param name="Name">The theme folder (dark, light, ...).</param>
+/// <param name="Size">File size in characters.</param>
+/// <param name="Current">The file reads the --jf-* variables (Jellyfin 12 format) and is untouched.</param>
+/// <param name="Repaired">The bridge block has been appended to it.</param>
+/// <param name="Error">Why the repair failed, if it did.</param>
+public sealed record ThemeFileDto(string Name, int Size, bool Current, bool Repaired, string? Error);
 
 /// <summary>Reply to a logo upload: the URL the page should write into the settings.</summary>
 public sealed record LogoResultDto(string Url);

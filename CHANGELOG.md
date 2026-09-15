@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.0.3 - 2026-09-15
+
+A bug-fix release, with the TV layout and theme sharing on top.
+
 - TV layout: the preview really starts the client in its TV layout, and
   the bar settings reach the TV's own top bar (style, islands, floating,
   rounding, shadow, navigation pills / underline, hidden icons, logo);
@@ -25,10 +29,19 @@ All notable changes to Jellycanvas. The format follows
   image links on private addresses stay out of it.
 - Fixed: the TV info bar overlapped the top bar; a rotation stopped while
   an image was loading threw an error.
-- Card rounding is written straight onto the card elements as well as
-  into the `--jf-card-borderRadius` variable: only the theme stylesheet
-  reads the variable, and a server upgraded from 10.x can be left with an
-  old `themes/*/theme.css` that does not.
+- Old theme files: a server upgraded from 10.x can be left with the old
+  `web/themes/*/theme.css`, which does not read the `--jf-*` variables -
+  the palette and the card rounding were ignored there. The generated CSS
+  now carries the theme stylesheet's variable rules itself (a no-op on a
+  current install), the card rounding is also written straight onto the
+  card elements, and *Misc → Theme files on the server* lists which files
+  are old and can patch them (a copy is kept as `theme.css.jellycanvas-bak`).
+- Fixed: with *Apply to dark themes only*, every rule starting with `html`
+  (bar, cards, TV, mobile - a third of the theme) was generated as
+  `html:not(...) html ...` and never applied.
+- Fixed: the corner-badge played style sat inset from the corner on
+  rounded cards; its icon and the unplayed count now keep clear of the
+  rounded corner.
 - Development: `test\Make-Media.ps1` regenerates the test clips with
   resolutions, HDR, audio languages and subtitles so the badges have
   something to show; the test scripts run on Jellyfin 12.1.
