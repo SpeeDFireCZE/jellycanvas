@@ -54,6 +54,8 @@
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (Dolby Digital+ 5.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            importFetchFail: 'The link could not be loaded (the site has to allow cross-origin requests; raw GitHub links do).', importPlaceholder2: 'Paste a theme JSON or a link to one',
+            themeShareHeading: 'Share a theme', themeShareHint: 'A whole theme is one JSON: paste one here - or a link to one (a raw GitHub file, for example) - and import it in one click. Nothing is applied until you click Apply. The export holds only the look: custom buttons and their addresses, the info bar text, the login title, the uploaded logo and image links on private addresses stay out of it.',
             mockNext: 'Next episode starts in {0} s', mockEpisode: 'S1:E2 - Episode title', mockStartNow: 'Start now', mockHide: 'Hide', mockStill: 'Are you still watching?', mockStop: 'Stop watching', mockContinue: 'Continue watching'
         },
         cs: {
@@ -72,9 +74,10 @@
             fontCustomName: 'Název vlastního písma (přesně jako na Google Fonts)', googleFonts: 'Načíst z Google Fonts',
             googleFontsHint: 'Inter, Roboto, Poppins, Nunito i vlastní název. Vypni, pokud prohlížeče nesmí na internet.', fontScale: 'Velikost',
             backdrop: 'Obrázek na pozadí', dim: 'Ztmavení', loginGradient: 'Pozadí přechodem', gradientFrom: 'Přechod od (prázdné = barva pozadí)', gradientTo: 'Přechod do (prázdné = tmavé zvýraznění)', gradientAngle: 'Směr přechodu', gradientOpacity: 'Krytí přechodu (pod 100 prosvítá backdrop)', loginGradientHint: 'Adresa obrázku na pozadí výše má před přechodem přednost.', loginTransparentBar: 'Na přihlášení bez lišty - jen logo přes pozadí', loginTitle: 'Text nadpisu (prázdné = „Prosíme, přihlaste se“)', loginFieldsHeading: 'Pole a tlačítka', loginFormWidth: 'Šířka formuláře (0 = výchozí)', loginInputs: 'Textová pole', loginButtons: 'Tlačítka', loginInputsDefault: 'Výchozí Jellyfin', loginInputRadius: 'Zaoblení polí a tlačítek (-1 = jako formulář)', loginInputScale: 'Výška polí', loginHideTitle: 'Schovat nadpis', loginHideQuick: 'Schovat tlačítko Rychlé připojení', loginHideForgot: 'Schovat tlačítko Zapomenuté heslo', loginRadius: 'Zaoblení rohů',
+            tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek',
             tv: 'Rozložení TV', focusColor: 'Barva zaměření (prázdné = zvýraznění)', focusWidth: 'Tloušťka rámečku zaměření', focusScale: 'Zvětšení zaměřené karty',
             mobile: 'Rozložení mobil', cardRadiusMobile: 'Zaoblení karet (-1 = jako web)', fontScaleMobile: 'Velikost písma (0 = jako web)',
-            extra: 'Vlastní CSS a export', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
+            extra: 'Vlastní CSS, export a import', themeShareHeading: 'Sdílení tématu', themeShareHint: 'Celé téma je jeden JSON: vlož ho sem – nebo odkaz na něj (třeba raw soubor z GitHubu) – a jedním kliknutím ho naimportuj. Na server se nic nezapíše, dokud nedáš Použít. Export obsahuje jen vzhled: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo a odkazy na obrázky na privátních adresách v něm nejsou.', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
             exportHint: 'Vygenerované CSS - jen pro čtení. Zkopíruj, pokud ho chceš použít jinde.',
             devWeb: 'Web', devTv: 'TV', devMobile: 'Mobil', pageHome: 'Domů', pageLibrary: 'Knihovna', pageDetail: 'Detail položky', pageLogin: 'Přihlášení', pageUpNext: 'Přehrávač: další díl', pageStillWatching: 'Přehrávač: „Stále se díváte?“', mockNext: 'Další díl začne za {0} s', mockEpisode: 'S1:E2 – Název epizody', mockStartNow: 'Spustit hned', mockHide: 'Skrýt', mockStill: 'Stále se díváte?', mockStop: 'Přestat sledovat', mockContinue: 'Pokračovat ve sledování',
             previewHint: 'Náhled je skutečný webový klient s vloženým CSS - dá se v něm klikat. Ctrl+klik na prvek otevře jeho nastavení. Vlastní CSS se projeví v klientech založených na webu (prohlížeč, Jellyfin Media Player, aplikace pro Android); nativní TV aplikace ho ignorují.',
@@ -84,7 +87,7 @@
             applied: 'Téma použito. Prohlížeče si ho vezmou při obnovení stránky - klient si branding cachuje až minutu.', saved: 'Rozpracované téma uloženo.', removed: 'Téma odebráno ze serveru.',
             confirmDisable: 'Odebrat téma z Brandingu? Nastavení zůstane uložené.', confirmReset: 'Vrátit všechno na výchozí hodnoty Jellyfinu?',
             failed: 'Nepovedlo se: {0}',
-            layout: 'Rozvržení', layoutFull: 'Jedna souvislá lišta nahoře', layoutSections: 'Horní lišta rozdělená na sekce (ostrůvky)', layoutSidebar: 'Svislý panel vlevo (jako před verzí 12; ne na mobilu)', sidebarWidth: 'Šířka panelu', sectionRadius: 'Zaoblení sekcí (999 = pilulka)',
+            layout: 'Rozvržení', layoutFull: 'Jedna souvislá lišta nahoře', layoutSections: 'Horní lišta rozdělená na sekce (ostrůvky)', layoutSidebar: 'Svislý panel vlevo (jako před verzí 12; mobil a TV mají horní lištu)', sidebarWidth: 'Šířka panelu', sectionRadius: 'Zaoblení sekcí (999 = pilulka)',
             height: 'Výška (0 = výchozí)', nav: 'Odkazy v liště', navText: 'Text (výchozí)', navPill: 'Pilulky, aktivní vyplněný', navUnderline: 'Aktivní podtržený',
             hideSyncPlay: 'Schovat ikonu SyncPlay', hideCast: 'Schovat ikonu Cast', hideSearch: 'Schovat ikonu hledání',
             logo: 'Logo', showServerName: 'Zobrazit vedle loga název serveru', logoImage: 'Obrázek loga', logoDefault: 'Ikona Jellyfinu', logoCustom: 'Vlastní obrázek', logoHidden: 'Bez obrázku',
@@ -100,7 +103,7 @@
             backdropMode: 'Zdroj', backdropDefault: 'Výchozí Jellyfin (nastavení uživatele „Zobrazit pozadí“)', backdropRandom: 'Náhodný backdrop z knihovny, na každé stránce', backdropCustom: 'Vlastní adresa obrázku',
             backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
-            share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON: vše z této stránky kromě nahraného loga (to nahraj zvlášť). Zkopíruj ho pro sdílení, vlož cizí a vyzkoušej ho – na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
+            share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení, vlož cizí a vyzkoušej ho – na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky',
@@ -257,8 +260,8 @@
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
-                    if (path.indexOf('InfoBar.') === 0) {
-                        scheduleScriptPreview(); // the close button lives in the script
+                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0) {
+                        scheduleScriptPreview(); // the close button and the backdrop rotation live in the script
                     }
                 }
             }
@@ -359,8 +362,8 @@
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
-                    if (path.indexOf('InfoBar.') === 0) {
-                        scheduleScriptPreview(); // the close button lives in the script
+                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0) {
+                        scheduleScriptPreview(); // the close button and the backdrop rotation live in the script
                     }
                 }
             });
@@ -1222,11 +1225,15 @@
             // Changing only the hash would not reload the page (and our
             // <style> would stay); "about:blank" in between forces a clean load.
             frame.src = 'about:blank';
-            setTimeout(function () { frame.src = url; }, 30);
+            setTimeout(function () {
+                pushPreviewLayout();
+                frame.src = url;
+            }, 30);
         });
     }
 
     frame.addEventListener('load', function () {
+        restorePreviewLayout();
         injectCss();
         injectScript();
         // The client keeps building the page for a while after start and
@@ -1317,12 +1324,60 @@
     }
 
     function selectDevice(d) {
+        var changed = device !== d;
         device = d;
         page.querySelectorAll('.jc-device').forEach(function (b) {
             b.classList.toggle('jc-active', b.getAttribute('data-device') === d);
         });
         layoutStage();
         injectCss();
+        if (changed && frame.src && frame.src !== 'about:blank') {
+            // The TV layout is a different DOM (the legacy header), not just
+            // a class - the client has to start in that layout.
+            loadPreview();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // The client picks its layout at startup from localStorage["layout"]
+    // (desktop / mobile / tv; missing = by device). The iframe shares this
+    // page's localStorage, so the wanted layout is written just before the
+    // preview loads and the admin's own value is put back as soon as the
+    // client inside has started - the Dashboard around us keeps running
+    // with the layout it started with.
+    // ------------------------------------------------------------------
+    var layoutBefore;
+    var layoutRestoreTimer = null;
+
+    function pushPreviewLayout() {
+        try {
+            if (layoutRestoreTimer === null) {
+                layoutBefore = localStorage.getItem('layout');
+            }
+            localStorage.setItem('layout', device === 'tv' ? 'tv' : device === 'mobile' ? 'mobile' : 'desktop');
+        } catch (e) {
+            return;
+        }
+        clearTimeout(layoutRestoreTimer);
+        // Safety net: put it back even if the frame never fires "load".
+        layoutRestoreTimer = setTimeout(restorePreviewLayout, 6000);
+    }
+
+    function restorePreviewLayout() {
+        if (layoutRestoreTimer === null) {
+            return;
+        }
+        clearTimeout(layoutRestoreTimer);
+        layoutRestoreTimer = null;
+        try {
+            if (layoutBefore === null || layoutBefore === undefined) {
+                localStorage.removeItem('layout');
+            } else {
+                localStorage.setItem('layout', layoutBefore);
+            }
+        } catch (e) {
+            // storage unavailable - nothing was written either
+        }
     }
 
     // ------------------------------------------------------------------
@@ -1414,10 +1469,46 @@
     // from another version, or a hand-edited one, cannot smuggle in junk),
     // and the server-side bits (Enabled, the uploaded logo) stay as they are.
     // ------------------------------------------------------------------
+    // Only what a theme looks like travels. Anything that points at this
+    // server or reads as its own stays home: the custom buttons (their
+    // targets), the info bar text, the login title, the uploaded logo.
+    // Image links go along only on a public https address. The keys are
+    // removed rather than blanked, so an import keeps the importer's own.
     function exportJson() {
         var copy = JSON.parse(JSON.stringify(state));
         delete copy.Enabled;
+        if (copy.Scripts) {
+            delete copy.Scripts.ToolbarButtons;
+        }
+        if (copy.InfoBar) {
+            delete copy.InfoBar.Text;
+        }
+        if (copy.Login) {
+            delete copy.Login.Title;
+            if (!isPublicUrl(copy.Login.BackgroundUrl)) {
+                delete copy.Login.BackgroundUrl;
+            }
+        }
+        if (copy.Header) {
+            delete copy.Header.LogoUrl;
+        }
+        if (copy.Backdrop && !isPublicUrl(copy.Backdrop.Url)) {
+            delete copy.Backdrop.Url;
+        }
         return JSON.stringify(copy, null, 2);
+    }
+
+    // https on a real host name - not localhost, a bare name, a private
+    // address or a home-network suffix.
+    function isPublicUrl(url) {
+        var m = /^https:\/\/([^/:?#]+)/i.exec(url || '');
+        if (!m) {
+            return false;
+        }
+        var host = m[1].toLowerCase();
+        return host !== 'localhost' && host.indexOf('.') >= 0 &&
+            !/^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[)/.test(host) &&
+            !/\.(local|lan|home|internal|localdomain)$/.test(host);
     }
 
     function mergeKnown(target, source) {
@@ -1442,6 +1533,19 @@
     }
 
     function importJson(text) {
+        text = (text || '').trim();
+        // A link instead of the JSON: fetch it, then import what it holds.
+        // (A GitHub "blob" page link is turned into its raw file.)
+        if (/^https?:\/\/\S+$/i.test(text)) {
+            var url = text.replace(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/blob\//i, 'https://raw.githubusercontent.com/$1/');
+            fetch(url).then(function (r) {
+                if (!r.ok) {
+                    throw new Error(r.status);
+                }
+                return r.text();
+            }).then(importJson).catch(function () { toast(t('importFetchFail')); });
+            return;
+        }
         var data;
         try {
             data = JSON.parse(text);
@@ -1464,17 +1568,7 @@
         toast(t('importDone'));
     }
 
-    page.querySelector('#jcBtnExportCopy').addEventListener('click', function () {
-        var text = exportJson();
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function () { toast(t('copied')); }, fail);
-        } else {
-            page.querySelector('#jcImportText').value = text;
-            toast(t('copied'));
-        }
-    });
-
-    page.querySelector('#jcBtnExportFile').addEventListener('click', function () {
+    function downloadJson() {
         var blob = new Blob([exportJson()], { type: 'application/json' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -1483,25 +1577,45 @@
         a.click();
         a.remove();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-    });
+    }
 
-    page.querySelector('#jcBtnImport').addEventListener('click', function () {
-        importJson(page.querySelector('#jcImportText').value);
-    });
+    // The same export / import controls live in two places (Share and
+    // Extra CSS); one file input serves both.
+    function wireShare(suffix) {
+        var textBox = page.querySelector('#jcImportText' + suffix);
+        page.querySelector('#jcBtnExportCopy' + suffix).addEventListener('click', function () {
+            var text = exportJson();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function () { toast(t('copied')); }, fail);
+            } else {
+                textBox.value = text;
+                toast(t('copied'));
+            }
+        });
+        page.querySelector('#jcBtnExportFile' + suffix).addEventListener('click', downloadJson);
+        page.querySelector('#jcBtnImport' + suffix).addEventListener('click', function () {
+            importJson(textBox.value);
+        });
+        page.querySelector('#jcBtnImportFile' + suffix).addEventListener('click', function () {
+            var input = page.querySelector('#jcImportFileInput');
+            input.jcTarget = textBox;
+            input.click();
+        });
+    }
 
-    page.querySelector('#jcBtnImportFile').addEventListener('click', function () {
-        page.querySelector('#jcImportFileInput').click();
-    });
+    wireShare('');
+    wireShare('2');
 
     page.querySelector('#jcImportFileInput').addEventListener('change', function () {
         var file = this.files && this.files[0];
+        var target = this.jcTarget || page.querySelector('#jcImportText');
         this.value = '';
         if (!file) {
             return;
         }
         var reader = new FileReader();
         reader.onload = function () {
-            page.querySelector('#jcImportText').value = reader.result;
+            target.value = reader.result;
             importJson(reader.result);
         };
         reader.readAsText(file);

@@ -16,7 +16,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -44,7 +44,11 @@ public static class ScriptBuilder
             ["br"] = BadgeList(cb.BottomRight),
         };
         var hasBadges = cb.Enabled && corners.Values.Any(v => v.Length > 0);
-        if (!s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges))
+        var bd = c.Backdrop;
+        // Rotating random backdrops: the script does it with preloaded images
+        // and a real cross-fade; the CSS version stays as the fallback.
+        var hasBackdrop = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
+        if (!s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop))
         {
             return string.Empty;
         }
@@ -99,7 +103,9 @@ public static class ScriptBuilder
             }
             : null;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges }, JsonOptions);
+        var backdrop = hasBackdrop ? new { seconds = Math.Max(3, bd.RotateSeconds) } : null;
+
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop }, JsonOptions);
 
         // "</script>" inside a string would end the <script> element early if
         // the script were ever inlined; harmless to neutralise it always.

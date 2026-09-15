@@ -297,7 +297,8 @@ public static class CssBuilder
             // the old .skinHeader is in the page flow (position: relative), so
             // margins are enough there.
             sb.AppendLine($"{headers} {{ left: 12px !important; right: 12px !important; top: 8px !important; width: auto !important; border-radius: {radius} !important; box-shadow: {shadow} !important; border-bottom: {border}; overflow: hidden; }}");
-            sb.AppendLine($"{x.P}html.layout-tv .skinHeader {{ left: auto !important; right: auto !important; top: auto !important; margin: 8px 12px 0; }}");
+            // (overflow: visible again - the TV info strip hangs below the bar.)
+            sb.AppendLine($"{x.P}html.layout-tv .skinHeader {{ left: auto !important; right: auto !important; top: auto !important; margin: 8px 12px 0; overflow: visible; }}");
         }
         else
         {
@@ -307,6 +308,16 @@ public static class CssBuilder
         if (h.Height > 0)
         {
             sb.AppendLine($"{x.P}{Toolbar}:first-child {{ min-height: {Px(h.Height)} !important; }}");
+        }
+
+        // Phones: everything has to fit one row - tighter icons, no wrapping
+        // (with islands and a couple of custom buttons the user icon used to
+        // drop to a second line).
+        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child {{ flex-wrap: nowrap !important; gap: 4px !important; padding-left: 8px !important; padding-right: 8px !important; }}");
+        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child .MuiIconButton-root {{ padding: 6px !important; }}");
+        if (h.Layout == HeaderLayout.Sections)
+        {
+            sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiStack-root, {x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiBox-root {{ padding: 2px 3px !important; }}");
         }
 
         if (x.HeaderFloating && h.Layout != HeaderLayout.Sidebar)
@@ -626,7 +637,8 @@ public static class CssBuilder
         Place(bottom, 20, true, false);
     }
 
-    private static string SidebarScope(Context x) => $"{x.P}html:not(.layout-mobile):not(:has(#loginPage:not(.hide)))";
+    // Phones and TV keep a top bar (TV has no MUI header at all), so nothing of the sidebar applies there.
+    private static string SidebarScope(Context x) => $"{x.P}html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide)))";
 
     /// <summary>
     /// The announcement strip. Rendered with a pseudo-element, so the text
@@ -652,8 +664,17 @@ public static class CssBuilder
         var rounded = i.Radius > 0;
         var edge = rounded ? "10px" : "0px"; // a unitless 0 is invalid inside calc()
         // Room for the close button the script adds at the right end.
-        var padding = i.Closable ? "0 2.6em 0 1em" : "0 1em";
-        var look = $"content: {CssString(i.Text)}; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: {height}; padding: {padding}; background: {bg.Hex}; color: {fg}; font-size: 0.92em; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: {Px(i.Radius)};";
+        var padding = i.Closable ? "0.3em 2.6em 0.3em 1em" : "0.3em 1em";
+        // Long text wraps onto more lines instead of running off the screen;
+        // the strip grows with it (min-height keeps short texts at the set height).
+        var look = $"content: {CssString(i.Text)}; display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: {height}; padding: {padding}; background: {bg.Hex}; color: {fg}; font-size: 0.92em; font-weight: 600; letter-spacing: 0.01em; line-height: 1.3; text-align: center; white-space: normal; overflow-wrap: anywhere; border-radius: {Px(i.Radius)};";
+        // The space reserved for the strip cannot be measured from CSS, so it
+        // is estimated from the text length: ~140 characters per line on a
+        // desktop, ~48 on a phone (smaller font there).
+        static int Reserve(int chars, int perLine, int lineHeight, int minimum)
+            => Math.Max(minimum, (int)Math.Ceiling(chars / (double)perLine) * lineHeight + 10);
+        var reserveDesktop = Px(Reserve(i.Text.Trim().Length, 140, 19, Math.Max(20, i.Height)));
+        var reserveMobile = Px(Reserve(i.Text.Trim().Length, 48, 16, Math.Max(20, i.Height)));
         var scope = i.HideOnMobile ? $"{x.P}html:not(.layout-mobile)" : $"{x.P}html";
 
         sb.AppendLine("/* --- info bar --- */");
@@ -664,7 +685,8 @@ public static class CssBuilder
             // Next to a floating sidebar the strip starts at the bar's inset,
             // so the space it takes is that much taller.
             var floatingSidebar = x.Config.Header.Layout == HeaderLayout.Sidebar && x.HeaderFloating;
-            sb.AppendLine($"{scope} {{ --jellycanvas-info: {(floatingSidebar ? $"calc({height} + 12px)" : height)}; }}");
+            sb.AppendLine($"{scope} {{ --jellycanvas-info: {(floatingSidebar ? $"calc({reserveDesktop} + 12px)" : reserveDesktop)}; }}");
+            sb.AppendLine($"{scope}.layout-mobile {{ --jellycanvas-info: {reserveMobile}; }}");
         }
 
         sb.AppendLine($"{x.P}html.jellycanvas-infobar-closed {{ --jellycanvas-info: 0px; }}");
@@ -697,6 +719,9 @@ public static class CssBuilder
         sb.AppendLine($"{scope} header.MuiAppBar-root::after {{ {look} {(rounded ? "margin: 0 10px 6px;" : string.Empty)} }}");
         // Pages are absolutely positioned inside <main>; padding would not move them.
         sb.AppendLine($"{scope} header.MuiAppBar-root ~ main .mainAnimatedPage {{ top: var(--jellycanvas-info, 0px) !important; }}");
+        // Phones: smaller text, cut with an ellipsis rather than squeezed
+        // into two overlapping lines.
+        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root::after {{ font-size: 0.78em; padding-left: 0.7em; padding-right: {(i.Closable ? "2.6em" : "0.7em")}; }}");
     }
 
     /// <summary>A CSS string literal for content: - quoted, with backslashes, quotes and line breaks escaped.</summary>
@@ -855,6 +880,8 @@ public static class CssBuilder
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText-first:last-child {{ bottom: 0.4em; }}");
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText-secondary {{ bottom: 0.4em; color: rgba(255, 255, 255, 0.7) !important; }}");
                 sb.AppendLine($"{x.P}.cardBox-bottompadded {{ margin-bottom: 0.6em !important; }}");
+                // The script's card badges would sit on the title - lift the bottom corners above it.
+                sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) .jellycanvas-badges-bl, {x.P}.cardBox:not(.visualCardBox) .jellycanvas-badges-br {{ bottom: 2.6em !important; }}");
                 break;
             case CardText.Hidden:
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText {{ display: none !important; }}");
@@ -1204,9 +1231,16 @@ public static class CssBuilder
         var layer = $"content: ''; position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; {size}";
 
         sb.AppendLine($"{container} {{ background-image: none !important; }}");
-        // Layer A shows images 1, 3, 5...; layer B shows 2, 4, 6...
+        // Layer A shows images 1, 3, 5...; layer B shows 2, 4, 6... When the
+        // client script is present it rotates instead (preloaded images, a
+        // real cross-fade) and marks <html>; the CSS layers then stay off.
         sb.AppendLine($"{container}::before {{ {layer} animation: jellycanvas-fade-a {2 * seconds}s linear infinite, jellycanvas-images-a {total}s step-end infinite{pan}; }}");
         sb.AppendLine($"{container}::after {{ {layer} animation: jellycanvas-fade-b {2 * seconds}s linear infinite, jellycanvas-images-b {total}s step-end infinite{pan}; }}");
+        sb.AppendLine($"html.jellycanvas-js-backdrop .backgroundContainer::before, html.jellycanvas-js-backdrop .backgroundContainer::after {{ display: none !important; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; inset: 0; overflow: hidden; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; inset: 0; background: {dim}; }}");
 
         // Visibility over one two-slot period: A visible in the first half,
         // B in the second, with a cross-fade around the hand-over.
@@ -1642,6 +1676,151 @@ public static class CssBuilder
         sb.AppendLine($"{x.P}*::-webkit-scrollbar {{ display: none !important; }}");
     }
 
+    /// <summary>
+    /// The TV layout does not use the MUI header at all: it keeps the
+    /// legacy .skinHeader (.headerTop with .headerLeft / .headerRight, and
+    /// .headerTabs with .emby-tab-button links under it). The bar settings
+    /// are translated to that markup here - the surface itself already
+    /// reaches it through the .skinHeader-withBackground selector. A
+    /// sidebar has no TV counterpart; TV keeps the top bar.
+    /// </summary>
+    private static void AppendTvHeader(StringBuilder sb, Context x)
+    {
+        var h = x.Config.Header;
+        var tv = $"{x.P}html.layout-tv";
+        var bar = $"{tv} .skinHeader";
+        var color = x.HeaderColor;
+        var radius = Px(h.Radius);
+        var shadow = StyleShadow(h.Style, color, x) ?? (h.Shadow || x.HeaderFloating ? "0 6px 24px rgba(0, 0, 0, 0.35)" : "none");
+        var border = StyleBorder(h.Style, x) ?? (h.BottomBorder ? $"1px solid {x.Text.Rgba(0.1)}" : "0");
+
+        sb.AppendLine("/* --- TV layout: the legacy header --- */");
+        if (h.Layout == HeaderLayout.Sections)
+        {
+            // Islands: the logo group, the icon group and the row of tabs.
+            sb.AppendLine($"{bar} {{ background: transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 0 !important; }}");
+            sb.AppendLine($"{bar} .headerTop {{ gap: 10px; padding: 8px 12px !important; }}");
+            sb.AppendLine($"{bar} .headerLeft, {bar} .headerRight, {bar} .headerTabs .emby-tabs-slider {{ {Surface(h.Style, color, h.Opacity, h.Blur, x, "90deg")} border-radius: {Px(h.SectionRadius)} !important; padding: 2px 10px !important; box-shadow: {shadow} !important; border: {border}; }}");
+            sb.AppendLine($"{bar} .headerTabs .emby-tabs-slider {{ display: inline-flex !important; }}");
+        }
+        else
+        {
+            sb.AppendLine($"{bar} {{ {Surface(h.Style, color, h.Opacity, h.Blur, x, "90deg")} }}");
+            if (x.HeaderFloating)
+            {
+                sb.AppendLine($"{bar} {{ margin: 8px 12px 0 !important; border-radius: {radius} !important; box-shadow: {shadow} !important; border-bottom: {border}; }}");
+            }
+            else
+            {
+                sb.AppendLine($"{bar} {{ border-radius: 0 0 {radius} {radius} !important; box-shadow: {shadow} !important; border-bottom: {border}; }}");
+            }
+        }
+
+        // Jellyfin pulls the row of tabs up into the top row with a fixed
+        // negative margin (-4.3em), sized for its own row height. Once the
+        // row grows (bar height, icon scale) the tabs land above the bar
+        // and the bar's box ends short of the icons. Taking the tabs out
+        // of the flow instead - absolutely centred over the top row - keeps
+        // the bar's box equal to the row whatever its height.
+        sb.AppendLine($"{bar} {{ position: relative; }}");
+        sb.AppendLine($"{bar} .headerTabs {{ position: absolute !important; top: 0; bottom: 0; left: 0; right: 0; width: auto !important; max-width: none !important; margin: 0 !important; display: flex !important; align-items: center; justify-content: center; pointer-events: none; }}");
+        sb.AppendLine($"{bar} .headerTabs .emby-tabs-slider {{ pointer-events: auto; }}");
+
+        // The page sits under the bar with Jellyfin's own 134px of top
+        // padding, which fits its default row. A taller row (bar height,
+        // icon scale, islands, floating) and the info strip need more;
+        // the row height is estimated the same way it is built.
+        // The row is as tall as its buttons (2.78em of the 20px base font,
+        // scaled) plus the row's padding (16px each side; 8px + 2px island
+        // padding for the islands), or the set height if that is more.
+        var tvHeight = x.Config.Tv.BarHeight > 0 ? x.Config.Tv.BarHeight : h.Height;
+        var buttons = 55.6 * x.Config.Tv.BarScale / 100;
+        var rowEstimate = (int)Math.Ceiling(Math.Max(tvHeight, buttons + (h.Layout == HeaderLayout.Sections ? 20 : 32))) + (x.HeaderFloating ? 8 : 0);
+        sb.AppendLine($"{tv} .mainAnimatedPage {{ margin-top: max(0px, calc({Px(rowEstimate)} + var(--jellycanvas-info, 0px) + 20px - 134px)) !important; }}");
+
+        // The TV bar has its own height setting (under TV): Jellyfin's row is low.
+        if (tvHeight > 0)
+        {
+            sb.AppendLine($"{bar} .headerTop {{ box-sizing: border-box; min-height: {Px(tvHeight)} !important; }}");
+        }
+
+        if (x.Config.Tv.BarScale != 100)
+        {
+            sb.AppendLine($"{bar} .headerButton, {bar} .emby-tab-button, {bar} .pageTitle, {bar} .currentTimeText {{ font-size: {x.Config.Tv.BarScale}% !important; }}");
+            sb.AppendLine($"{bar} .headerButton .material-icons {{ font-size: 1.6em !important; }}");
+        }
+
+        if (h.Style == SurfaceStyle.NeoBrutalism)
+        {
+            sb.AppendLine($"{bar} .headerButton, {bar} .emby-tab-button, {bar} .pageTitle, {bar} .currentTimeText {{ color: {color.ContrastText} !important; }}");
+        }
+
+        // Navigation: the TV tabs (Home, Favorites, libraries) under the top row.
+        var tab = $"{bar} .emby-tab-button";
+        switch (h.Nav)
+        {
+            case NavStyle.Pill:
+                sb.AppendLine($"{tab} {{ border-radius: 999px !important; padding: 0.35em 1.1em !important; margin: 0 0.2em !important; }}");
+                sb.AppendLine($"{tab}.emby-tab-button-active {{ background: {x.Accent.Hex} !important; color: {x.Accent.ContrastText} !important; }}");
+                sb.AppendLine($"{tab}.emby-tab-button-active .emby-button-foreground {{ color: inherit !important; }}");
+                break;
+            case NavStyle.Underline:
+                sb.AppendLine($"{tab} {{ border-bottom: 2px solid transparent !important; }}");
+                sb.AppendLine($"{tab}.emby-tab-button-active {{ border-bottom-color: {x.Accent.Hex} !important; color: {x.Text.Hex} !important; }}");
+                break;
+        }
+
+        if (h.HideSyncPlay)
+        {
+            sb.AppendLine($"{bar} .headerSyncButton {{ display: none !important; }}");
+        }
+
+        if (h.HideCast)
+        {
+            sb.AppendLine($"{bar} .headerCastButton {{ display: none !important; }}");
+        }
+
+        if (h.HideSearch)
+        {
+            sb.AppendLine($"{bar} .headerSearchButton {{ display: none !important; }}");
+        }
+
+        if (h.HideLogo)
+        {
+            sb.AppendLine($"{bar} .headerLeft .pageTitle {{ display: none !important; }}");
+        }
+        else if (h.Logo == LogoImage.Custom && !string.IsNullOrWhiteSpace(h.LogoUrl))
+        {
+            var height = Px(Math.Max(16, h.LogoHeight));
+            var width = h.LogoWidth > 0 ? Px(h.LogoWidth) : "auto";
+            sb.AppendLine($"{bar} .pageTitleWithDefaultLogo {{ background-image: url({CssUrl(h.LogoUrl)}) !important; background-size: contain !important; height: {height} !important; width: {width} !important; min-width: {height}; }}");
+        }
+        else if (h.Logo == LogoImage.Hidden)
+        {
+            sb.AppendLine($"{bar} .pageTitleWithDefaultLogo {{ background-image: none !important; }}");
+        }
+
+        // The info bar. The legacy header is position: fixed and its tabs
+        // are pulled up into the top row with a negative margin, so the
+        // header's own box is shorter than what is visible - a strip in
+        // the flow or at the header's 100% would land on the icons. It
+        // hangs off the top row instead (.headerTop::after at 100%); the
+        // page's margin above accounts for it.
+        var i = x.Config.InfoBar;
+        if (i.Enabled && !string.IsNullOrWhiteSpace(i.Text) && i.Position == InfoBarPosition.Top)
+        {
+            var bg = Color.Parse(i.Color, x.Accent);
+            var fg = string.IsNullOrWhiteSpace(i.TextColor) ? bg.ContrastText : Color.Parse(i.TextColor, x.Text).Hex;
+            var edge = i.Radius > 0 ? "10px" : "0px";
+            // Jellyfin gives .skinHeader "contain: content", which paints
+            // nothing outside its 41px box - the strip below it would be
+            // clipped away, so the paint containment goes.
+            sb.AppendLine($"{bar} {{ contain: layout style !important; }}");
+            sb.AppendLine($"{bar} .headerTop {{ position: relative; }}");
+            sb.AppendLine($"{bar} .headerTop::after {{ content: {CssString(i.Text)}; position: absolute; top: 100%; left: {edge}; right: {edge}; z-index: 2; display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: {Px(Math.Max(20, i.Height))}; padding: 0.3em 1em; background: {bg.Hex}; color: {fg}; font-size: 0.92em; font-weight: 600; line-height: 1.3; text-align: center; white-space: normal; overflow-wrap: anywhere; border-radius: {Px(i.Radius)}; {(i.Radius > 0 ? "margin-top: 6px;" : string.Empty)} }}");
+        }
+    }
+
     private static void AppendTv(StringBuilder sb, Context x)
     {
         var tv = x.Config.Tv;
@@ -1654,6 +1833,8 @@ public static class CssBuilder
             var f = Color.Parse(tv.FocusColor, x.Accent);
             sb.AppendLine($"{x.RootTv} {{ --jf-palette-secondary-main: {f.Hex} !important; --jf-palette-secondary-mainChannel: {f.Channel} !important; --jf-palette-secondary-contrastText: {f.ContrastText} !important; }}");
         }
+
+        AppendTvHeader(sb, x);
 
         sb.AppendLine($"{x.P}html.layout-tv .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {{ border-width: {Px(tv.FocusWidth)} !important; }}");
         if (tv.FocusScale != 100)

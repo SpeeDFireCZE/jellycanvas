@@ -153,7 +153,7 @@ public class CssBuilderTests
         Assert.Contains("header.MuiAppBar-root { top: 0px !important; left: 0px !important; bottom: 0px !important; right: auto !important; width: 240px !important;", css, StringComparison.Ordinal);
         Assert.Contains("header.MuiAppBar-root + div { display: none !important; }", css, StringComparison.Ordinal);
         Assert.Contains("header.MuiAppBar-root ~ main { margin-left: calc(240px + 0px + 0px) !important; width: calc(100% - 240px - 0px - 0px) !important;", css, StringComparison.Ordinal);
-        Assert.Contains("html:not(.layout-mobile):not(:has(#loginPage:not(.hide)))", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide)))", css, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("width: 60px !important;", css, StringComparison.Ordinal);
-        Assert.Contains(":has(.MuiToolbar-root:first-child :focus-visible), html:not(.layout-mobile):not(:has(#loginPage:not(.hide))):has(#app-user-menu", css, StringComparison.Ordinal);
+        Assert.Contains(":has(.MuiToolbar-root:first-child :focus-visible), html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide))):has(#app-user-menu", css, StringComparison.Ordinal);
         // an open header menu keeps the bar out
         Assert.Contains(":has(#app-user-menu:not(.MuiModal-hidden), #app-sync-play-menu:not(.MuiModal-hidden), #app-remote-play-menu:not(.MuiModal-hidden)) header.MuiAppBar-root { width: 220px !important; transition-delay: 0s; }", css, StringComparison.Ordinal);
         // the library row is clipped under the slid-out bar
@@ -371,7 +371,7 @@ public class CssBuilderTests
         Assert.Contains("left: calc(64px + 0px + 0px + 0px); right: 0px; z-index: 3; }", css, StringComparison.Ordinal);
         Assert.Contains("{ --jellycanvas-info: 36px; }", css, StringComparison.Ordinal);
         Assert.Contains("html.jellycanvas-infobar-closed { --jellycanvas-info: 0px; }", css, StringComparison.Ordinal);
-        Assert.Contains("padding: 0 2.6em 0 1em;", css, StringComparison.Ordinal);
+        Assert.Contains("padding: 0.3em 2.6em 0.3em 1em;", css, StringComparison.Ordinal);
         // the library row and the pages read the variable, not a literal
         Assert.Contains(".MuiToolbar-root:nth-child(2) { position: fixed; top: var(--jellycanvas-info, 0px);", css, StringComparison.Ordinal);
     }
@@ -467,6 +467,18 @@ public class CssBuilderTests
         Assert.Contains("html #itemDetailPage .trackSelections { background-color: rgba(18, 52, 86, 0.6) !important;", css, StringComparison.Ordinal);
         Assert.Contains("html #itemDetailPage .tagline, html #itemDetailPage .overview { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
         Assert.Contains("html #itemDetailPage .itemTags a { font-size: 0.85rem !important; background: #ff0000 !important; color: #ffffff !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Tv_layout_gets_the_bar_look_on_the_legacy_header()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Style = SurfaceStyle.Glass, Opacity = 60, Blur = 12, Radius = 14, Nav = NavStyle.Pill, HideSearch = true }, InfoBar = new InfoBarSettings { Enabled = true, Text = "Hi" } });
+
+        Assert.Contains("html.layout-tv .skinHeader { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv .skinHeader { border-radius: 0 0 14px 14px !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv .skinHeader .emby-tab-button.emby-tab-button-active { background: #00a4dc !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv .skinHeader .headerSearchButton { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv .skinHeader .headerTop::after { content: \"Hi\";", css, StringComparison.Ordinal);
     }
 
     [Fact]

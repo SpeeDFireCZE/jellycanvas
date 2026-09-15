@@ -17,8 +17,9 @@ small client script injected through the
 plugin when it is installed.
 
 > Requires Jellyfin **12.0** or newer. The theme reaches every client that
-> renders the web UI: browsers, Jellyfin Media Player and the Android app.
-> Native apps (Android TV, Swiftfin, Roku, Kodi) do not load custom CSS.
+> renders the web UI: browsers, Jellyfin Media Player, the Android app and
+> the web UI's TV layout (a browser or WebOS / Tizen app). Native apps
+> (Android TV, Swiftfin, Roku, Kodi) do not load custom CSS.
 
 ## Installation
 
@@ -77,8 +78,11 @@ client with your theme injected.
   server; nobody else sees it. **Apply to server** writes the CSS to
   Branding for everyone. **Remove from server** takes it out again; your
   settings stay saved.
-- **Share / import** exports the whole theme as a JSON file and loads one
-  back in - a way to pass themes around.
+- **Share / import** exports the theme as a JSON file and loads one back
+  in - pasted, opened from a file or fetched from a link (a raw GitHub
+  file, for example). The export holds only the look: custom buttons and
+  their addresses, the info bar text, the login title, the uploaded logo
+  and image links on private addresses never leave your server.
 
 Custom CSS you had in Branding before is preserved: the generated block
 sits between two marker comments, and the plugin never touches anything
@@ -116,8 +120,10 @@ other browsers may need a reload a little later.
   library, rotating every N seconds, custom URL, blur, dim, panning),
   **home slideshow** (script), **login page** (background image or
   gradient, form as card or glass, field and button styles, texts),
-  **typography** (bundled, system, Google Fonts), **TV** and **mobile**
-  tweaks, and a free-form extra CSS box.
+  **typography** (bundled, system, Google Fonts), **TV** (the TV layout's
+  own top bar takes the bar settings, plus its height and icon size,
+  focus ring, card zoom) and **mobile** tweaks, and a free-form extra CSS
+  box.
 
 ## Development
 
@@ -132,6 +138,7 @@ dotnet build                      # plugin + tests
 dotnet test                       # CssBuilder / BrandingWriter / ScriptBuilder unit tests
 .\test\Start-Jellyfin.ps1         # build, install into test\data\plugins, start the server
 .\test\Setup-Jellyfin.ps1         # first run only: wizard, admin/admin, test libraries
+.\test\Make-Media.ps1             # optional: test clips with resolutions, HDR, languages, subtitles
 ```
 
 The test server keeps everything under `test\data\` (git-ignored). Log in

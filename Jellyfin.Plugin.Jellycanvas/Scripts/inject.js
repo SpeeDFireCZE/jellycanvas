@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -32,6 +32,7 @@
     var slideshow = CONFIG.slideshow || null;
     var infoBar = CONFIG.infoBar || null;
     var badges = CONFIG.badges || null;
+    var backdrop = CONFIG.backdrop || null;
     var disposed = false;
     var observers = [];
     var timers = [];
@@ -55,6 +56,7 @@
         ssStop();
         document.documentElement.classList.remove('jellycanvas-infobar-closed');
         badgesRemoveAll();
+        backdropStop();
         ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
@@ -64,7 +66,7 @@
         delete window.__jellycanvasScript;
     }
 
-    if (!buttons.length && !slideshow && !infoBar && !badges) {
+    if (!buttons.length && !slideshow && !infoBar && !badges && !backdrop) {
         return;
     }
 
@@ -472,6 +474,110 @@
     }
 
     // ------------------------------------------------------------------
+    // Rotating random backdrops. The theme's CSS can only swap URLs and
+    // hope the picture is there; the script asks the server for the next
+    // random backdrop ahead of time, waits for the picture to load, and
+    // only then cross-fades to it on a second layer. The CSS layers are
+    // switched off by the class on <html>.
+    // ------------------------------------------------------------------
+    var bdTimer = null;
+    var bdHost = null;
+    var bdLayers = [];
+    var bdCurrent = 0;
+    var bdBusy = false;
+
+    function backdropUrl() {
+        // Relative to /web/ (or wherever the client lives), like the CSS.
+        var base = location.pathname.replace(/[^/]*$/, '');
+        return base + '../Jellycanvas/Backdrop?n=' + Math.floor(Math.random() * 1e9);
+    }
+
+    function backdropNext() {
+        if (bdBusy || !bdHost || document.hidden) {
+            return;
+        }
+        bdBusy = true;
+        // The endpoint redirects to a random backdrop; the final URL is what
+        // goes into the layer (asking the endpoint again would give another).
+        fetch(backdropUrl(), { credentials: 'same-origin', cache: 'no-store' })
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error(res.status);
+                }
+                return res.url;
+            })
+            .then(function (finalUrl) {
+                return new Promise(function (resolve, reject) {
+                    var img = new Image();
+                    img.onload = function () { resolve(finalUrl); };
+                    img.onerror = reject;
+                    img.src = finalUrl;
+                });
+            })
+            .then(function (finalUrl) {
+                // The pair in use is captured: the rotation may be stopped
+                // (and the layers dropped) while the image loads or between
+                // the two frames below.
+                var layers = bdLayers;
+                var next = 1 - bdCurrent;
+                if (!layers[next]) {
+                    return;
+                }
+                layers[next].style.backgroundImage = 'url("' + finalUrl + '")';
+                // Two frames later so the browser paints the new image before the fade.
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        if (layers !== bdLayers) {
+                            return;
+                        }
+                        layers[next].classList.add('is-on');
+                        layers[bdCurrent].classList.remove('is-on');
+                        bdCurrent = next;
+                    });
+                });
+            })
+            .catch(function () { /* no backdrop right now - keep the current one */ })
+            .then(function () { bdBusy = false; });
+    }
+
+    function backdropStop() {
+        if (bdTimer) {
+            clearInterval(bdTimer);
+            bdTimer = null;
+        }
+        if (bdHost) {
+            bdHost.remove();
+            bdHost = null;
+            bdLayers = [];
+        }
+        document.documentElement.classList.remove('jellycanvas-js-backdrop');
+    }
+
+    function backdropSync() {
+        if (!backdrop || disposed) {
+            return;
+        }
+        var container = document.querySelector('.backgroundContainer');
+        if (!container) {
+            return;
+        }
+        if (bdHost && bdHost.parentElement === container) {
+            return;
+        }
+        backdropStop();
+        bdHost = document.createElement('div');
+        bdHost.className = 'jellycanvas-backdrop';
+        bdLayers = [document.createElement('div'), document.createElement('div')];
+        bdHost.appendChild(bdLayers[0]);
+        bdHost.appendChild(bdLayers[1]);
+        container.appendChild(bdHost);
+        document.documentElement.classList.add('jellycanvas-js-backdrop');
+        bdCurrent = 1;
+        backdropNext();
+        bdTimer = setInterval(backdropNext, backdrop.seconds * 1000);
+    }
+
+    // ------------------------------------------------------------------
     // Info bar close button. The strip itself is a CSS pseudo-element (so
     // it works without any script); the script only adds an "x" over its
     // right end and, once clicked, marks <html> so the theme hides the
@@ -622,10 +728,24 @@
                 return all[i];
             }
         }
+        // The TV layout has no MUI header: it keeps the old .skinHeader,
+        // whose .headerTop row (logo left, icon buttons right) is the bar.
+        // On the desktop that element is still in the DOM but empty.
+        var legacy = document.querySelector('.skinHeader .headerTop');
+        if (legacy && visible(legacy) && legacy.getBoundingClientRect().height > 0) {
+            return legacy;
+        }
         return null;
     }
 
+    function isLegacyBar(bar) {
+        return bar.classList.contains('headerTop');
+    }
+
     function iconGroup(bar) {
+        if (isLegacyBar(bar)) {
+            return bar.querySelector('.headerRight');
+        }
         // The icon group is the .MuiBox-root that holds the icon buttons
         // (SyncPlay, Cast, Search); the user-menu box is a separate one.
         var boxes = bar.querySelectorAll(':scope > .MuiBox-root');
@@ -638,11 +758,16 @@
     }
 
     function navGroup(bar) {
+        if (isLegacyBar(bar)) {
+            // The TV tabs are driven by their index, a foreign one would
+            // confuse them; links go next to the logo instead.
+            return bar.querySelector('.headerLeft');
+        }
         return bar.querySelector(':scope > .MuiStack-root');
     }
 
     function templateIconButton(bar) {
-        var c = bar.querySelectorAll('.MuiIconButton-root');
+        var c = bar.querySelectorAll(isLegacyBar(bar) ? '.headerButton' : '.MuiIconButton-root');
         for (var i = 0; i < c.length; i++) {
             if (visible(c[i]) && !c[i].hasAttribute('data-jellycanvas')) {
                 return c[i];
@@ -652,7 +777,18 @@
     }
 
     function templateNavLink(bar) {
+        if (isLegacyBar(bar)) {
+            return templateIconButton(bar);
+        }
         return bar.querySelector('.MuiStack-root > a.MuiButton-sizeMedium:not([data-jellycanvas])');
+    }
+
+    // A template's own role classes (headerSearchButton, headerCastButton)
+    // must not travel with its look: the theme may hide those.
+    function templateClasses(tpl) {
+        return tpl.className.split(/\s+/).filter(function (c) {
+            return c && !/^(header(Search|Cast|Sync|User|Home|Back)|syncButton|castButton|searchButton|userButton)/.test(c);
+        }).join(' ');
     }
 
     // Where the overlay may go: under a top bar, or to the right of a
@@ -921,7 +1057,10 @@
             el.rel = 'noopener';
         }
 
-        if (b.placement === 'Nav') {
+        if (b.placement === 'Nav' && isLegacyBar(bar)) {
+            // On TV a link is an icon button with its label beside the icon.
+            el.innerHTML = '<span class="material-icons" aria-hidden="true">' + b.icon + '</span><span style="margin-left:0.35em;font-size:0.8em;white-space:nowrap">' + b.label + '</span>';
+        } else if (b.placement === 'Nav') {
             // Same structure as Jellyfin's own links (icon in a
             // MuiButton-startIcon wrapper), so themes that style or collapse
             // the links treat ours the same way.
@@ -945,8 +1084,12 @@
         }
         var tpl = b.placement === 'Nav' ? templateNavLink(bar) : templateIconButton(bar);
         if (tpl) {
-            el.className = tpl.className;
+            el.className = templateClasses(tpl);
             el.style.cssText = '';
+            if (b.placement === 'Nav' && isLegacyBar(bar)) {
+                // The TV icon button is a fixed square; a labelled one is wider.
+                el.style.cssText = 'width:auto;padding:0 0.7em;border-radius:999px;';
+            }
             el.setAttribute('data-jellycanvas-look', 'template');
         } else if (!el.getAttribute('data-jellycanvas-look')) {
             el.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;background:transparent;border:0;border-radius:50%;color:inherit;cursor:pointer;';
@@ -975,8 +1118,9 @@
         }
 
         // Icons: right before Search when it exists, otherwise at the end.
-        // (Library pages link to "#/search?parentId=...", hence the prefix match.)
-        var search = group.querySelector('a[href^="#/search"]');
+        // (Library pages link to "#/search?parentId=...", hence the prefix
+        // match; the TV header has a .headerSearchButton.)
+        var search = group.querySelector('a[href^="#/search"], .headerSearchButton');
         var correct = search ? el.nextElementSibling === search && el.parentElement === group : el.parentElement === group && el === group.lastElementChild;
         if (!correct) {
             group.insertBefore(el, search || null);
@@ -1004,6 +1148,7 @@
         ssSync();
         syncInfoBar();
         badgeSync();
+        backdropSync();
         var tv = isTv();
         var mobile = isMobile();
         var dashboard = document.body && document.body.classList.contains('dashboardDocument');
@@ -1017,7 +1162,12 @@
             }
             if (b.placement === 'Nav' && mobile) {
                 // The links are in the drawer on phones; follow them there.
-                removeButton(b);
+                // Only the bar button goes - removeButton() would also take
+                // the overlay the drawer entry has just opened.
+                var barButton = document.getElementById(buttonId(b));
+                if (barButton) {
+                    barButton.remove();
+                }
                 syncDrawerItem(b);
                 return;
             }

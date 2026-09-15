@@ -5,6 +5,30 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- TV layout: the preview really starts the client in its TV layout, and
+  the bar settings reach the TV's own top bar (style, islands, floating,
+  rounding, shadow, navigation pills / underline, hidden icons, logo);
+  bar height and icon size under *TV*; the tabs stay inside the bar at
+  any height; the info bar sits under the bar; custom toolbar buttons
+  show on TV when allowed (icons before the search, links next to the
+  logo) and their overlay opens below the bar.
+- Mobile: the bar stays on one row (the user icon used to drop under an
+  islands bar); a custom link in the slide-out menu opens again.
+- Background: a random backdrop rotation cross-fades smoothly between
+  images (script) instead of cutting.
+- Info bar: long text wraps onto more lines, on phones too, and the page
+  moves down for it.
+- Share / import: a theme can be imported from a link (a raw GitHub
+  file, for example) - also from the *Extra CSS, export & import*
+  section. The export carries only the look: custom buttons and their
+  addresses, the info bar text, the login title, the uploaded logo and
+  image links on private addresses stay out of it.
+- Fixed: the TV info bar overlapped the top bar; a rotation stopped while
+  an image was loading threw an error.
+- Development: `test\Make-Media.ps1` regenerates the test clips with
+  resolutions, HDR, audio languages and subtitles so the badges have
+  something to show; the test scripts run on Jellyfin 12.1.
+
 ## 1.0.2 - 2026-09-14
 
 - Card badges: audio and subtitle languages each have their own style -

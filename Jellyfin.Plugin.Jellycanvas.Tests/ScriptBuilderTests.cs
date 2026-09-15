@@ -38,6 +38,18 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Rotating_backdrop_goes_into_the_script()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true },
+            Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 20 },
+        };
+
+        Assert.Contains("\"backdrop\":{\"seconds\":20}", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Closable_info_bar_goes_into_the_script()
     {
         var cfg = new PluginConfiguration

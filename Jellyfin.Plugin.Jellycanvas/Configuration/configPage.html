@@ -191,7 +191,7 @@
                         <details class="jc-section" data-section="share">
                             <summary><span class="material-icons" aria-hidden="true">swap_horiz</span><span data-i18n="share">Share / import</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
-                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file: everything on this page except the uploaded logo (upload that separately). Copy it to share, paste one to try it - nothing is applied until you click Apply.</div>
+                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the info bar text, the login title, the uploaded logo, image links on private addresses. Copy it to share, paste one to try it - nothing is applied until you click Apply.</div>
                                 <h4 class="jc-sub" data-i18n="exportHeading">Export</h4>
                                 <div class="jc-actions">
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy"><span data-i18n="exportCopy">Copy theme JSON</span></button>
@@ -199,7 +199,7 @@
                                 </div>
                                 <h4 class="jc-sub" data-i18n="importHeading">Import</h4>
                                 <div class="inputContainer">
-                                    <textarea is="emby-textarea" id="jcImportText" class="emby-textarea" rows="4" data-i18n-placeholder="importPlaceholder" placeholder="Paste a theme JSON here"></textarea>
+                                    <textarea is="emby-textarea" id="jcImportText" class="emby-textarea" rows="4" data-i18n-placeholder="importPlaceholder2" placeholder="Paste a theme JSON or a link to one"></textarea>
                                 </div>
                                 <div class="jc-actions">
                                     <button is="emby-button" type="button" class="raised button-submit emby-button" id="jcBtnImport"><span data-i18n="importApply">Load into the designer</span></button>
@@ -257,7 +257,7 @@
                                     <select is="emby-select" id="jcHeaderLayout" data-path="Header.Layout" class="emby-select-withcolor emby-select">
                                         <option value="Full" data-i18n="layoutFull">One full-width bar at the top</option>
                                         <option value="Sections" data-i18n="layoutSections">Top bar split into sections (islands)</option>
-                                        <option value="Sidebar" data-i18n="layoutSidebar">Vertical sidebar on the left (pre-12 feel; not on phones)</option>
+                                        <option value="Sidebar" data-i18n="layoutSidebar">Vertical sidebar on the left (pre-12 feel; phones and TV keep a top bar)</option>
                                     </select>
                                 </div>
                                 <h4 class="jc-sub" data-when="Header.Layout=Full|Sections" data-i18n="topBarHeading">Top bar</h4>
@@ -757,7 +757,7 @@
                                 <div class="jc-row" data-slider="Backdrop.Blur" data-min="0" data-max="60" data-unit="px" data-i18n-label="blur">Blur</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
                                 <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
-                                <div class="jc-row" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
+                                <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
                             </div>
                         </details>
@@ -929,6 +929,10 @@
                                 <div class="jc-color" data-color="Tv.FocusColor" data-optional="1" data-i18n-label="focusColor">Focus color (empty = accent)</div>
                                 <div class="jc-row" data-slider="Tv.FocusWidth" data-min="1" data-max="8" data-unit="px" data-i18n-label="focusWidth">Focus ring width</div>
                                 <div class="jc-row" data-slider="Tv.FocusScale" data-min="100" data-max="120" data-unit="%" data-i18n-label="focusScale">Focused card zoom</div>
+                                <h4 class="jc-sub" data-i18n="tvBarHeading">TV top bar</h4>
+                                <div class="jc-hint" data-i18n="tvBarHint">The TV layout keeps Jellyfin's classic top bar (logo, icons, tabs); it takes the style, colors and rounding from the Bar section. Its height and size are set here.</div>
+                                <div class="jc-row" data-slider="Tv.BarHeight" data-min="0" data-max="140" data-unit="px" data-i18n-label="tvBarHeight">Bar height (0 = Jellyfin default)</div>
+                                <div class="jc-row" data-slider="Tv.BarScale" data-min="80" data-max="160" data-unit="%" data-i18n-label="tvBarScale">Icons and tabs size</div>
                             </div>
                         </details>
                         <details class="jc-section" data-section="mobile">
@@ -976,13 +980,24 @@
                             </div>
                         </details>
                         <details class="jc-section" data-section="extra">
-                            <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS &amp; export</span><span class="jc-caret"></span></summary>
+                            <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS, export &amp; import</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="extraHint">Anything the controls above cannot do. Appended after the generated CSS.</div>
                                 <textarea is="emby-textarea" class="jc-css" data-path="ExtraCss" rows="6"></textarea>
                                 <br><br>
                                 <div class="jc-hint" data-i18n="exportHint">Generated CSS - read-only. Copy it if you want to use it elsewhere.</div>
                                 <textarea class="jc-css emby-textarea" id="jcCssOut" readonly rows="10"></textarea>
+                                <h4 class="jc-sub" data-i18n="themeShareHeading">Share a theme</h4>
+                                <div class="jc-hint" data-i18n="themeShareHint">A whole theme is one JSON: paste one here - or a link to one (a raw GitHub file, for example) - and import it in one click. Nothing is applied until you click Apply. The export holds only the look: custom buttons and their addresses, the info bar text, the login title, the uploaded logo and image links on private addresses stay out of it.</div>
+                                <div class="inputContainer">
+                                    <textarea is="emby-textarea" id="jcImportText2" class="emby-textarea" rows="3" data-i18n-placeholder="importPlaceholder2" placeholder="Paste a theme JSON or a link to one"></textarea>
+                                </div>
+                                <div class="jc-actions">
+                                    <button is="emby-button" type="button" class="raised button-submit emby-button" id="jcBtnImport2"><span data-i18n="importApply">Load into the designer</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnImportFile2"><span data-i18n="importFile">Open .json file…</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy2"><span data-i18n="exportCopy">Copy theme JSON</span></button>
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportFile2"><span data-i18n="exportFile">Download .json</span></button>
+                                </div>
                             </div>
                         </details>
                     </div>

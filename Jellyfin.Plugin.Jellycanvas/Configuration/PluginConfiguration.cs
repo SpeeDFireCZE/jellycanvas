@@ -1051,6 +1051,12 @@ public class TvSettings
 
     /// <summary>Focus ring width in pixels.</summary>
     public int FocusWidth { get; set; } = 3;
+
+    /// <summary>Height of the TV top bar's first row (logo, icons) in pixels; 0 = Jellyfin's own, which is rather low.</summary>
+    public int BarHeight { get; set; } = 0;
+
+    /// <summary>Size of the TV bar's icons and tabs in percent (100 = default).</summary>
+    public int BarScale { get; set; } = 100;
 }
 
 /// <summary>Tweaks for the mobile layout (<c>html.layout-mobile</c>).</summary>
