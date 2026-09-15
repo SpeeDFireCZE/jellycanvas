@@ -810,7 +810,11 @@ public static class CssBuilder
         sb.AppendLine("/* --- cards (.card) --- */");
 
         // Rounding goes through the --jf-card-borderRadius variable in the
-        // palette; the rest are extra effects.
+        // palette - but only the theme stylesheet (themes/*/theme.css) reads
+        // it; the base stylesheet has a plain 0.2em. When the theme file is
+        // not there (a proxy that does not pass it on, a broken cache) the
+        // variable is never used, so the same elements get the value directly.
+        sb.AppendLine($"{x.P}.blurhash-canvas, {x.P}.cardBox:not(.visualCardBox) .cardPadder, {x.P}.cardContent, {x.P}.cardImageContainer, {x.P}.cardOverlayContainer, {x.P}.visualCardBox, {x.P}.card:focus .cardBox:not(.visualCardBox) .cardScalable {{ border-radius: {Px(k.Radius)} !important; }}");
         var image = $"{x.P}.cardBox:not(.visualCardBox) .cardScalable";
         var effects = new StringBuilder();
         if (k.Shadow)

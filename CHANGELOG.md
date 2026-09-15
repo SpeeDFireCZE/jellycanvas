@@ -25,6 +25,10 @@ All notable changes to Jellycanvas. The format follows
   image links on private addresses stay out of it.
 - Fixed: the TV info bar overlapped the top bar; a rotation stopped while
   an image was loading threw an error.
+- Card rounding is written straight onto the card elements as well as
+  into the `--jf-card-borderRadius` variable: only the theme stylesheet
+  reads the variable, and a server upgraded from 10.x can be left with an
+  old `themes/*/theme.css` that does not.
 - Development: `test\Make-Media.ps1` regenerates the test clips with
   resolutions, HDR, audio languages and subtitles so the badges have
   something to show; the test scripts run on Jellyfin 12.1.

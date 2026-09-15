@@ -519,4 +519,13 @@ public class CssBuilderTests
 
         Assert.Contains("border-radius: 12px; position: fixed; left: 10px; right: 10px; bottom: 10px;", css, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Card_radius_is_set_directly_as_well_as_through_the_variable()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Radius = 18 } });
+
+        Assert.Contains("--jf-card-borderRadius: 18px !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".cardImageContainer, .cardOverlayContainer, .visualCardBox, .card:focus .cardBox:not(.visualCardBox) .cardScalable { border-radius: 18px !important; }", css, StringComparison.Ordinal);
+    }
 }
