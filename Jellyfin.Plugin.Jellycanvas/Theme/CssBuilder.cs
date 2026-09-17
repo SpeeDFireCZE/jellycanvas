@@ -1289,6 +1289,11 @@ public static class CssBuilder
         // above it separately.
         sb.AppendLine($"{x.P}html .backdropContainer {{ display: none !important; }}");
         sb.AppendLine($"{x.P}html {{ background-image: none !important; }}");
+        // While a video plays Jellyfin blanks its background (the document
+        // goes "transparent") and the player, first in <body>, would sit
+        // under anything the background still paints - so ours goes too.
+        sb.AppendLine("html.transparentDocument .backgroundContainer, html .backgroundContainer.backgroundContainer-transparent { background-image: none !important; }");
+        sb.AppendLine("html.transparentDocument .backgroundContainer::before, html.transparentDocument .backgroundContainer::after, html.transparentDocument .backgroundContainer > .jellycanvas-backdrop, html .backgroundContainer.backgroundContainer-transparent::before, html .backgroundContainer.backgroundContainer-transparent::after, html .backgroundContainer.backgroundContainer-transparent > .jellycanvas-backdrop { display: none !important; }");
         sb.AppendLine($"{container} {{ opacity: 1 !important; background-position: center !important; }}");
         if (bd.Blur > 0)
         {
@@ -1985,8 +1990,6 @@ public static class CssBuilder
     {
         var p = x.Config.Player;
         sb.AppendLine("/* --- video player --- */");
-        // The video must never end up under the theme's background layers.
-        sb.AppendLine($"{x.P}html .videoPlayerContainer {{ z-index: 1000 !important; }}");
         var bar = $"{x.P}html .videoOsdBottom";
 
         if (p.Osd != OsdStyle.Default)
@@ -2020,7 +2023,8 @@ public static class CssBuilder
             sb.AppendLine($"{x.P}html .skinHeader-withBackground.osdHeader {{ background: linear-gradient(180deg, {color.Rgba(0.75)}, {color.Rgba(0)}) !important; }}");
         }
 
-        if (!string.IsNullOrWhiteSpace(p.ProgressColor) || p.ProgressHeight > 0)
+        // The slider is Jellyfin blue by hard-coded value; it follows the
+        // accent (or the chosen color) always.
         {
             var progress = Color.Parse(p.ProgressColor, x.Accent);
             sb.AppendLine($"{bar} .mdl-slider-background-lower {{ background-color: {progress.Hex} !important; }}");

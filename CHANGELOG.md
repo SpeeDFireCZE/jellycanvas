@@ -38,8 +38,9 @@ All notable changes to Jellycanvas. The format follows
 - Fixed: the split bar's surface ran across the whole library row; a
   panning backdrop was a band across the middle of a phone screen; the
   info bar's close button floated above a custom button's overlay; the
-  video player is kept above the theme's background layers; the CSS no
-  longer uses the `inset` shorthand (older TV browsers).
+  theme's background (rotating backdrops) covered the video while it
+  played; the player's progress slider now follows the accent color; the
+  CSS no longer uses the `inset` shorthand (older TV browsers).
 - README: screenshots from the demo.
 - Release workflow: with a `RELEASE_TOKEN` secret the release and the
   manifest commit are made under its owner's account.
