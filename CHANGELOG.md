@@ -5,6 +5,12 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Fixed: the Seerr rows made the home page throw "pause is not a function"
+  when leaving it (their scroller carried Jellyfin's own itemsContainer
+  class); "coming soon" posters always open Seerr, a series partly in the
+  library included.
+- README: screenshots of the designer itself.
+
 ## 1.1.0 - 2026-09-17
 
 - Seerr rows (Jellyseerr / Overseerr) on the home page: coming soon
