@@ -867,6 +867,9 @@ public class SeerrRow
 
     public SeerrRowKind Kind { get; set; } = SeerrRowKind.Upcoming;
 
+    /// <summary>Movies, series, or both.</summary>
+    public SeerrMedia Media { get; set; } = SeerrMedia.Both;
+
     /// <summary>The row's heading; empty = a default in the viewer's language.</summary>
     public string Title { get; set; } = string.Empty;
 
@@ -893,6 +896,14 @@ public class SeerrRow
 
     /// <summary>Who requested it, on the poster (request rows).</summary>
     public bool ShowRequester { get; set; } = false;
+}
+
+/// <summary>What a Seerr row is limited to.</summary>
+public enum SeerrMedia
+{
+    Both,
+    Movies,
+    Series,
 }
 
 /// <summary>Where a custom row goes on the home page.</summary>

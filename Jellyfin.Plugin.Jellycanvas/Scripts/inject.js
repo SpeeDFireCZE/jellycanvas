@@ -962,57 +962,58 @@
             return;
         }
         rowsStyle();
+        // Build (or keep) every row's element, then put them where they
+        // belong in the settings' order: the top rows one after another
+        // right after the slideshow, the bottom rows at the very end.
+        var top = [];
+        var bottom = [];
         rows.forEach(function (row) {
             var items = rowsData[row.id];
             var id = 'jellycanvasRow-' + row.id;
-            var existing = document.getElementById(id);
+            var el = document.getElementById(id);
             if (!items || !items.length) {
-                if (existing) {
-                    existing.remove();
+                if (el) {
+                    el.remove();
                 }
                 return;
             }
-            var wantTop = row.position === 'Top';
-            // Already in place (after the slideshow when there is one).
-            if (existing && existing.parentElement === container) {
-                var prev = existing.previousElementSibling;
-                var next = existing.nextElementSibling;
-                var ok = wantTop
-                    ? (prev === null || prev.id === SS_ID || (prev.classList.contains('jellycanvas-row') && prev.getAttribute('data-position') === 'Top'))
-                    : next === null || (next.classList.contains('jellycanvas-row') && next.getAttribute('data-position') === 'Bottom');
-                if (ok) {
-                    return;
-                }
-                existing.remove();
+            if (!el) {
+                el = document.createElement('div');
+                el.id = id;
+                el.className = 'verticalSection jellycanvas-row';
+                el.setAttribute('data-jellycanvas', '1');
+                el.setAttribute('data-position', row.position);
+                var head = document.createElement('div');
+                head.className = 'sectionTitleContainer sectionTitleContainer-cards padded-left';
+                var h2 = document.createElement('h2');
+                h2.className = 'sectionTitle sectionTitle-cards';
+                h2.textContent = rowTitle(row);
+                head.appendChild(h2);
+                el.appendChild(head);
+                var scroller = document.createElement('div');
+                scroller.className = 'itemsContainer scrollX hiddenScrollX padded-left padded-right';
+                scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;';
+                items.forEach(function (item) { scroller.appendChild(rowCard(item, row)); });
+                el.appendChild(scroller);
             }
-            var section = document.createElement('div');
-            section.id = id;
-            section.className = 'verticalSection jellycanvas-row';
-            section.setAttribute('data-jellycanvas', '1');
-            section.setAttribute('data-position', row.position);
-            var head = document.createElement('div');
-            head.className = 'sectionTitleContainer sectionTitleContainer-cards padded-left';
-            var h2 = document.createElement('h2');
-            h2.className = 'sectionTitle sectionTitle-cards';
-            h2.textContent = rowTitle(row);
-            head.appendChild(h2);
-            section.appendChild(head);
-            var scroller = document.createElement('div');
-            scroller.className = 'itemsContainer scrollX hiddenScrollX padded-left padded-right';
-            scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;';
-            items.forEach(function (item) { scroller.appendChild(rowCard(item, row)); });
-            section.appendChild(scroller);
-            if (wantTop) {
-                var after = document.getElementById(SS_ID);
-                var custom = container.querySelectorAll('.jellycanvas-row[data-position="Top"]');
-                if (custom.length) {
-                    after = custom[custom.length - 1];
-                }
-                container.insertBefore(section, after ? after.nextSibling : container.firstChild);
-            } else {
-                container.appendChild(section);
-            }
+            (row.position === 'Top' ? top : bottom).push(el);
         });
+        var prev = document.getElementById(SS_ID);
+        top.forEach(function (el) {
+            var want = prev ? prev.nextSibling : container.firstChild;
+            if (el.parentElement !== container || el !== want) {
+                container.insertBefore(el, want);
+            }
+            prev = el;
+        });
+        // Bottom rows: the last one ends the container, each earlier one
+        // sits right before the next.
+        for (var i = bottom.length - 1; i >= 0; i--) {
+            var follower = i + 1 < bottom.length ? bottom[i + 1] : null;
+            if (bottom[i].parentElement !== container || bottom[i].nextSibling !== follower) {
+                container.insertBefore(bottom[i], follower);
+            }
+        }
     }
 
     function rowsLoad(row) {
@@ -1021,7 +1022,7 @@
             return;
         }
         rowsLoading[row.id] = true;
-        api.getJSON(api.getUrl('Jellycanvas/Seerr/' + row.kind.toLowerCase(), { limit: row.limit })).then(function (items) {
+        api.getJSON(api.getUrl('Jellycanvas/Seerr/' + row.kind.toLowerCase(), { limit: row.limit, media: (row.media || 'Both').toLowerCase() })).then(function (items) {
             rowsData[row.id] = items || [];
             rowsLoading[row.id] = false;
             rowsRender();

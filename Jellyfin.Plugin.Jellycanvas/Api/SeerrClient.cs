@@ -69,10 +69,36 @@ public sealed class SeerrClient
         return "ok " + (name ?? "Seerr");
     }
 
-    /// <summary>The items of one row, from the cache when fresh.</summary>
-    public async Task<IReadOnlyList<SeerrItemDto>> GetAsync(SeerrSettings s, string kind, int limit, CancellationToken ct)
+    /// <summary>
+    /// For the designer's test button: every configured row fetched with the
+    /// settings as typed (unsaved), one line per row - how many posters it
+    /// would show, or what went wrong.
+    /// </summary>
+    public async Task<string> ProbeRowsAsync(SeerrSettings s, CancellationToken ct)
     {
-        var key = kind + ":" + limit;
+        var lines = new List<string>();
+        foreach (var row in s.Rows.Where(r => r.Enabled))
+        {
+            var kind = row.Kind.ToString().ToLowerInvariant();
+            var media = row.Media.ToString().ToLowerInvariant();
+            try
+            {
+                var items = await FetchAsync(s, kind, Math.Clamp(row.Limit, 1, 60), media, ct).ConfigureAwait(false);
+                lines.Add($"{row.Kind} ({row.Media}): {items.Count}");
+            }
+            catch (Exception e) when (e is HttpRequestException or TaskCanceledException or JsonException)
+            {
+                lines.Add($"{row.Kind}: {e.Message}");
+            }
+        }
+
+        return lines.Count == 0 ? "no rows" : string.Join("; ", lines);
+    }
+
+    /// <summary>The items of one row, from the cache when fresh. media = "both", "movies" or "series".</summary>
+    public async Task<IReadOnlyList<SeerrItemDto>> GetAsync(SeerrSettings s, string kind, int limit, string media, CancellationToken ct)
+    {
+        var key = kind + ":" + limit + ":" + media;
         lock (Cache)
         {
             if (Cache.TryGetValue(key, out var hit) && DateTime.UtcNow - hit.At < CacheFor)
@@ -92,7 +118,7 @@ public sealed class SeerrClient
                 }
             }
 
-            var items = await FetchAsync(s, kind, limit, ct).ConfigureAwait(false);
+            var items = await FetchAsync(s, kind, limit, media, ct).ConfigureAwait(false);
             lock (Cache)
             {
                 Cache[key] = (DateTime.UtcNow, items);
@@ -115,8 +141,13 @@ public sealed class SeerrClient
         return client;
     }
 
-    private async Task<IReadOnlyList<SeerrItemDto>> FetchAsync(SeerrSettings s, string kind, int limit, CancellationToken ct)
+    private async Task<IReadOnlyList<SeerrItemDto>> FetchAsync(SeerrSettings s, string kind, int limit, string media, CancellationToken ct)
     {
+        // Movies only / series only: the other type is dropped before the limit.
+        var keep = media switch { "movies" => "movie", "series" => "tv", _ => null };
+        bool Wanted(SeerrItemDto i) => keep is null || i.Type == keep;
+        bool WantedType(string type) => keep is null || type == keep;
+
         using var client = Create(s);
         var discover = kind switch
         {
@@ -129,7 +160,7 @@ public sealed class SeerrClient
         {
             var page = await client.GetFromJsonAsync<JsonElement>(discover, ct).ConfigureAwait(false);
             var fixedType = kind == "popularmovies" ? "movie" : kind == "populartv" ? "tv" : null;
-            return Results(page).Select(r => fixedType is null ? FromDiscover(r, s) : FromMedia(r, fixedType, s)).Where(i => i is not null).Cast<SeerrItemDto>().Take(limit).ToList();
+            return Results(page).Select(r => fixedType is null ? FromDiscover(r, s) : FromMedia(r, fixedType, s)).Where(i => i is not null).Cast<SeerrItemDto>().Where(Wanted).Take(limit).ToList();
         }
 
         // Requests carry only ids; the title, poster and date come from the
@@ -139,13 +170,18 @@ public sealed class SeerrClient
         var wanted = new List<(string Type, int TmdbId, string By, DateTime Added)>();
         foreach (var r in Results(requests))
         {
-            if (!r.TryGetProperty("media", out var media) || !media.TryGetProperty("tmdbId", out var tmdb))
+            if (!r.TryGetProperty("media", out var mediaEl) || !mediaEl.TryGetProperty("tmdbId", out var tmdb))
             {
                 continue;
             }
 
-            var type = media.TryGetProperty("mediaType", out var mt) ? mt.GetString() ?? "movie" : "movie";
-            var status = media.TryGetProperty("status", out var st) ? st.GetInt32() : 0;
+            var type = mediaEl.TryGetProperty("mediaType", out var mt) ? mt.GetString() ?? "movie" : "movie";
+            if (!WantedType(type))
+            {
+                continue;
+            }
+
+            var status = mediaEl.TryGetProperty("status", out var st) ? st.GetInt32() : 0;
             // Upcoming: approved but not in the library yet (5 = available).
             if (kind == "upcoming" && status >= 5)
             {

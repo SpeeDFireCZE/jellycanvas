@@ -926,7 +926,7 @@
                                     <span id="jcSeerrTestResult" class="jc-hint"></span>
                                 </div>
                                 <h4 class="jc-sub" data-i18n="seerrRowsHeading">Rows</h4>
-                                <div class="jc-hint" data-i18n="seerrRowsHint">Each row lists one thing from Seerr; tick what the posters carry. An empty heading takes a default in the viewer's language.</div>
+                                <div class="jc-hint" data-i18n="seerrRowsHint">Each row lists one thing from Seerr; tick what the posters carry. An empty heading takes a default in the viewer's language. The rows appear on the home page after Save or Apply (the client script is built from the saved settings); "Test the connection" also says how many posters each row has right now.</div>
                                 <div id="jcSeerrRows"></div>
                                 <div class="jc-actions"><button is="emby-button" type="button" class="raised emby-button" id="jcBtnAddSeerrRow"><span data-i18n="seerrAddRow">Add a row</span></button></div>
                                 <template id="jcSeerrRowTemplate">
@@ -945,6 +945,14 @@
                                                 <option value="Trending" data-i18n="kindTrending">Trending (Seerr discover)</option>
                                                 <option value="PopularMovies" data-i18n="kindPopularMovies">Popular movies (Seerr discover)</option>
                                                 <option value="PopularTv" data-i18n="kindPopularTv">Popular series (Seerr discover)</option>
+                                            </select>
+                                        </div>
+                                        <div class="selectContainer">
+                                            <label class="selectLabel" data-i18n="rowMedia">Movies / series</label>
+                                            <select is="emby-select" class="emby-select-withcolor emby-select" data-field="Media">
+                                                <option value="Both" data-i18n="rowMediaBoth">Both</option>
+                                                <option value="Movies" data-i18n="rowMediaMovies">Movies only</option>
+                                                <option value="Series" data-i18n="rowMediaSeries">Series only</option>
                                             </select>
                                         </div>
                                         <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" data-i18n="rowTitle">Heading (empty = default in the viewer's language)</label><input is="emby-input" type="text" data-field="Title"></div>

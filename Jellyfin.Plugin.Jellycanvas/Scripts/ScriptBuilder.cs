@@ -58,6 +58,7 @@ public static class ScriptBuilder
                 {
                     id = t.i + 1,
                     kind = t.r.Kind.ToString(),
+                    media = t.r.Media.ToString(),
                     title = (t.r.Title ?? string.Empty).Trim(),
                     position = t.r.Position.ToString(),
                     limit = Math.Clamp(t.r.Limit, 1, 60),

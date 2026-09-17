@@ -268,7 +268,7 @@ public class JellycanvasController : ControllerBase
     [HttpGet("Seerr/{kind}")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<SeerrItemDto>>> GetSeerrRow([FromRoute] string kind, [FromQuery] int limit = 20, CancellationToken ct = default)
+    public async Task<ActionResult<IReadOnlyList<SeerrItemDto>>> GetSeerrRow([FromRoute] string kind, [FromQuery] int limit = 20, [FromQuery] string media = "both", CancellationToken ct = default)
     {
         if (User.Identity?.IsAuthenticated != true)
         {
@@ -283,7 +283,7 @@ public class JellycanvasController : ControllerBase
 
         try
         {
-            var items = await new SeerrClient(_http, _logger).GetAsync(s, kind, Math.Clamp(limit, 1, 60), ct).ConfigureAwait(false);
+            var items = await new SeerrClient(_http, _logger).GetAsync(s, kind, Math.Clamp(limit, 1, 60), media is "movies" or "series" ? media : "both", ct).ConfigureAwait(false);
             return items.ToList();
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or UriFormatException)
@@ -342,9 +342,18 @@ public class JellycanvasController : ControllerBase
     {
         try
         {
-            var result = await new SeerrClient(_http, _logger).TestAsync(s, ct).ConfigureAwait(false);
+            var client = new SeerrClient(_http, _logger);
+            var result = await client.TestAsync(s, ct).ConfigureAwait(false);
             SeerrClient.Forget();
-            return new SeerrTestDto(result.StartsWith("ok", StringComparison.Ordinal), result);
+            var ok = result.StartsWith("ok", StringComparison.Ordinal);
+            if (ok)
+            {
+                // The rows as configured, so an empty row is explained here
+                // rather than by a home page with nothing on it.
+                result += " | " + await client.ProbeRowsAsync(s, ct).ConfigureAwait(false);
+            }
+
+            return new SeerrTestDto(ok, result);
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or UriFormatException or InvalidOperationException)
         {
