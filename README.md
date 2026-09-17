@@ -24,7 +24,9 @@ plugin when it is installed.
 ## Screenshots
 
 The designer: settings on the left, the live preview of the real web
-client on the right (all from the demo library).
+client on the right. Everything shown is made-up demo data: a test
+library of short generated clips with public posters, invented
+requests and users, and a stand-in Seerr - no real server behind it.
 
 ![Bar settings with the home page](images/screens/designer-bar.jpg)
 
