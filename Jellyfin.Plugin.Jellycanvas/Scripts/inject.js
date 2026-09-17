@@ -837,13 +837,16 @@
             '.jellycanvas-row .jellycanvas-row-state { position: absolute; top: 0.4em; left: 0.4em; padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
             '.jellycanvas-row .jellycanvas-row-state.is-available { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }' +
             '.jellycanvas-row .jellycanvas-row-type { position: absolute; bottom: 0.4em; left: 0.4em; padding: 0.15em 0.45em; font-size: 0.68em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
-            '.jellycanvas-row .jellycanvas-row-by { position: absolute; bottom: 0.4em; right: 0.4em; padding: 0.15em 0.45em; font-size: 0.68em; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
             // The same hover overlay as Jellyfin's cards: a dim with one
             // button in the middle (open here, or in Seerr).
             '.jellycanvas-row .cardOverlayContainer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }' +
             '.jellycanvas-row .card:hover .cardOverlayContainer, .jellycanvas-row .card:focus-within .cardOverlayContainer { opacity: 1; }' +
             '.jellycanvas-row .cardOverlayButton { width: 3em; height: 3em; border-radius: 50%; border: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }' +
-            '.jellycanvas-row .cardOverlayButton .material-icons { font-size: 1.6em; }';
+            '.jellycanvas-row .cardOverlayButton .material-icons { font-size: 1.6em; }' +
+            '.jellycanvas-row .sectionTitleContainer { display: flex; align-items: center; }' +
+            '.jellycanvas-row .jellycanvas-row-arrows { margin-left: auto; }' +
+            '.jellycanvas-row .itemsContainer::-webkit-scrollbar { display: none; }' +
+            'html.layout-mobile .jellycanvas-row .jellycanvas-row-arrows, html.layout-tv .jellycanvas-row .jellycanvas-row-arrows { display: none; }';
         document.head.appendChild(style);
     }
 
@@ -911,17 +914,11 @@
             tag.textContent = row.kind === 'Upcoming' ? item.Date : item.Date.slice(0, 4);
             link.appendChild(tag);
         }
-        if (row.showType) {
+        if (row.showType && (row.media || 'Both') === 'Both') {
             var ty = document.createElement('span');
             ty.className = 'jellycanvas-row-type';
             ty.textContent = rowWord(item.Type === 'tv' ? 'tv' : 'movie');
             link.appendChild(ty);
-        }
-        if (row.showRequester && item.RequestedBy) {
-            var by = document.createElement('span');
-            by.className = 'jellycanvas-row-by';
-            by.textContent = item.RequestedBy;
-            link.appendChild(by);
         }
         scalable.appendChild(link);
         // Hover: the same kind of overlay Jellyfin's cards have, with one
@@ -946,10 +943,18 @@
             text.textContent = item.Title;
             box.appendChild(text);
         }
-        if (row.showSubtitle) {
+        // Under the title: the year and / or who requested it, each on its own tick.
+        var parts = [];
+        if (row.showSubtitle && item.Date) {
+            parts.push(item.Date.slice(0, 4));
+        }
+        if (row.showRequester && rowIsRequests(row) && item.RequestedBy) {
+            parts.push(item.RequestedBy);
+        }
+        if (parts.length) {
             var sub = document.createElement('div');
             sub.className = 'cardText cardTextCentered cardText-secondary';
-            sub.textContent = rowIsRequests(row) && item.RequestedBy && !row.showRequester ? item.RequestedBy : (item.Date || '').slice(0, 4);
+            sub.textContent = parts.join(' · ');
             box.appendChild(sub);
         }
         card.appendChild(box);
@@ -992,9 +997,24 @@
                 el.appendChild(head);
                 var scroller = document.createElement('div');
                 scroller.className = 'itemsContainer scrollX hiddenScrollX padded-left padded-right';
-                scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;';
+                scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;scroll-behavior:smooth;scrollbar-width:none;';
                 items.forEach(function (item) { scroller.appendChild(rowCard(item, row)); });
                 el.appendChild(scroller);
+                // The arrows Jellyfin's rows have at the right of the title
+                // (its classes, so they look and hide - on phones - the same).
+                var arrows = document.createElement('div');
+                arrows.className = 'emby-scrollbuttons padded-right jellycanvas-row-arrows';
+                [['chevron_left', -1], ['chevron_right', 1]].forEach(function (a) {
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'emby-scrollbuttons-button paper-icon-button-light';
+                    b.innerHTML = '<span class="material-icons ' + a[0] + '" aria-hidden="true"></span>';
+                    b.addEventListener('click', function () {
+                        scroller.scrollBy({ left: a[1] * Math.round(scroller.clientWidth * 0.85), behavior: 'smooth' });
+                    });
+                    arrows.appendChild(b);
+                });
+                head.appendChild(arrows);
             }
             (row.position === 'Top' ? top : bottom).push(el);
         });
@@ -2058,8 +2078,11 @@
         var style = document.createElement('style');
         style.id = 'jellycanvas-inject-style';
         style.textContent =
-            '[data-jellycanvas] { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }' +
-            '[data-jellycanvas]:hover, [data-jellycanvas]:focus-visible { background-color: rgba(var(--jf-palette-text-primaryChannel, 255 255 255) / 0.12) !important; }' +
+            // Hover for the toolbar buttons and drawer entries only - the
+            // slideshow, the Seerr rows and their cards carry the marker
+            // too, and a highlight across a whole row is not wanted.
+            'a[data-jellycanvas], button[data-jellycanvas], li[data-jellycanvas] { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }' +
+            'a[data-jellycanvas]:hover, a[data-jellycanvas]:focus-visible, button[data-jellycanvas]:hover, button[data-jellycanvas]:focus-visible, li[data-jellycanvas]:hover, li[data-jellycanvas]:focus-visible { background-color: rgba(var(--jf-palette-text-primaryChannel, 255 255 255) / 0.12) !important; }' +
             '[data-jellycanvas].MuiIconButton-root:hover { color: var(--jf-palette-primary-main, #00a4dc) !important; }' +
             badgeCss();
         document.head.appendChild(style);

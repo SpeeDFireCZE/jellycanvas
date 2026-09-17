@@ -876,8 +876,8 @@ public class SeerrRow
     /// <summary>Above Jellyfin's own rows, or below them.</summary>
     public RowPosition Position { get; set; } = RowPosition.Top;
 
-    /// <summary>How many posters at most.</summary>
-    public int Limit { get; set; } = 20;
+    /// <summary>How many posters at most (16, like Jellyfin's own rows).</summary>
+    public int Limit { get; set; } = 16;
 
     /// <summary>The title under the poster.</summary>
     public bool ShowTitle { get; set; } = true;
