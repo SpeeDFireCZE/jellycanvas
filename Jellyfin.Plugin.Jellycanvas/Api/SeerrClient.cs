@@ -53,7 +53,15 @@ public sealed class SeerrClient
         using var res = await client.GetAsync("api/v1/settings/main", ct).ConfigureAwait(false);
         if (!res.IsSuccessStatusCode)
         {
-            return $"HTTP {(int)res.StatusCode}";
+            // What answered: Seerr itself says "API key required" / "You do
+            // not have permission"; a proxy in front of it (Authelia, basic
+            // auth, Cloudflare Access) says something else and often sends a
+            // WWW-Authenticate header - that tells the two apart.
+            var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            body = System.Text.RegularExpressions.Regex.Replace(body, "<[^>]+>", " ").Trim();
+            var auth = res.Headers.WwwAuthenticate.Count > 0 ? " [" + string.Join(", ", res.Headers.WwwAuthenticate) + "]" : string.Empty;
+            var server = res.Headers.TryGetValues("Server", out var sv) ? " (" + string.Join(",", sv) + ")" : string.Empty;
+            return $"HTTP {(int)res.StatusCode}{auth}{server} {res.RequestMessage?.RequestUri}: {(body.Length > 160 ? body[..160] + "…" : body)}";
         }
 
         var main = await res.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct).ConfigureAwait(false);

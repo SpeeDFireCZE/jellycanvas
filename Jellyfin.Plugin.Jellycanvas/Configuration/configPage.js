@@ -346,7 +346,7 @@
         });
     }
 
-    var BOUND_INPUTS = 'select[data-path], input[type=checkbox][data-path], input[type=text][data-path], textarea[data-path]';
+    var BOUND_INPUTS = 'select[data-path], input[type=checkbox][data-path], input[type=text][data-path], input[type=password][data-path], input[type=number][data-path], textarea[data-path]';
 
     function bindInputs(root) {
         root.querySelectorAll(BOUND_INPUTS).forEach(function (el) {
