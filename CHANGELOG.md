@@ -5,6 +5,8 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.1.1 - 2026-09-17
+
 - Fixed: the Seerr rows made the home page throw "pause is not a function"
   when leaving it (their scroller carried Jellyfin's own itemsContainer
   class); "coming soon" posters always open Seerr, a series partly in the
