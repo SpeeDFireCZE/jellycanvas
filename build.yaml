@@ -3,7 +3,7 @@
 # JPRM tool use). The version is kept here and in the .csproj - they must match.
 name: "Jellycanvas"
 guid: "433e86f7-318f-4bd5-98e9-98fd3eea7d42"
-version: "1.0.5"
+version: "1.1.0"
 targetAbi: "12.0.0.0"
 framework: "net10.0"
 overview: "Visual theme builder - customize the Jellyfin web UI without writing CSS"

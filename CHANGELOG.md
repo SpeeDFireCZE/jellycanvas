@@ -5,18 +5,21 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
-## 1.0.5 - 2026-09-17
+## 1.1.0 - 2026-09-17
 
 - Seerr rows (Jellyseerr / Overseerr) on the home page: coming soon
   (approved requests not in the library yet, next release first),
   recently requested, waiting for approval, requests now available,
-  trending, popular movies, popular series. Each row has a heading (a
-  default in the viewer's language), a place above or below Jellyfin's
-  rows, a limit, and what the posters carry (title, year / requester,
-  release date, request state, movie / series, who requested it). The
-  server talks to Seerr with the API key and serves the posters itself;
-  the address and key stay out of a shared theme. A poster opens the item
-  here when the library has it, otherwise its page in Seerr.
+  trending, popular movies, popular series - any number of rows, each
+  limited to movies, series or both, with a heading (a default in the
+  viewer's language), a place above or below Jellyfin's rows, a limit
+  (16 like Jellyfin's rows), scroll arrows when needed, and what the
+  posters carry (title, year, who requested it, release date, request
+  state, movie / series). The server talks to Seerr with the API key and
+  serves the posters itself; the address and key stay out of a shared
+  theme. A poster opens the item here when the library has it, otherwise
+  its page in Seerr; "Test the connection" also reports how many posters
+  each row has.
 - Player section: the control bar (style, color, opacity, blur, floating,
   rounding), the progress slider (color, height), button size, and the
   built-in "Skip intro / credits" button (style, color, rounding, position,
