@@ -834,9 +834,10 @@
         style.textContent =
             '.jellycanvas-row .cardImageContainer { background-size: cover; background-position: center; }' +
             '.jellycanvas-row .jellycanvas-row-tag { position: absolute; top: 0.4em; right: 0.4em; padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; color: #fff; background: rgba(0, 0, 0, 0.7); border-radius: 4px; pointer-events: none; }' +
-            '.jellycanvas-row .jellycanvas-row-state { position: absolute; top: 0.4em; left: 0.4em; padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-corner { position: absolute; top: 0.4em; left: 0.4em; display: flex; gap: 0.3em; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-state { padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; }' +
             '.jellycanvas-row .jellycanvas-row-state.is-available { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }' +
-            '.jellycanvas-row .jellycanvas-row-type { position: absolute; bottom: 0.4em; left: 0.4em; padding: 0.15em 0.45em; font-size: 0.68em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-type { padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; }' +
             // The same hover overlay as Jellyfin's cards: a dim with one
             // button in the middle (open here, or in Seerr).
             '.jellycanvas-row .cardOverlayContainer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }' +
@@ -900,25 +901,32 @@
             // Through the plugin (server-side fetch, cached), not TMDB directly.
             link.style.backgroundImage = 'url("' + api.getUrl('Jellycanvas/Seerr/Image', { p: item.Poster }) + '")';
         }
+        // Top-left corner: "Movie" / "Series" (mixed rows only), then the request state.
         var state = rowState(item);
-        if (row.showState && rowIsRequests(row)) {
+        var corner = document.createElement('span');
+        corner.className = 'jellycanvas-row-corner';
+        if (row.showType && (row.media || 'Both') === 'Both') {
+            var ty = document.createElement('span');
+            ty.className = 'jellycanvas-row-type';
+            ty.textContent = rowWord(item.Type === 'tv' ? 'tv' : 'movie');
+            corner.appendChild(ty);
+        }
+        // Coming soon is by definition not there yet - no state for it.
+        if (row.showState && rowIsRequests(row) && row.kind !== 'Upcoming') {
             var st = document.createElement('span');
             st.className = 'jellycanvas-row-state is-' + state;
             st.textContent = state === 'available' ? '✓' : state === 'processing' ? '…' : state === 'partial' ? '½' : '+';
             st.title = rowWord(state);
-            link.appendChild(st);
+            corner.appendChild(st);
+        }
+        if (corner.childNodes.length) {
+            link.appendChild(corner);
         }
         if (row.showDate && item.Date) {
             var tag = document.createElement('span');
             tag.className = 'jellycanvas-row-tag';
             tag.textContent = row.kind === 'Upcoming' ? item.Date : item.Date.slice(0, 4);
             link.appendChild(tag);
-        }
-        if (row.showType && (row.media || 'Both') === 'Both') {
-            var ty = document.createElement('span');
-            ty.className = 'jellycanvas-row-type';
-            ty.textContent = rowWord(item.Type === 'tv' ? 'tv' : 'movie');
-            link.appendChild(ty);
         }
         scalable.appendChild(link);
         // Hover: the same kind of overlay Jellyfin's cards have, with one
