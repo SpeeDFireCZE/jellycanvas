@@ -697,9 +697,18 @@
             var kindSel = node.querySelector('[data-field="Kind"]');
             var typeTick = node.querySelector('[data-field="ShowType"]').closest('label');
             var stateTick = node.querySelector('[data-field="ShowState"]').closest('label');
+            // Popular movies / series are one type by definition: no
+            // movies-or-series choice and no type badge for them.
+            var mediaBox = mediaSel.closest('.selectContainer');
             var syncTicks = function () {
-                typeTick.hidden = mediaSel.value !== 'Both';
-                stateTick.hidden = kindSel.value === 'Upcoming' || kindSel.value === 'Trending' || kindSel.value === 'PopularMovies' || kindSel.value === 'PopularTv';
+                var fixedType = kindSel.value === 'PopularMovies' || kindSel.value === 'PopularTv';
+                if (fixedType && mediaSel.value !== 'Both') {
+                    mediaSel.value = 'Both';
+                    setPath(state, mediaSel.getAttribute('data-path'), 'Both');
+                }
+                mediaBox.hidden = fixedType;
+                typeTick.hidden = fixedType || mediaSel.value !== 'Both';
+                stateTick.hidden = kindSel.value === 'Upcoming' || kindSel.value === 'Trending' || fixedType;
             };
             mediaSel.addEventListener('change', syncTicks);
             kindSel.addEventListener('change', syncTicks);

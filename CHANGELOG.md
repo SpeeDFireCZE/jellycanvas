@@ -5,6 +5,8 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Seerr rows: popular movies / series have no movies-or-series choice (they are one type).
+
 ## 1.1.1 - 2026-09-17
 
 - Fixed: the Seerr rows made the home page throw "pause is not a function"
