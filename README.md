@@ -23,26 +23,38 @@ plugin when it is installed.
 
 ## Screenshots
 
-All from the demo library in the plugin's own preview - the "frosted
-glass" look with islands, colorful card badges, an info bar and the
-item's backdrop behind its page.
+The designer: settings on the left, the live preview of the real web
+client on the right (all from the demo library).
 
-| Home (web) | Library |
+![Bar settings with the home page](images/screens/designer-bar.jpg)
+
+![Card settings with a library](images/screens/designer-cards.jpg)
+
+![Card badges](images/screens/designer-badges.jpg)
+
+![Player controls and the skip button](images/screens/designer-player.jpg)
+
+![Item page settings](images/screens/designer-detail.jpg)
+
+![TV layout](images/screens/designer-tv.jpg)
+
+![Phone layout](images/screens/designer-mobile.jpg)
+
+![Seerr rows](images/screens/designer-seerr.jpg)
+
+What it looks like in the client:
+
+| Home | Library |
 |---|---|
 | ![Home](images/screens/home.jpg) | ![Library](images/screens/library.jpg) |
 
-| Item page | Player controls & skip button |
+| Item page | Player |
 |---|---|
 | ![Item page](images/screens/detail.jpg) | ![Player](images/screens/player.jpg) |
 
-| TV layout | Phone |
+| TV | Phone |
 |---|---|
 | ![TV](images/screens/tv.jpg) | <img src="images/screens/mobile.jpg" alt="Phone" width="300"> |
-
-The designer itself - settings on the left, the live preview of the real
-client on the right:
-
-![The designer](images/screens/designer.jpg)
 
 ## Installation
 

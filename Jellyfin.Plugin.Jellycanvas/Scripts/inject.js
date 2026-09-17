@@ -848,7 +848,7 @@
             '.jellycanvas-row .jellycanvas-row-arrows { margin-left: auto; }' +
             // Jellyfin's "display: flex" on .emby-scrollbuttons would beat the hidden attribute.
             '.jellycanvas-row .jellycanvas-row-arrows[hidden] { display: none !important; }' +
-            '.jellycanvas-row .itemsContainer::-webkit-scrollbar { display: none; }' +
+            '.jellycanvas-row .jellycanvas-row-items::-webkit-scrollbar { display: none; }' +
             'html.layout-mobile .jellycanvas-row .jellycanvas-row-arrows, html.layout-tv .jellycanvas-row .jellycanvas-row-arrows { display: none; }';
         document.head.appendChild(style);
     }
@@ -890,7 +890,10 @@
         var padder = document.createElement('div');
         padder.className = 'cardPadder cardPadder-overflowPortrait';
         scalable.appendChild(padder);
-        var inLibrary = !!(item.JellyfinId && api);
+        // Coming soon always leads to Seerr: a series there may already be
+        // known to the library (some seasons in), but the row is about what
+        // is still to come.
+        var inLibrary = !!(item.JellyfinId && api) && row.kind !== 'Upcoming';
         var href = inLibrary ? '#/details?id=' + item.JellyfinId + '&serverId=' + api.serverId() : item.SeerrUrl;
         var link = document.createElement('a');
         link.className = 'cardImageContainer coveredImage cardContent';
@@ -1005,8 +1008,11 @@
                 h2.textContent = rowTitle(row);
                 head.appendChild(h2);
                 el.appendChild(head);
+                // Not ".itemsContainer": the home tab calls pause() / resume()
+                // on every element with that class (its own custom element),
+                // and a plain div would throw.
                 var scroller = document.createElement('div');
-                scroller.className = 'itemsContainer scrollX hiddenScrollX padded-left padded-right';
+                scroller.className = 'jellycanvas-row-items scrollX hiddenScrollX padded-left padded-right';
                 scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;scroll-behavior:smooth;scrollbar-width:none;';
                 items.forEach(function (item) { scroller.appendChild(rowCard(item, row)); });
                 el.appendChild(scroller);
@@ -1028,7 +1034,7 @@
             }
             // The arrows only when there is something to scroll to.
             var arrowsEl = el.querySelector('.jellycanvas-row-arrows');
-            var scrollerEl = el.querySelector('.itemsContainer');
+            var scrollerEl = el.querySelector('.jellycanvas-row-items');
             if (arrowsEl && scrollerEl) {
                 arrowsEl.hidden = scrollerEl.scrollWidth <= scrollerEl.clientWidth + 2;
             }
