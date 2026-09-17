@@ -1024,6 +1024,12 @@
                 });
                 head.appendChild(arrows);
             }
+            // The arrows only when there is something to scroll to.
+            var arrowsEl = el.querySelector('.jellycanvas-row-arrows');
+            var scrollerEl = el.querySelector('.itemsContainer');
+            if (arrowsEl && scrollerEl) {
+                arrowsEl.hidden = scrollerEl.scrollWidth <= scrollerEl.clientWidth + 2;
+            }
             (row.position === 'Top' ? top : bottom).push(el);
         });
         var prev = document.getElementById(SS_ID);
@@ -1394,6 +1400,10 @@
                 applyFrameGeometry(document.getElementById(frameId(b)));
             }
         });
+        // A wider window may fit a whole Seerr row: its arrows go, or come back.
+        if (rows.length && rowsContainer()) {
+            rowsRender();
+        }
     }
 
     function closeAll() {
