@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,6 +64,7 @@ public class JellycanvasController : ControllerBase
     private readonly IApplicationPaths _paths;
     private readonly IPluginManager _plugins;
     private readonly ILogger<JellycanvasController> _logger;
+    private readonly IHttpClientFactory _http;
 
     /// <summary>
     /// Dependencies are supplied by Jellyfin (dependency injection) - asking
@@ -76,13 +78,15 @@ public class JellycanvasController : ControllerBase
         ILibraryManager library,
         IApplicationPaths paths,
         IPluginManager plugins,
-        ILogger<JellycanvasController> logger)
+        ILogger<JellycanvasController> logger,
+        IHttpClientFactory http)
     {
         _config = config;
         _library = library;
         _paths = paths;
         _plugins = plugins;
         _logger = logger;
+        _http = http;
     }
 
     /// <summary>Folder for the plugin's files (the uploaded logo). Next to the settings XML.</summary>
@@ -249,6 +253,103 @@ public class JellycanvasController : ControllerBase
         }
 
         return new ThemesDto(ThemesDir, list);
+    }
+
+    // ------------------------------------------------------------------
+    // Seerr rows. The client script asks here (as the signed-in user); the
+    // server asks Seerr with the key from the settings.
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// The posters of one row: kind = upcoming, recent or trending. For any
+    /// signed-in user, not just admins: the class-level policy would add
+    /// up with a method-level one, so the check is done by hand.
+    /// </summary>
+    [HttpGet("Seerr/{kind}")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<SeerrItemDto>>> GetSeerrRow([FromRoute] string kind, [FromQuery] int limit = 20, CancellationToken ct = default)
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return Unauthorized();
+        }
+
+        var s = Plugin.Instance!.Configuration.Seerr;
+        if (string.IsNullOrWhiteSpace(s.Url) || string.IsNullOrWhiteSpace(s.ApiKey) || !SeerrClient.Kinds.Contains(kind))
+        {
+            return Array.Empty<SeerrItemDto>();
+        }
+
+        try
+        {
+            var items = await new SeerrClient(_http, _logger).GetAsync(s, kind, Math.Clamp(limit, 1, 60), ct).ConfigureAwait(false);
+            return items.ToList();
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or UriFormatException)
+        {
+            _logger.LogWarning(e, "Jellycanvas: Seerr row {Kind} failed", kind);
+            return Array.Empty<SeerrItemDto>();
+        }
+    }
+
+    /// <summary>
+    /// A TMDB poster for a Seerr row, fetched by the server and kept on disk
+    /// for a week: the browser then needs no access to TMDB itself (some
+    /// networks block it) and the same poster is not fetched by everyone.
+    /// Anonymous like the logo: an image URL cannot carry a token.
+    /// </summary>
+    [HttpGet("Seerr/Image")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetSeerrImage([FromQuery] string p, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(p) || !System.Text.RegularExpressions.Regex.IsMatch(p, "^/[A-Za-z0-9_-]{1,64}\\.(jpg|jpeg|png|webp)$"))
+        {
+            return NotFound();
+        }
+
+        var dir = Path.Combine(DataDir, "seerr-images");
+        Directory.CreateDirectory(dir);
+        var file = Path.Combine(dir, p.TrimStart('/'));
+        if (!System.IO.File.Exists(file) || DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
+        {
+            try
+            {
+                using var client = _http.CreateClient("Jellycanvas.Tmdb");
+                client.Timeout = TimeSpan.FromSeconds(15);
+                var bytes = await client.GetByteArrayAsync("https://image.tmdb.org/t/p/w342" + p, ct).ConfigureAwait(false);
+                await System.IO.File.WriteAllBytesAsync(file, bytes, ct).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
+            {
+                _logger.LogDebug(e, "Jellycanvas: poster {Path} not fetched", p);
+                return NotFound();
+            }
+        }
+
+        var type = p.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : p.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" : "image/jpeg";
+        Response.Headers.CacheControl = "public, max-age=604800";
+        return PhysicalFile(file, type);
+    }
+
+    /// <summary>Tries the address and key from the body (unsaved settings) against Seerr. Admin only.</summary>
+    [HttpPost("Seerr/Test")]
+    [Authorize(Policy = Policies.RequiresElevation)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<SeerrTestDto>> TestSeerr([FromBody] SeerrSettings s, CancellationToken ct)
+    {
+        try
+        {
+            var result = await new SeerrClient(_http, _logger).TestAsync(s, ct).ConfigureAwait(false);
+            SeerrClient.Forget();
+            return new SeerrTestDto(result.StartsWith("ok", StringComparison.Ordinal), result);
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or UriFormatException or InvalidOperationException)
+        {
+            return new SeerrTestDto(false, e.Message);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -419,6 +520,11 @@ public sealed record StatusDto(bool Enabled, bool PresentInBranding, int Foreign
 
 /// <summary>Reply to /Apply.</summary>
 public sealed record ApplyResultDto(string Css, bool Applied);
+
+/// <summary>Reply to /Seerr/Test.</summary>
+/// <param name="Ok">The address and key work.</param>
+/// <param name="Message">What Seerr said, or the error.</param>
+public sealed record SeerrTestDto(bool Ok, string Message);
 
 /// <summary>The web client's theme files.</summary>
 /// <param name="Path">The themes folder that was looked at.</param>

@@ -142,7 +142,7 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("html header.MuiAppBar-root, html .skinHeader-withBackground, html .skinHeader.semiTransparent { background: transparent !important;", css, StringComparison.Ordinal);
-        Assert.Contains(".MuiToolbar-root > .MuiStack-root, html header.MuiAppBar-root .MuiToolbar-root > .MuiBox-root { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".MuiToolbar-root:first-child > .MuiStack-root, html header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiBox-root { background-color: rgba(32, 32, 32, 0.6) !important;", css, StringComparison.Ordinal);
         Assert.Contains("border-radius: 999px !important", css, StringComparison.Ordinal);
     }
 
@@ -301,7 +301,7 @@ public class CssBuilderTests
 
         var css = CssBuilder.Build(cfg);
 
-        Assert.Contains("html #loginPage::before { content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient(45deg, rgba(16, 32, 48, 0.6) 0%, rgba(255, 0, 0, 0.6) 100%); }", css, StringComparison.Ordinal);
+        Assert.Contains("html #loginPage::before { content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: linear-gradient(45deg, rgba(16, 32, 48, 0.6) 0%, rgba(255, 0, 0, 0.6) 100%); }", css, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -389,7 +389,16 @@ public class CssBuilderTests
         Assert.Contains(".MuiToolbar-root:nth-child(2) { min-height: 44px !important; height: 44px !important; padding-top: 0 !important;", css, StringComparison.Ordinal);
         Assert.Contains("left: calc(220px + 0px + 10px) !important; right: 10px !important;", css, StringComparison.Ordinal);
         // under a top bar the row simply shares the bar's look
-        Assert.DoesNotContain("html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) { background-color", CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { LibraryRow = LibraryRowStyle.Glass } }), StringComparison.Ordinal);
+        // Under a top bar the row is styled too (it used to be sidebar-only).
+        Assert.Contains("html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) { background-color", CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { LibraryRow = LibraryRowStyle.Glass } }), StringComparison.Ordinal);
+
+        // Islands bar + "same as bar": the surface goes around the groups, the row stays clear.
+        var islands = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sections, Style = SurfaceStyle.Solid } });
+        Assert.Contains(".MuiToolbar-root:nth-child(2) { background: transparent !important;", islands, StringComparison.Ordinal);
+        Assert.Contains(".MuiToolbar-root:nth-child(2) > .MuiButton-root, html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) > .MuiBox-root:has(.MuiChip-root), html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) .MuiStack-root > .MuiBox-root, html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) .MuiStack-root > .MuiButtonGroup-root {", islands, StringComparison.Ordinal);
+
+        var parts = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { LibraryRowHideSort = true, LibraryRowHidePaging = true } });
+        Assert.Contains("button:has(svg[data-testid=\"SortByAlphaIcon\"]), html header.MuiAppBar-root .MuiToolbar-root:nth-child(2) .MuiButtonGroup-root:has(svg[data-testid=\"NavigateNextIcon\"]) { display: none !important; }", parts, StringComparison.Ordinal);
 
         var hidden = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, LibraryRow = LibraryRowStyle.Hidden } });
 
@@ -409,7 +418,7 @@ public class CssBuilderTests
 
         var css = CssBuilder.Build(cfg);
 
-        Assert.Contains("html .detailRibbon::before { content: ''; position: absolute; inset: 0; z-index: -1; box-sizing: border-box; pointer-events: none; background-color: rgba(18, 52, 86, 0.5) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html .detailRibbon::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; box-sizing: border-box; pointer-events: none; background-color: rgba(18, 52, 86, 0.5) !important;", css, StringComparison.Ordinal);
         Assert.Contains("backdrop-filter: blur(8px)", css, StringComparison.Ordinal);
         Assert.Contains("html .upNextContainer { background-color: rgba(32, 32, 32, 0.7) !important;", css, StringComparison.Ordinal);
         Assert.Contains(".upNextDialog-button.btnStartNow { background: #00a4dc !important;", css, StringComparison.Ordinal);

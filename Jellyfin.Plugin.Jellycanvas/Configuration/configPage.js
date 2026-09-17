@@ -51,14 +51,15 @@
             scriptsNone: 'Toolbar buttons and the home slideshow need JavaScript in the web client. Install the File Transformation plugin (recommended, automatic) or a JavaScript injector plugin to unlock them.',
             chipNav: 'Logo & links', chipIcons: 'Icons', chipUser: 'User', slotTop: 'Top', slotMiddle: 'Middle', slotBottom: 'Bottom', slotLeft: 'Left', slotCenter: 'Center', slotRight: 'Right',
             pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
-            chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (Dolby Digital+ 5.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
+            chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
             themeCurrent: 'current', themeOld: 'old (pre-12 format, {0} characters) - compensated by the generated CSS', themePatched: 'old, patched by Jellycanvas', themeNone: 'No theme files found in {0}.', themeRepairDone: 'Theme files patched.', themeRepairFailed: 'Could not write: {0}',
             importFetchFail: 'The link could not be loaded (the site has to allow cross-origin requests; raw GitHub links do).', importPlaceholder2: 'Paste a theme JSON or a link to one',
-            mockNext: 'Next episode starts in {0} s', mockEpisode: 'S1:E2 - Episode title', mockStartNow: 'Start now', mockHide: 'Hide', mockStill: 'Are you still watching?', mockStop: 'Stop watching', mockContinue: 'Continue watching'
+            mockNext: 'Next episode starts in {0} s', mockSkip: 'Skip Intro', mockEndsAt: 'Ends at 21:35', mockEpisode: 'S1:E2 - Episode title', mockStartNow: 'Start now', mockHide: 'Hide', mockStill: 'Are you still watching?', mockStop: 'Stop watching', mockContinue: 'Continue watching'
         },
         cs: {
             reset: 'Reset', save: 'Uložit rozpracované', apply: 'Použít na serveru', disable: 'Odebrat ze serveru',
@@ -66,7 +67,7 @@
             colors: 'Barvy', accent: 'Zvýraznění', background: 'Pozadí', surface: 'Plochy (lišty, dialogy)', text: 'Text', outline: 'Rámeček a tvrdý stín neo-brutalismu (prázdné = černá)', secondaryText: 'Krytí vedlejšího textu',
             header: 'Lišta', style: 'Styl', solid: 'Plná', glass: 'Sklo', gradient: 'Přechod', transparent: 'Průhledná', neoBrutalism: 'Neo-brutalismus', glowmorphism: 'Glowmorfismus', claymorphism: 'Claymorfismus', neumorphism: 'Neumorfismus',
             styleHint: 'Neo-brutalismus vyplní lištu zvýrazňovací barvou (změníš ji barvou lišty), odsadí ji od okrajů okna, aby byl vidět rámeček i stín, a nejlépe vypadá se zaoblením 0; glow, clay a neumorfismus vyniknou na ostrůvcích nebo plovoucí liště se zaoblením; neumorfismus bere barvu pozadí stránky, pokud není nastavená barva lišty.', barColor: 'Barva lišty (prázdné = barva ploch)', opacity: 'Krytí', blur: 'Rozmazání pozadí (vidět při krytí pod 100)', radius: 'Zaoblení rohů',
-            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název, řazení, filtr, zobrazení – vedle boční lišty; pod horní lištou má vzhled lišty)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
+            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
             drawer: 'Boční menu (mobil / úzké okno)', menuColor: 'Barva menu (prázdné = barva pozadí)', itemRadius: 'Zaoblení položek', width: 'Šířka (0 = výchozí)',
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
             cardText: 'Název a text', below: 'Pod obrázkem', overlay: 'Přes obrázek', hidden: 'Skrytý', border: 'Tenký rámeček',
@@ -76,12 +77,12 @@
             fontCustomName: 'Název vlastního písma (přesně jako na Google Fonts)', googleFonts: 'Načíst z Google Fonts',
             googleFontsHint: 'Inter, Roboto, Poppins, Nunito i vlastní název. Vypni, pokud prohlížeče nesmí na internet.', fontScale: 'Velikost',
             backdrop: 'Obrázek na pozadí', dim: 'Ztmavení', loginGradient: 'Pozadí přechodem', gradientFrom: 'Přechod od (prázdné = barva pozadí)', gradientTo: 'Přechod do (prázdné = tmavé zvýraznění)', gradientAngle: 'Směr přechodu', gradientOpacity: 'Krytí přechodu (pod 100 prosvítá backdrop)', loginGradientHint: 'Adresa obrázku na pozadí výše má před přechodem přednost.', loginTransparentBar: 'Na přihlášení bez lišty - jen logo přes pozadí', loginTitle: 'Text nadpisu (prázdné = „Prosíme, přihlaste se“)', loginFieldsHeading: 'Pole a tlačítka', loginFormWidth: 'Šířka formuláře (0 = výchozí)', loginInputs: 'Textová pole', loginButtons: 'Tlačítka', loginInputsDefault: 'Výchozí Jellyfin', loginInputRadius: 'Zaoblení polí a tlačítek (-1 = jako formulář)', loginInputScale: 'Výška polí', loginHideTitle: 'Schovat nadpis', loginHideQuick: 'Schovat tlačítko Rychlé připojení', loginHideForgot: 'Schovat tlačítko Zapomenuté heslo', loginRadius: 'Zaoblení rohů',
-            tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek',
+            tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek', tvTabFocus: 'Záložka s fokusem (Domů, Oblíbené, knihovny)', tabFocusHighlight: 'Vyplnit barvou fokusu', tabFocusRing: 'Rámeček v barvě fokusu', tabFocusGlow: 'Jemné zvětšení se září', tabFocusScale: 'Jako Jellyfin: zvětší se 1,3×',
             tv: 'Rozložení TV', focusColor: 'Barva zaměření (prázdné = zvýraznění)', focusWidth: 'Tloušťka rámečku zaměření', focusScale: 'Zvětšení zaměřené karty',
             mobile: 'Rozložení mobil', cardRadiusMobile: 'Zaoblení karet (-1 = jako web)', fontScaleMobile: 'Velikost písma (0 = jako web)',
             extra: 'Vlastní CSS a export', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
             exportHint: 'Vygenerované CSS - jen pro čtení. Zkopíruj, pokud ho chceš použít jinde.',
-            devWeb: 'Web', devTv: 'TV', devMobile: 'Mobil', pageHome: 'Domů', pageLibrary: 'Knihovna', pageDetail: 'Detail položky', pageLogin: 'Přihlášení', pageUpNext: 'Přehrávač: další díl', pageStillWatching: 'Přehrávač: „Stále se díváte?“', mockNext: 'Další díl začne za {0} s', mockEpisode: 'S1:E2 – Název epizody', mockStartNow: 'Spustit hned', mockHide: 'Skrýt', mockStill: 'Stále se díváte?', mockStop: 'Přestat sledovat', mockContinue: 'Pokračovat ve sledování',
+            devWeb: 'Web', devTv: 'TV', devMobile: 'Mobil', pageHome: 'Domů', pageLibrary: 'Knihovna', pageDetail: 'Detail položky', pageLogin: 'Přihlášení', pageUpNext: 'Přehrávač: další díl', pageStillWatching: 'Přehrávač: „Stále se díváte?“', mockNext: 'Další díl začne za {0} s', mockSkip: 'Přeskočit úvod', mockEndsAt: 'Konec ve 21:35', mockEpisode: 'S1:E2 – Název epizody', mockStartNow: 'Spustit hned', mockHide: 'Skrýt', mockStill: 'Stále se díváte?', mockStop: 'Přestat sledovat', mockContinue: 'Pokračovat ve sledování',
             previewHint: 'Náhled je skutečný webový klient s vloženým CSS - dá se v něm klikat. Ctrl+klik na prvek otevře jeho nastavení. Vlastní CSS se projeví v klientech založených na webu (prohlížeč, Jellyfin Media Player, aplikace pro Android); nativní TV aplikace ho ignorují.',
             statusOn: 'Téma je zapnuté a zapsané v Brandingu.', statusOff: 'Téma zatím není na serveru použité - zatím jen náhled.',
             statusMissing: 'Téma je zapnuté, ale v Brandingu chybí (někdo ho smazal ručně). Klikni na Použít.',
@@ -100,10 +101,11 @@
             playedColor: 'Barva fajfky (prázdné = zvýraznění)', progress: 'Ukazatel rozkoukání', progressDefault: 'Tenká linka dole (výchozí)', progressFloating: 'Plovoucí zaoblený proužek', progressBold: 'Tlustý proužek dole', progressTop: 'Tenká linka nahoře', progressFill: 'Průsvitný nádech přes plakát až tam, kam je zhlédnuto', progressFillOpacity: 'Krytí nádechu', hideOverlayFolders: 'Schovat tlačítka při najetí jen u celých seriálů, sezón a kolekcí (filmy a díly je mají dál)',
             progressColor: 'Barva ukazatele (prázdné = zvýraznění)',
             accentPlay: 'Tlačítko Přehrát na detailu vyplnit barvou zvýraznění', buttonsHint: 'Ovlivní plochá tlačítka na detailu, dialogy a nastavení a tlačítka Přehrát vše / filtry v knihovnách.',
+            player: 'Přehrávač', playerHint: 'Ovládání při přehrávání videa. Náhled to ukazuje jako maketu přes domovskou stránku (stránka „Přehrávač: ovládání a tlačítko přeskočit“).', osdHeading: 'Ovládací lišta', osdDefault: 'Jellyfin – ztmavení dolů', osdColor: 'Barva lišty (prázdné = barva ploch; akcent u neo-brutalismu)', osdFloating: 'Plovoucí (odsazená od okrajů)', progressHeading: 'Posuvník a tlačítka', playerProgressColor: 'Přehraná část a knoflík (prázdné = akcent)', playerProgressHeight: 'Výška dráhy (0 = výchozí Jellyfin)', playerButtonScale: 'Velikost tlačítek', skipHeading: 'Tlačítko „Přeskočit úvod / titulky“', skipHint: 'Vlastní tlačítko Jellyfinu pro segmenty médií (Nastavení → Přehrávání → akce pro segmenty: „Zeptat se“); pluginy, které označují úvody a titulky, ho plní.', skipDefault: 'Jellyfin – tmavý box', skipAccent: 'Výplň akcentem', skipSurface: 'Barva ploch', skipOutline: 'Jen obrys', skipColor: 'Barva tlačítka (prázdné = akcent nebo barva ploch podle stylu)', skipPosition: 'Umístění', skipBottomRight: 'Vpravo dole (výchozí Jellyfin)', skipBottomCenter: 'Dole uprostřed', skipBottomLeft: 'Vlevo dole', skipTopRight: 'Vpravo nahoře', skipOffset: 'Vzdálenost od okraje', skipScale: 'Velikost', pagePlayer: 'Přehrávač: ovládání a tlačítko přeskočit',
             dialogs: 'Dialogy a nabídky', dialogsUpNext: 'Také hláška přehrávače „Další díl“ (odpočet do další epizody)', dialogsHint: 'V náhledu otevři nabídku (tři tečky na kartě nebo uživatelské menu), ať to vidíš; v seznamu stránek náhledu jsou i hlášky přehrávače „Další díl“ a „Stále se díváte?“.', ribbonHeading: 'Titulní pás pod backdropem', ribbonSame: 'Stejný jako lišta', ribbonColor: 'Barva pásu (prázdné = barva lišty)', posterHeading: 'Plakát a logo',
             detail: 'Stránka detailu', transparentRibbon: 'Průhledná stuha s názvem pod backdropem', posterRadius: 'Zaoblení plakátu (-1 = jako karty)', posterShadow: 'Stín plakátu', hideTitleLogo: 'Schovat obrázkové logo titulu', peopleHeading: 'Herci a tvůrci', peopleShape: 'Tvar fotky', peopleDefault: 'Karty na výšku (výchozí)', peopleCircle: 'Kruhy, jméno na střed', peopleSquare: 'Čtverce', peopleRounded: 'Na výšku s velkým zaoblením', peopleScale: 'Velikost karet', peopleRing: 'Kroužek ve zvýrazňovací barvě kolem fotky', peopleGray: 'Černobíle, barevně při najetí', hideCastSection: 'Schovat sekci Herci a tvůrci', detailBlocksHeading: 'Popis a informační bloky', chipColor: 'Barva štítků (prázdné = automaticky)', detailBlockSurfacesHeading: 'Pozadí bloků', detailBlockSurfacesHint: 'Dej kterékoli části stránky vlastní pozadí – kartu, sklo nebo jeden ze stylů – každé s vlastní barvou.', blockNone: 'Žádné (přímo na stránce)', blockColor: 'Barva bloku (prázdné = plochy; u neo-brutalismu zvýraznění)', blockOpacity: 'Krytí bloků', blockRadius: 'Zaoblení bloků', blockSelectors: 'Výběr Verze / Video / Zvuk / Titulky', blockOverview: 'Popis (tagline + text)', blockGenres: 'Žánry', blockTags: 'Štítky', blockLinks: 'Externí odkazy', trackSelections: 'Výběr Verze / Video / Zvuk / Titulky', genresRow: 'Žánry', tagsRow: 'Štítky', externalLinksRow: 'Externí odkazy (IMDb, TMDB…)', blockDefault: 'Výchozí', blockChips: 'Štítky (chips)', blockAccentChips: 'Štítky ve zvýrazňovací barvě', overviewScale: 'Velikost textu popisu', overviewMaxWidth: 'Max. šířka popisu (0 = bez limitu)', hideTagline: 'Schovat tagline', detailSectionsHeading: 'Sekce níže', sectionTitles: 'Nadpisy sekcí', titleUppercase: 'Malé verzálky', titleAccentLine: 'Barevná linka pod nadpisem', titleAccentBar: 'Barevný proužek vlevo', hideSimilar: 'Schovat „Podobné položky“',
             backdropMode: 'Zdroj', backdropDefault: 'Výchozí Jellyfin (nastavení uživatele „Zobrazit pozadí“)', backdropRandom: 'Náhodný backdrop z knihovny, na každé stránce', backdropCustom: 'Vlastní adresa obrázku',
-            backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
+            backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)', backdropItemDetail: 'Na stránce položky ukázat její vlastní backdrop (klientský skript)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
@@ -120,7 +122,9 @@
             chipNav: 'Logo a odkazy', chipIcons: 'Ikony', chipUser: 'Uživatel', slotTop: 'Nahoře', slotMiddle: 'Uprostřed', slotBottom: 'Dole',
             sidebarCollapsible: 'Vysouvací panel (jen ikony, rozbalí se při najetí)', sidebarCollapsed: 'Šířka sbaleného panelu', drawerHint: 'Hamburger menu, které se vysouvá zleva v mobilním rozložení (a v úzkém okně). Na desktopu jsou odkazy v horní liště.', lookHeading: 'Vzhled', navHeading: 'Odkazy a ikony', playedHeading: 'Zhlédnuto a rozkoukáno',
             infobarRadius: 'Zaoblení rohů', follow: 'Sledovat nastavení',
-            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (Dolby Digital+ 5.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu',
+            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeLookHeading: 'Velikost a zařízení',
+            seerr: 'Řádky ze Seerru', seerrHint: 'Řádky na domovské stránce ze Seerru (Jellyseerr / Overseerr): co je požadované a brzy vyjde, poslední požadavky, co je trendy. Se Seerrem mluví server s API klíčem; klíč se do prohlížeče nedostane a není součástí sdíleného tématu. Plakát otevře položku tady, když ji knihovna má, jinak její stránku v Seerru.', seerrUrl: 'Adresa Seerru (jak ji vidí server)', seerrKey: 'API klíč (Seerr → Nastavení → Obecné)', seerrTest: 'Otestovat spojení', seerrTestOk: 'Spojení funguje: {0}', seerrTestFail: 'Nepodařilo se: {0}',
+            seerrRowsHeading: 'Řádky', seerrRowsHint: 'Každý řádek ukazuje jednu věc ze Seerru; zaškrtni, co mají plakáty nést. Prázdný nadpis dostane výchozí text v jazyce diváka.', seerrAddRow: 'Přidat řádek', seerrKind: 'Co zobrazit', kindUpcoming: 'Brzy vyjde – schválené požadavky, které ještě nejsou v knihovně, nejbližší vydání první', kindRecent: 'Naposledy požadované – poslední požadavky v jakémkoli stavu', kindPending: 'Čeká na schválení', kindAvailable: 'Požadavky, které už dorazily do knihovny', kindTrending: 'Trendy (Seerr discover)', kindPopularMovies: 'Populární filmy (Seerr discover)', kindPopularTv: 'Populární seriály (Seerr discover)', rowTitle: 'Nadpis (prázdné = výchozí v jazyce diváka)', rowPosition: 'Umístění', rowTop: 'Nad řádky Jellyfinu', rowBottom: 'Pod nimi', rowLimit: 'Plakátů nejvýš', rowShowHint: 'Na plakátech:', rowShowTitle: 'Název', rowShowSubtitle: 'Rok / žadatel pod názvem', rowShowDate: 'Datum vydání v rohu', rowShowState: 'Stav požadavku (+ … ½ ✓)', rowShowType: 'Film / Seriál', rowShowRequester: 'Kdo to požadoval',
             slideshow: 'Slideshow na Domů', slideshowHint: 'Velký karusel nahoře na domovské stránce: backdrop, logo nebo název, popis a tlačítko na položku. Vyžaduje zapnuté skriptové funkce (sekce Vlastní tlačítka v liště). V náhledu se objeví po Uložit nebo Použít.',
             slideshowEnabled: 'Zobrazit slideshow', slideshowSource: 'Co ukazovat', ssRandom: 'Náhodné položky', ssLatest: 'Nedávno přidané', ssContinue: 'Pokračovat ve sledování', ssFavorites: 'Oblíbené', ssGenre: 'Žánr (název níže)', ssTag: 'Štítek (název níže)',
             slideshowFilter: 'Název žánru / štítku', slideshowTypes: 'Typy položek', ssBoth: 'Filmy a seriály', ssMovies: 'Filmy', ssSeries: 'Seriály', slideshowCount: 'Počet položek', slideshowInterval: 'Sekund na snímek', slideshowHeight: 'Výška (% okna)',
@@ -353,7 +357,7 @@
             var path = el.getAttribute('data-path');
             var event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, function () {
-                setPath(state, path, el.type === 'checkbox' ? el.checked : el.value);
+                setPath(state, path, el.type === 'checkbox' ? el.checked : el.type === 'number' ? (parseInt(el.value, 10) || 0) : el.value);
                 followPreview(path);
                 if (path === 'Header.Layout') {
                     renderSlots();
@@ -363,7 +367,7 @@
                     state.Scripts.Enabled = true;
                     page.querySelector('#jcScriptsEnabled').checked = true;
                 }
-                if (path.indexOf('Scripts.') === 0) {
+                if (path.indexOf('Scripts.') === 0 || path.indexOf('Seerr.') === 0) {
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
@@ -416,6 +420,7 @@
             }
         });
         renderButtons();
+        renderSeerrRows();
         renderSlots();
         renderBadgeZones();
     }
@@ -669,6 +674,46 @@
         bindInputs(box);
     }
 
+    // Seerr rows: the same kind of list as the toolbar buttons.
+    function renderSeerrRows() {
+        var box = page.querySelector('#jcSeerrRows');
+        var tpl = page.querySelector('#jcSeerrRowTemplate');
+        box.textContent = '';
+        var list = (state.Seerr && state.Seerr.Rows) || [];
+        list.forEach(function (r, i) {
+            var node = tpl.content.firstElementChild.cloneNode(true);
+            node.querySelectorAll('[data-field]').forEach(function (el) {
+                var field = el.getAttribute('data-field');
+                el.setAttribute('data-path', 'Seerr.Rows.' + i + '.' + field);
+                if (el.type === 'checkbox') {
+                    el.checked = !!r[field];
+                } else {
+                    el.value = r[field] == null ? '' : r[field];
+                }
+            });
+            node.querySelector('.jc-btn-remove').addEventListener('click', function () {
+                state.Seerr.Rows.splice(i, 1);
+                renderSeerrRows();
+                scheduleScriptPreview();
+            });
+            translate(node);
+            box.appendChild(node);
+        });
+        bindInputs(box);
+    }
+
+    page.querySelector('#jcBtnAddSeerrRow').addEventListener('click', function () {
+        if (!state.Seerr) {
+            state.Seerr = { Url: '', ApiKey: '', Rows: [] };
+        }
+        if (!state.Seerr.Rows) {
+            state.Seerr.Rows = [];
+        }
+        state.Seerr.Rows.push({ Enabled: true, Kind: 'Upcoming', Title: '', Position: 'Top', Limit: 20, ShowTitle: true, ShowSubtitle: true, ShowDate: true, ShowState: true, ShowType: false, ShowRequester: false });
+        renderSeerrRows();
+        scheduleScriptPreview();
+    });
+
     page.querySelector('#jcBtnAddButton').addEventListener('click', function () {
         if (!state.Scripts) {
             state.Scripts = { Enabled: true, ToolbarButtons: [] };
@@ -841,6 +886,7 @@
         renderPlugins();
         page.querySelector('#jcScriptsSection').hidden = !available;
         page.querySelector('#jcSlideshowSection').hidden = !available;
+        page.querySelector('#jcSeerrSection').hidden = !available;
         page.querySelector('#jcBadgesSection').hidden = !available;
         page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
         refreshConditions();
@@ -981,6 +1027,8 @@
         ['.mainDrawer, .MuiDrawer-paper', 'drawer'],
         ['#jellycanvasSlideshow', 'slideshow'],
         ['.upNextContainer', 'dialogs', '[data-path="Dialogs.UpNext"]'],
+        ['.skip-button-container', 'player', 'skipHeading'],
+        ['.videoOsdBottom, .osdHeader', 'player', 'osdHeading'],
         ['.dialog, .MuiMenu-paper, .MuiPopover-paper, .MuiDialog-paper, .toast', 'dialogs'],
         ['#loginPage h1, #loginPage .btnQuick, #loginPage .btnForgotPassword', 'login', 'loginTextsHeading'],
         ['#loginPage .emby-input, #loginPage .emby-button', 'login', 'loginFieldsHeading'],
@@ -1146,6 +1194,7 @@
                 return findItem().then(function (id) { return base + (id ? '#/details?id=' + id : '#/home'); });
             case 'login':
                 return Promise.resolve(base + '#/login');
+            case 'player':
             case 'upnext':
             case 'stillwatching':
                 // The player prompts are mocked on top of the home page (injectMock).
@@ -1191,6 +1240,7 @@
         // Other dialog settings stay where they are: a menu opened in the
         // preview to look at is worth more than a jump to the mock prompt.
         ['Dialogs.UpNext', 'upnext'],
+        ['Player.', 'player'],
         ['Buttons.Play', 'detail'],
         ['Buttons.Detail', 'detail'],
         ['Header.LibraryRow', 'library'],
@@ -1266,10 +1316,51 @@
     // preview cannot do - so the same markup the client builds (from its
     // upNextDialog and dialog components) is put over the page instead.
     // ------------------------------------------------------------------
-    var MOCK_KINDS = { upnext: true, stillwatching: true };
+    var MOCK_KINDS = { player: true, upnext: true, stillwatching: true };
 
     function mockHtml(kind) {
         var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+        if (kind === 'player') {
+            // The player's own rules come along (from jellyfin-web's
+            // videoosd.scss, emby-slider.scss and the skip button); the
+            // theme's rules win over them, as in the real player.
+            var btn = function (icon, cls) { return '<button is="paper-icon-button-light" class="' + (cls || '') + ' paper-icon-button-light autoSize" type="button"><span class="xlargePaperIconButton material-icons ' + icon + '" aria-hidden="true"></span></button>'; };
+            return '<style>' +
+                '#jellycanvas-mock .osdHeader{position:fixed;top:0;left:0;right:0;height:7.5em;background:linear-gradient(180deg,rgba(16,16,16,.75),rgba(16,16,16,0));color:#eee;padding:.5em 1em;display:flex;align-items:center}' +
+                '#jellycanvas-mock .videoOsdBottom{background:linear-gradient(0deg,rgba(16,16,16,.75),rgba(16,16,16,0));bottom:0;color:#fff;display:flex;justify-content:center;left:0;padding:2em 1em 1.75em;position:fixed;right:0;transition:opacity .3s ease-out}' +
+                '#jellycanvas-mock .osdControls{flex-grow:1;padding:0 .8em;max-width:1400px}' +
+                '#jellycanvas-mock .osdTextContainer{display:flex;align-items:center;margin-bottom:.7em;padding-left:.5em}' +
+                '#jellycanvas-mock .osdTitle{margin:0 1em 0 0;font-size:1.4em}' +
+                '#jellycanvas-mock .sliderContainer{position:relative}' +
+                '#jellycanvas-mock .mdl-slider-container{display:flex;height:1.25em;position:relative}' +
+                '#jellycanvas-mock .mdl-slider-background-flex-container{box-sizing:border-box;padding:0 .54em;position:absolute;top:50%;width:100%}' +
+                '#jellycanvas-mock .mdl-slider-background-flex{background:hsla(0,0%,100%,.3);height:.2em;margin-top:-.1em;overflow:hidden;width:100%;display:flex}' +
+                '#jellycanvas-mock .mdl-slider-background-flex-inner{position:relative;width:100%}' +
+                '#jellycanvas-mock .mdl-slider-background-lower{background-color:#00a4dc;bottom:0;left:0;position:absolute;top:0;width:38%}' +
+                '#jellycanvas-mock .mdl-slider{appearance:none;-webkit-appearance:none;background:transparent;width:100%;height:150%;margin:0;position:relative;z-index:1}' +
+                '#jellycanvas-mock .mdl-slider::-webkit-slider-runnable-track{background:transparent}' +
+                '#jellycanvas-mock .mdl-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#00a4dc;border:none;border-radius:50%;height:1.08em;width:1.08em}' +
+                '#jellycanvas-mock .buttons{display:flex;align-items:center;flex-wrap:wrap;padding:.25em 0 0}' +
+                '#jellycanvas-mock .buttons .osdTimeText{margin:0 1em}' +
+                '#jellycanvas-mock .paper-icon-button-light{background:transparent;border:0;color:inherit;width:2.9em;height:2.9em;margin:0 .29em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1em;cursor:pointer}' +
+                '#jellycanvas-mock .xlargePaperIconButton{font-size:2.2em}' +
+                '#jellycanvas-mock .skip-button-container{bottom:8rem;left:0;pointer-events:none;position:fixed;right:0;z-index:10000;display:flex}' +
+                '#jellycanvas-mock .skip-button{align-items:center;background-color:#303030;border:none;border-radius:.2em;color:hsla(0,0%,100%,.87);cursor:pointer;display:flex;font-size:1.2em;font-weight:700;gap:3px;margin-left:auto;margin-right:6rem;padding:12px 20px;pointer-events:auto;font-family:inherit}' +
+                '</style>' +
+                '<div class="jc-mock-video" style="position:fixed;top:0;right:0;bottom:0;left:0;background:#000 url(&quot;../Jellycanvas/Backdrop&quot;) center/cover;filter:brightness(.7);"></div>' +
+                '<div class="skinHeader skinHeader-withBackground osdHeader"><button type="button" class="paper-icon-button-light headerButton headerBackButton"><span class="material-icons arrow_back" aria-hidden="true" style="font-size:1.6em"></span></button></div>' +
+                '<div class="videoOsdBottom videoOsdBottom-maincontrols"><div class="osdControls">' +
+                '<div class="osdTextContainer osdMainTextContainer"><h3 class="osdTitle">' + esc(t('mockEpisode')) + '</h3></div>' +
+                '<div class="flex flex-direction-row align-items-center" style="display:flex;align-items:center">' +
+                '<div class="osdTextContainer startTimeText osdPositionText" style="margin:0 .25em 0 0">17:42</div>' +
+                '<div class="sliderContainer flex-grow" style="margin:.5em 0 .25em;flex-grow:1"><div class="mdl-slider-container"><div class="mdl-slider-background-flex-container"><div class="mdl-slider-background-flex"><div class="mdl-slider-background-flex-inner"><div class="mdl-slider-background-lower"></div></div></div></div><input type="range" min="0" max="100" value="38" class="mdl-slider osdPositionSlider" aria-label="position"></div></div>' +
+                '<div class="osdTextContainer endTimeText osdDurationText" style="margin:0 0 0 .25em">46:10</div></div>' +
+                '<div class="buttons focuscontainer-x"><div>' + btn('skip_previous', 'btnPreviousTrack') + btn('fast_rewind', 'btnRewind') + btn('pause', 'btnPause') + btn('fast_forward', 'btnFastForward') + btn('skip_next', 'btnNextTrack') + '</div>' +
+                '<div class="osdTimeText"><span class="endsAtText">' + esc(t('mockEndsAt')) + '</span></div>' +
+                '<div style="margin-left:auto;display:flex;align-items:center">' + btn('closed_caption', 'btnSubtitles') + btn('audiotrack', 'btnAudio') + btn('volume_up', 'buttonMute') + btn('settings', 'btnVideoOsdSettings') + btn('fullscreen', 'btnFullscreen') + '</div>' +
+                '</div></div></div>' +
+                '<div class="skip-button-container"><button is="emby-button" class="skip-button emby-button" type="button">' + esc(t('mockSkip')) + '<span class="material-icons skip_next" aria-hidden="true"></span></button></div>';
+        }
         if (kind === 'upnext') {
             // The prompt's own stylesheet is part of the video player chunk,
             // which the home page never loads - so its rules come along
@@ -1461,6 +1552,15 @@
         }).catch(fail);
     });
 
+    page.querySelector('#jcBtnSeerrTest').addEventListener('click', function () {
+        var out = page.querySelector('#jcSeerrTestResult');
+        out.textContent = '…';
+        post('Seerr/Test', { Url: state.Seerr.Url, ApiKey: state.Seerr.ApiKey }, true).then(function (r) {
+            out.textContent = r.Ok ? t('seerrTestOk', r.Message.replace(/^ok\s*/, '')) : t('seerrTestFail', r.Message);
+            out.style.color = r.Ok ? '#7ed957' : '#ff8a80';
+        }).catch(fail);
+    });
+
     function refreshStatus() {
         return ApiClient.getJSON(ApiClient.getUrl('Jellycanvas/Status')).then(function (s) {
             status = s;
@@ -1536,6 +1636,10 @@
         delete copy.Enabled;
         if (copy.Scripts) {
             delete copy.Scripts.ToolbarButtons;
+        }
+        if (copy.Seerr) {
+            delete copy.Seerr.Url;
+            delete copy.Seerr.ApiKey;
         }
         if (copy.InfoBar) {
             delete copy.InfoBar.Text;

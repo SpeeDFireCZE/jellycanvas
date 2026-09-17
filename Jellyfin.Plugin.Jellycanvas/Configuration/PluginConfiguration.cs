@@ -483,6 +483,21 @@ public class CardBadgeSettings
 
     /// <summary>Badges in a corner stacked under each other instead of in a row.</summary>
     public bool Stacked { get; set; } = true;
+
+    /// <summary>Hide in the TV layout.</summary>
+    public bool HideOnTv { get; set; } = false;
+
+    /// <summary>How many audio languages a card shows at most (1-4).</summary>
+    public int AudioMax { get; set; } = 4;
+
+    /// <summary>Audio languages shown first when the item has them, in this order (codes like "cs, en"); the rest fill up by how widely spoken they are.</summary>
+    public string AudioPreferred { get; set; } = string.Empty;
+
+    /// <summary>How many subtitle languages a card shows at most (1-4).</summary>
+    public int SubtitleMax { get; set; } = 4;
+
+    /// <summary>Subtitle languages shown first when the item has them, in this order; the rest fill up by how widely spoken they are.</summary>
+    public string SubtitlePreferred { get; set; } = string.Empty;
 }
 
 /// <summary>How the audio / subtitle languages are shown on a card.</summary>
@@ -601,6 +616,33 @@ public class HeaderSettings
     /// <summary>Corner radius of the library row; with a radius the row is inset from the edges.</summary>
     public int LibraryRowRadius { get; set; } = 0;
 
+    /// <summary>The row's surface around each group (title, count, play, sort / filter / view, paging) instead of the whole row. Under an islands bar with "same as bar" this is on by itself.</summary>
+    public bool LibraryRowIslands { get; set; } = false;
+
+    /// <summary>A thin outline around the row (or its islands).</summary>
+    public bool LibraryRowBorder { get; set; } = false;
+
+    /// <summary>Hide the library name (with its dropdown).</summary>
+    public bool LibraryRowHideTitle { get; set; } = false;
+
+    /// <summary>Hide the item count chip.</summary>
+    public bool LibraryRowHideCount { get; set; } = false;
+
+    /// <summary>Hide the Play all / Shuffle buttons.</summary>
+    public bool LibraryRowHidePlay { get; set; } = false;
+
+    /// <summary>Hide the Filter button.</summary>
+    public bool LibraryRowHideFilter { get; set; } = false;
+
+    /// <summary>Hide the Sort button.</summary>
+    public bool LibraryRowHideSort { get; set; } = false;
+
+    /// <summary>Hide the View settings button.</summary>
+    public bool LibraryRowHideView { get; set; } = false;
+
+    /// <summary>Hide the Previous / Next paging buttons.</summary>
+    public bool LibraryRowHidePaging { get; set; } = false;
+
     public LogoImage Logo { get; set; } = LogoImage.Default;
 
     /// <summary>URL of the custom logo. Uploading through the plugin page stores "../Jellycanvas/Logo" here.</summary>
@@ -679,6 +721,185 @@ public class CardSettings
 
     /// <summary>Hover buttons (play, menu) off on series, seasons and collections only - movies and episodes keep them.</summary>
     public bool HideOverlayButtonsOnFolders { get; set; } = false;
+}
+
+/// <summary>The video player's on-screen controls (bottom bar, progress, buttons) and the "Skip intro / credits" button.</summary>
+public class PlayerSettings
+{
+    /// <summary>Look of the bottom control bar; Default = Jellyfin's fade to dark.</summary>
+    public OsdStyle Osd { get; set; } = OsdStyle.Default;
+
+    /// <summary>Bar color (empty = surface color; accent for neo-brutalism).</summary>
+    public string OsdColor { get; set; } = string.Empty;
+
+    /// <summary>Bar opacity in percent.</summary>
+    public int OsdOpacity { get; set; } = 75;
+
+    /// <summary>Background blur behind the bar in pixels (glass).</summary>
+    public int OsdBlur { get; set; } = 16;
+
+    /// <summary>The bar detached from the screen edges, with rounded corners.</summary>
+    public bool OsdFloating { get; set; } = false;
+
+    /// <summary>Corner radius of the bar in pixels (floating, or a styled bar).</summary>
+    public int OsdRadius { get; set; } = 16;
+
+    /// <summary>Color of the played part of the progress slider and its knob (empty = accent).</summary>
+    public string ProgressColor { get; set; } = string.Empty;
+
+    /// <summary>Height of the progress slider track in pixels; 0 = Jellyfin's (about 3).</summary>
+    public int ProgressHeight { get; set; } = 0;
+
+    /// <summary>Size of the control buttons in percent (100 = default).</summary>
+    public int ButtonScale { get; set; } = 100;
+
+    /// <summary>Look of the "Skip intro / credits" button; Default = Jellyfin's dark box.</summary>
+    public SkipStyle Skip { get; set; } = SkipStyle.Default;
+
+    /// <summary>Button color (empty = accent for Accent / neo-brutalism, surface color otherwise).</summary>
+    public string SkipColor { get; set; } = string.Empty;
+
+    /// <summary>Corner radius of the skip button in pixels.</summary>
+    public int SkipRadius { get; set; } = 4;
+
+    /// <summary>Where the skip button sits.</summary>
+    public SkipPosition SkipPosition { get; set; } = SkipPosition.BottomRight;
+
+    /// <summary>Distance of the skip button from the bottom (or top) edge in pixels.</summary>
+    public int SkipOffset { get; set; } = 128;
+
+    /// <summary>Size of the skip button in percent (100 = default).</summary>
+    public int SkipScale { get; set; } = 100;
+}
+
+/// <summary>Look of the player's bottom bar.</summary>
+public enum OsdStyle
+{
+    /// <summary>Jellyfin's own fade to dark.</summary>
+    Default,
+    Solid,
+    Glass,
+    Gradient,
+    Transparent,
+    NeoBrutalism,
+    Glowmorphism,
+    Claymorphism,
+    Neumorphism,
+}
+
+/// <summary>Look of the skip button.</summary>
+public enum SkipStyle
+{
+    /// <summary>Jellyfin's own dark box.</summary>
+    Default,
+
+    /// <summary>Filled with the accent color.</summary>
+    Accent,
+
+    /// <summary>The surface color.</summary>
+    Surface,
+
+    /// <summary>Frosted glass.</summary>
+    Glass,
+
+    /// <summary>Just an outline, transparent inside.</summary>
+    Outline,
+
+    /// <summary>Loud fill, hard frame and shadow.</summary>
+    NeoBrutalism,
+}
+
+/// <summary>Where the skip button sits on the screen.</summary>
+public enum SkipPosition
+{
+    BottomRight,
+    BottomCenter,
+    BottomLeft,
+    TopRight,
+}
+
+/// <summary>
+/// Seerr (Jellyseerr / Overseerr): rows on the home page built from its
+/// requests and discover lists. The client script draws them; the server
+/// talks to Seerr, so the API key stays on the server.
+/// </summary>
+public class SeerrSettings
+{
+    /// <summary>Seerr's address as the server reaches it (http://seerr:5055 or the public URL); empty = off.</summary>
+    public string Url { get; set; } = string.Empty;
+
+    /// <summary>API key from Seerr → Settings → General.</summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>The rows, in order.</summary>
+    public System.Collections.Generic.List<SeerrRow> Rows { get; set; } = new();
+}
+
+/// <summary>What a Seerr row lists.</summary>
+public enum SeerrRowKind
+{
+    /// <summary>Approved requests not in the library yet, next release first.</summary>
+    Upcoming,
+
+    /// <summary>The latest requests, whatever their state.</summary>
+    Recent,
+
+    /// <summary>Requests waiting for approval.</summary>
+    Pending,
+
+    /// <summary>Requests that have arrived in the library, newest first.</summary>
+    Available,
+
+    /// <summary>Seerr's trending list.</summary>
+    Trending,
+
+    /// <summary>Seerr's popular movies.</summary>
+    PopularMovies,
+
+    /// <summary>Seerr's popular series.</summary>
+    PopularTv,
+}
+
+/// <summary>One home page row fed by Seerr.</summary>
+public class SeerrRow
+{
+    public bool Enabled { get; set; } = true;
+
+    public SeerrRowKind Kind { get; set; } = SeerrRowKind.Upcoming;
+
+    /// <summary>The row's heading; empty = a default in the viewer's language.</summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Above Jellyfin's own rows, or below them.</summary>
+    public RowPosition Position { get; set; } = RowPosition.Top;
+
+    /// <summary>How many posters at most.</summary>
+    public int Limit { get; set; } = 20;
+
+    /// <summary>The title under the poster.</summary>
+    public bool ShowTitle { get; set; } = true;
+
+    /// <summary>The year (or who requested it, for request rows) under the title.</summary>
+    public bool ShowSubtitle { get; set; } = true;
+
+    /// <summary>The release date in the poster's corner.</summary>
+    public bool ShowDate { get; set; } = true;
+
+    /// <summary>The request state (requested, processing, partly, available) in the poster's corner.</summary>
+    public bool ShowState { get; set; } = true;
+
+    /// <summary>"Movie" / "Series" in the poster's corner.</summary>
+    public bool ShowType { get; set; } = false;
+
+    /// <summary>Who requested it, on the poster (request rows).</summary>
+    public bool ShowRequester { get; set; } = false;
+}
+
+/// <summary>Where a custom row goes on the home page.</summary>
+public enum RowPosition
+{
+    Top,
+    Bottom,
 }
 
 /// <summary>Dialogs, menus and popovers (<c>.dialog</c>, <c>.MuiMenu-paper</c>...).</summary>
@@ -1009,6 +1230,9 @@ public class BackdropSettings
     /// backdrop every N seconds with a cross-fade; 0 = only on page load.
     /// </summary>
     public int RotateSeconds { get; set; } = 0;
+
+    /// <summary>On an item's page show that item's own backdrop instead (client script; random and custom modes).</summary>
+    public bool ItemDetail { get; set; } = false;
 }
 
 /// <summary>The login page.</summary>
@@ -1069,6 +1293,22 @@ public class LoginSettings
 }
 
 /// <summary>Tweaks for the TV layout (<c>html.layout-tv</c>) - remote-control navigation.</summary>
+/// <summary>How a focused tab in the TV top bar shows.</summary>
+public enum TabFocusStyle
+{
+    /// <summary>Filled with the focus color, no movement.</summary>
+    Highlight,
+
+    /// <summary>A ring in the focus color around the tab.</summary>
+    Ring,
+
+    /// <summary>Jellyfin's own: the tab grows (1.3x).</summary>
+    Scale,
+
+    /// <summary>A gentle grow (1.1x) with a glow in the focus color.</summary>
+    Glow,
+}
+
 public class TvSettings
 {
     /// <summary>Color of the ring around the focused element; empty = accent color.</summary>
@@ -1085,6 +1325,9 @@ public class TvSettings
 
     /// <summary>Size of the TV bar's icons and tabs in percent (100 = default).</summary>
     public int BarScale { get; set; } = 100;
+
+    /// <summary>What a focused tab in the TV bar (Home, Favorites, libraries) does.</summary>
+    public TabFocusStyle TabFocus { get; set; } = TabFocusStyle.Highlight;
 }
 
 /// <summary>Tweaks for the mobile layout (<c>html.layout-mobile</c>).</summary>
@@ -1134,6 +1377,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public DialogSettings Dialogs { get; set; } = new();
 
+    public PlayerSettings Player { get; set; } = new();
+
     public DetailSettings Detail { get; set; } = new();
 
     public MiscSettings Misc { get; set; } = new();
@@ -1145,6 +1390,8 @@ public class PluginConfiguration : BasePluginConfiguration
     public MobileSettings Mobile { get; set; } = new();
 
     public ScriptSettings Scripts { get; set; } = new();
+
+    public SeerrSettings Seerr { get; set; } = new();
 
     /// <summary>Custom CSS appended after the generated block - for anything the controls do not cover.</summary>
     public string ExtraCss { get; set; } = string.Empty;

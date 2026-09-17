@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [] };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -33,6 +33,7 @@
     var infoBar = CONFIG.infoBar || null;
     var badges = CONFIG.badges || null;
     var backdrop = CONFIG.backdrop || null;
+    var rows = CONFIG.rows || [];
     var disposed = false;
     var observers = [];
     var timers = [];
@@ -57,7 +58,8 @@
         document.documentElement.classList.remove('jellycanvas-infobar-closed');
         badgesRemoveAll();
         backdropStop();
-        ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose'].forEach(function (id) {
+        rowsRemoveAll();
+        ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.remove();
@@ -66,7 +68,7 @@
         delete window.__jellycanvasScript;
     }
 
-    if (!buttons.length && !slideshow && !infoBar && !badges && !backdrop) {
+    if (!buttons.length && !slideshow && !infoBar && !badges && !backdrop && !rows.length) {
         return;
     }
 
@@ -84,6 +86,32 @@
         bul: 'BG', hrv: 'HR', srp: 'SR', slv: 'SL', tha: 'TH', vie: 'VI', ind: 'ID', heb: 'HE', cat: 'CA', lit: 'LT', lav: 'LV', est: 'ET'
     };
     var BADGE_TYPES = /^(Movie|Episode|Video|MusicVideo|Trailer)$/;
+    // Languages by how many people speak them, for filling up the badge
+    // when the preferred ones are missing (an item with EN, FR and JA and
+    // room for two shows EN and FR).
+    var LANG_RANK = ['EN', 'ZH', 'HI', 'ES', 'FR', 'AR', 'BN', 'PT', 'RU', 'UR', 'ID', 'DE', 'JA', 'SW', 'TE', 'TR', 'KO', 'VI', 'IT', 'TH', 'PL', 'UK', 'NL', 'RO', 'EL', 'CS', 'SV', 'HU', 'HE', 'DA', 'FI', 'NO', 'SK', 'BG', 'HR', 'SR', 'SL', 'LT', 'LV', 'ET', 'CA'];
+
+    // Which of an item's languages the badge shows: the preferred ones
+    // first (in the admin's order), then the most widely spoken of the
+    // rest, then whatever is left - cut to the limit.
+    function pickLanguages(codes, preferred, max) {
+        var rank = function (c) {
+            var i = LANG_RANK.indexOf(c);
+            return i < 0 ? LANG_RANK.length : i;
+        };
+        var out = [];
+        (preferred || []).forEach(function (p) {
+            if (codes.indexOf(p) >= 0 && out.indexOf(p) < 0) {
+                out.push(p);
+            }
+        });
+        codes.slice().sort(function (a, b) { return rank(a) - rank(b); }).forEach(function (c) {
+            if (out.indexOf(c) < 0) {
+                out.push(c);
+            }
+        });
+        return out.slice(0, Math.max(1, max || 4));
+    }
     var badgeCache = {};
     var badgePending = {};
     var badgeQueue = [];
@@ -174,14 +202,15 @@
         return { resolution: res, hdr: hdr, codec: codecName, sound: soundName(sound), audio: audio, subtitles: subs };
     }
 
-    // "Dolby Digital+ 5.1", "DTS-HD 7.1", "AAC 2.0" - the way a receiver would say it.
+    // "DD+ Atmos 5.1", "DTS-HD 7.1", "AAC 2.0" - short enough for a card
+    // (the full "Dolby Digital+ Atmos 5.1" ran past the poster's edge).
     function soundName(st) {
         if (!st) {
             return '';
         }
         var c = (st.Codec || '').toLowerCase();
         var profile = (st.Profile || '').toLowerCase();
-        var name = c === 'eac3' ? 'Dolby Digital+' : c === 'ac3' ? 'Dolby Digital' : c === 'truehd' ? 'Dolby TrueHD'
+        var name = c === 'eac3' ? 'DD+' : c === 'ac3' ? 'DD' : c === 'truehd' ? 'TrueHD'
             : c === 'dts' ? (/hd|x|ma/.test(profile) ? 'DTS-HD' : 'DTS') : c === 'aac' ? 'AAC' : c === 'flac' ? 'FLAC' : c === 'opus' ? 'Opus'
             : c === 'mp3' ? 'MP3' : c === 'pcm' || /pcm/.test(c) ? 'PCM' : c.toUpperCase();
         if (/atmos/.test(profile)) {
@@ -354,7 +383,7 @@
         // Sound: the codec family decides, the channel layout does not.
         if (id === 'sound') {
             var fam = key.replace(/\s[0-9.]+$/, '');
-            var sounds = ['Dolby TrueHD Atmos', 'Dolby Digital+ Atmos', 'Dolby TrueHD', 'DTS-HD', 'DTS', 'Dolby Digital+', 'Dolby Digital', 'AAC', 'FLAC', 'Opus', 'MP3', 'PCM'];
+            var sounds = ['TrueHD Atmos', 'DD+ Atmos', 'TrueHD', 'DTS-HD', 'DTS', 'DD+', 'DD', 'AAC', 'FLAC', 'Opus', 'MP3', 'PCM'];
             var at = sounds.indexOf(fam);
             if (at >= 0) {
                 return 12 + at;
@@ -384,6 +413,11 @@
             return '';
         }
         var isLang = id === 'audio' || id === 'subtitles';
+        if (isLang) {
+            value = id === 'audio'
+                ? pickLanguages(value, badges.audioPreferred, badges.audioMax)
+                : pickLanguages(value, badges.subtitlePreferred, badges.subtitleMax);
+        }
         var el = document.createElement('span');
         el.className = 'jellycanvas-badge jellycanvas-badge-' + id;
         // Audio and subtitle languages each have their own way of showing.
@@ -463,6 +497,18 @@
             return Math.max(0, Math.round(ind.getBoundingClientRect().bottom - hostTop) - inset + 2);
         }
         var below = { tr: under('.playedIndicator, .countIndicator, .indicator'), tl: under('.mediaSourceIndicator') };
+        // TV cards (and the "overlay" title style) print the title over the
+        // bottom of the image; badges at the bottom move up above it.
+        var hostRect = host.getBoundingClientRect();
+        var textTop = hostRect.bottom;
+        var texts = card.querySelectorAll('.cardText');
+        for (var t = 0; t < texts.length; t++) {
+            var tr = texts[t].getBoundingClientRect();
+            if (tr.height > 0 && tr.top < hostRect.bottom - 2 && tr.bottom > hostRect.top && getComputedStyle(texts[t]).position === 'absolute') {
+                textTop = Math.min(textTop, tr.top);
+            }
+        }
+        var above = Math.max(0, Math.round(hostRect.bottom - textTop) - inset + 2);
         Object.keys(badges.corners).forEach(function (corner) {
             var ids = badges.corners[corner];
             var box = null;
@@ -477,6 +523,9 @@
                     box.style.padding = inset + 'px';
                     if (below[corner]) {
                         box.style.marginTop = below[corner] + 'px';
+                    }
+                    if (above && (corner === 'bl' || corner === 'br')) {
+                        box.style.marginBottom = above + 'px';
                     }
                 }
                 (els.length === undefined ? [els] : els).forEach(function (el) { box.appendChild(el); });
@@ -530,7 +579,7 @@
         if (!badges || disposed) {
             return;
         }
-        if (badges.hideOnMobile && isMobile()) {
+        if ((badges.hideOnMobile && isMobile()) || (badges.hideOnTv && isTv())) {
             return;
         }
         var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges])');
@@ -568,6 +617,78 @@
     var bdLayers = [];
     var bdCurrent = 0;
     var bdBusy = false;
+    var bdDetailId = null;
+
+    // The item whose page is open (#/details?id=...), or null elsewhere.
+    function detailItemId() {
+        var m = /^#\/details\?(.*)$/.exec(location.hash || '');
+        if (!m) {
+            return null;
+        }
+        var q = /(?:^|&)id=([^&]+)/.exec(m[1]);
+        return q ? q[1] : null;
+    }
+
+    // Loads the picture, then cross-fades to it on the other layer.
+    function backdropShow(url) {
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () { resolve(url); };
+            img.onerror = reject;
+            img.src = url;
+        }).then(function (finalUrl) {
+            // The pair in use is captured: the rotation may be stopped
+            // (and the layers dropped) while the image loads or between
+            // the two frames below.
+            var layers = bdLayers;
+            var host = bdHost;
+            var next = 1 - bdCurrent;
+            if (!layers[next]) {
+                return;
+            }
+            layers[next].style.backgroundImage = 'url("' + finalUrl + '")';
+            // Two frames later so the browser paints the new image before the fade.
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    if (layers !== bdLayers) {
+                        return;
+                    }
+                    layers[next].classList.add('is-on');
+                    layers[bdCurrent].classList.remove('is-on');
+                    host.classList.add('is-active');
+                    bdCurrent = next;
+                });
+            });
+        });
+    }
+
+    // Both layers off: whatever the CSS paints underneath shows again.
+    function backdropClear() {
+        bdLayers.forEach(function (l) { l.classList.remove('is-on'); });
+        if (bdHost) {
+            bdHost.classList.remove('is-active');
+        }
+    }
+
+    // The item's own backdrop (an episode's comes from its series).
+    function backdropShowItem(id) {
+        var api = window.ApiClient;
+        if (!api || !api.getCurrentUserId()) {
+            return;
+        }
+        api.getItem(api.getCurrentUserId(), id).then(function (item) {
+            if (bdDetailId !== id || !item) {
+                return;
+            }
+            var own = item.BackdropImageTags && item.BackdropImageTags.length;
+            var owner = own ? item.Id : item.ParentBackdropItemId;
+            var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
+            if (!owner) {
+                return;
+            }
+            return backdropShow(api.getScaledImageUrl(owner, { type: 'Backdrop', maxWidth: 1920, tag: tag }));
+        }).catch(function () { /* no backdrop for this item - keep what is there */ });
+    }
 
     function backdropUrl() {
         // Relative to /web/ (or wherever the client lives), like the CSS.
@@ -576,7 +697,8 @@
     }
 
     function backdropNext() {
-        if (bdBusy || !bdHost || document.hidden) {
+        // Paused while an item's page shows its own backdrop.
+        if (bdBusy || !bdHost || document.hidden || bdDetailId) {
             return;
         }
         bdBusy = true;
@@ -589,36 +711,7 @@
                 }
                 return res.url;
             })
-            .then(function (finalUrl) {
-                return new Promise(function (resolve, reject) {
-                    var img = new Image();
-                    img.onload = function () { resolve(finalUrl); };
-                    img.onerror = reject;
-                    img.src = finalUrl;
-                });
-            })
-            .then(function (finalUrl) {
-                // The pair in use is captured: the rotation may be stopped
-                // (and the layers dropped) while the image loads or between
-                // the two frames below.
-                var layers = bdLayers;
-                var next = 1 - bdCurrent;
-                if (!layers[next]) {
-                    return;
-                }
-                layers[next].style.backgroundImage = 'url("' + finalUrl + '")';
-                // Two frames later so the browser paints the new image before the fade.
-                requestAnimationFrame(function () {
-                    requestAnimationFrame(function () {
-                        if (layers !== bdLayers) {
-                            return;
-                        }
-                        layers[next].classList.add('is-on');
-                        layers[bdCurrent].classList.remove('is-on');
-                        bdCurrent = next;
-                    });
-                });
-            })
+            .then(backdropShow)
             .catch(function () { /* no backdrop right now - keep the current one */ })
             .then(function () { bdBusy = false; });
     }
@@ -644,20 +737,309 @@
         if (!container) {
             return;
         }
-        if (bdHost && bdHost.parentElement === container) {
+        if (!bdHost || bdHost.parentElement !== container) {
+            backdropStop();
+            bdHost = document.createElement('div');
+            bdHost.className = 'jellycanvas-backdrop';
+            bdLayers = [document.createElement('div'), document.createElement('div')];
+            bdHost.appendChild(bdLayers[0]);
+            bdHost.appendChild(bdLayers[1]);
+            container.appendChild(bdHost);
+            bdCurrent = 1;
+            bdDetailId = null;
+            if (backdrop.seconds > 0) {
+                document.documentElement.classList.add('jellycanvas-js-backdrop');
+                backdropNext();
+                bdTimer = setInterval(backdropNext, backdrop.seconds * 1000);
+            }
+        }
+        if (!backdrop.detail) {
             return;
         }
-        backdropStop();
-        bdHost = document.createElement('div');
-        bdHost.className = 'jellycanvas-backdrop';
-        bdLayers = [document.createElement('div'), document.createElement('div')];
-        bdHost.appendChild(bdLayers[0]);
-        bdHost.appendChild(bdLayers[1]);
-        container.appendChild(bdHost);
-        document.documentElement.classList.add('jellycanvas-js-backdrop');
-        bdCurrent = 1;
-        backdropNext();
-        bdTimer = setInterval(backdropNext, backdrop.seconds * 1000);
+        // An item's page shows that item's backdrop; leaving it goes back
+        // to the rotation (next random picture) or to the still background.
+        var id = detailItemId();
+        if (id === bdDetailId) {
+            return;
+        }
+        // The client may not be signed in yet right after load; try again
+        // on the next sync rather than remembering the page as done.
+        if (id && !(window.ApiClient && window.ApiClient.getCurrentUserId())) {
+            return;
+        }
+        bdDetailId = id;
+        if (id) {
+            backdropShowItem(id);
+        } else if (backdrop.seconds > 0) {
+            backdropNext();
+        } else {
+            backdropClear();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Seerr rows on the home page: posters of requested (coming soon),
+    // recently requested or trending titles, drawn as Jellyfin cards so the
+    // theme's card settings apply. The data comes from the plugin's own
+    // endpoint (the server talks to Seerr). A poster opens the item here
+    // when the library has it, otherwise its page in Seerr.
+    // ------------------------------------------------------------------
+    var rowsData = {};
+    var rowsLoading = {};
+
+    // Default headings, in the viewer's language.
+    var ROW_TITLES = {
+        Upcoming: { en: 'Coming soon (requested)', cs: 'Brzy vyjde (požadované)', sk: 'Čoskoro vyjde (požadované)', de: 'Demnächst (angefragt)' },
+        Recent: { en: 'Recently requested', cs: 'Naposledy požadované', sk: 'Naposledy požadované', de: 'Zuletzt angefragt' },
+        Pending: { en: 'Waiting for approval', cs: 'Čeká na schválení', sk: 'Čaká na schválenie', de: 'Wartet auf Freigabe' },
+        Available: { en: 'Requests now available', cs: 'Požadované – nově dostupné', sk: 'Požadované – novo dostupné', de: 'Angefragt – jetzt verfügbar' },
+        Trending: { en: 'Trending', cs: 'Trendy', sk: 'Trendy', de: 'Im Trend' },
+        PopularMovies: { en: 'Popular movies', cs: 'Populární filmy', sk: 'Populárne filmy', de: 'Beliebte Filme' },
+        PopularTv: { en: 'Popular series', cs: 'Populární seriály', sk: 'Populárne seriály', de: 'Beliebte Serien' }
+    };
+    var ROW_WORDS = {
+        en: { movie: 'Movie', tv: 'Series', requested: 'Requested', processing: 'Processing', partial: 'Partly available', available: 'Available', open: 'Open', seerr: 'Open in Seerr' },
+        cs: { movie: 'Film', tv: 'Seriál', requested: 'Požadováno', processing: 'Zpracovává se', partial: 'Částečně dostupné', available: 'Dostupné', open: 'Otevřít', seerr: 'Otevřít v Seerru' },
+        sk: { movie: 'Film', tv: 'Seriál', requested: 'Požadované', processing: 'Spracúva sa', partial: 'Čiastočne dostupné', available: 'Dostupné', open: 'Otvoriť', seerr: 'Otvoriť v Seerri' },
+        de: { movie: 'Film', tv: 'Serie', requested: 'Angefragt', processing: 'In Bearbeitung', partial: 'Teilweise verfügbar', available: 'Verfügbar', open: 'Öffnen', seerr: 'In Seerr öffnen' }
+    };
+
+    function rowLang() {
+        var l = (document.documentElement.lang || navigator.language || 'en').slice(0, 2).toLowerCase();
+        return ROW_WORDS[l] ? l : 'en';
+    }
+
+    function rowWord(key) {
+        return (ROW_WORDS[rowLang()] || ROW_WORDS.en)[key] || ROW_WORDS.en[key];
+    }
+
+    function rowTitle(row) {
+        if (row.title) {
+            return row.title;
+        }
+        var t = ROW_TITLES[row.kind] || {};
+        return t[rowLang()] || t.en || row.kind;
+    }
+
+    function rowsContainer() {
+        return document.querySelector('#indexPage:not(.hide) #homeTab .homeSectionsContainer');
+    }
+
+    function rowsStyle() {
+        if (document.getElementById('jellycanvasRows-style')) {
+            return;
+        }
+        var style = document.createElement('style');
+        style.id = 'jellycanvasRows-style';
+        style.textContent =
+            '.jellycanvas-row .cardImageContainer { background-size: cover; background-position: center; }' +
+            '.jellycanvas-row .jellycanvas-row-tag { position: absolute; top: 0.4em; right: 0.4em; padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; color: #fff; background: rgba(0, 0, 0, 0.7); border-radius: 4px; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-state { position: absolute; top: 0.4em; left: 0.4em; padding: 0.2em 0.5em; font-size: 0.72em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-state.is-available { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }' +
+            '.jellycanvas-row .jellycanvas-row-type { position: absolute; bottom: 0.4em; left: 0.4em; padding: 0.15em 0.45em; font-size: 0.68em; font-weight: 700; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; }' +
+            '.jellycanvas-row .jellycanvas-row-by { position: absolute; bottom: 0.4em; right: 0.4em; padding: 0.15em 0.45em; font-size: 0.68em; border-radius: 4px; background: rgba(0, 0, 0, 0.7); color: #fff; pointer-events: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
+            // The same hover overlay as Jellyfin's cards: a dim with one
+            // button in the middle (open here, or in Seerr).
+            '.jellycanvas-row .cardOverlayContainer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.45); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }' +
+            '.jellycanvas-row .card:hover .cardOverlayContainer, .jellycanvas-row .card:focus-within .cardOverlayContainer { opacity: 1; }' +
+            '.jellycanvas-row .cardOverlayButton { width: 3em; height: 3em; border-radius: 50%; border: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }' +
+            '.jellycanvas-row .cardOverlayButton .material-icons { font-size: 1.6em; }';
+        document.head.appendChild(style);
+    }
+
+    function rowsRemoveAll() {
+        var all = document.querySelectorAll('.jellycanvas-row');
+        for (var i = 0; i < all.length; i++) {
+            all[i].remove();
+        }
+    }
+
+    function rowState(item) {
+        if (item.Status >= 5) {
+            return 'available';
+        }
+        if (item.Status === 4) {
+            return 'partial';
+        }
+        if (item.Status === 3) {
+            return 'processing';
+        }
+        return 'requested';
+    }
+
+    function rowIsRequests(row) {
+        return row.kind === 'Upcoming' || row.kind === 'Recent' || row.kind === 'Pending' || row.kind === 'Available';
+    }
+
+    function rowCard(item, row) {
+        var api = window.ApiClient;
+        var card = document.createElement('div');
+        card.className = 'card overflowPortraitCard card-hoverable card-withuserdata';
+        card.setAttribute('data-jellycanvas', '1');
+        card.setAttribute('data-type', item.Type === 'tv' ? 'Series' : 'Movie');
+        var box = document.createElement('div');
+        box.className = 'cardBox cardBox-bottompadded';
+        var scalable = document.createElement('div');
+        scalable.className = 'cardScalable';
+        var padder = document.createElement('div');
+        padder.className = 'cardPadder cardPadder-overflowPortrait';
+        scalable.appendChild(padder);
+        var inLibrary = !!(item.JellyfinId && api);
+        var href = inLibrary ? '#/details?id=' + item.JellyfinId + '&serverId=' + api.serverId() : item.SeerrUrl;
+        var link = document.createElement('a');
+        link.className = 'cardImageContainer coveredImage cardContent';
+        link.href = href;
+        if (!inLibrary) {
+            link.target = '_blank';
+            link.rel = 'noopener';
+        }
+        if (item.Poster && api) {
+            // Through the plugin (server-side fetch, cached), not TMDB directly.
+            link.style.backgroundImage = 'url("' + api.getUrl('Jellycanvas/Seerr/Image', { p: item.Poster }) + '")';
+        }
+        var state = rowState(item);
+        if (row.showState && rowIsRequests(row)) {
+            var st = document.createElement('span');
+            st.className = 'jellycanvas-row-state is-' + state;
+            st.textContent = state === 'available' ? '✓' : state === 'processing' ? '…' : state === 'partial' ? '½' : '+';
+            st.title = rowWord(state);
+            link.appendChild(st);
+        }
+        if (row.showDate && item.Date) {
+            var tag = document.createElement('span');
+            tag.className = 'jellycanvas-row-tag';
+            tag.textContent = row.kind === 'Upcoming' ? item.Date : item.Date.slice(0, 4);
+            link.appendChild(tag);
+        }
+        if (row.showType) {
+            var ty = document.createElement('span');
+            ty.className = 'jellycanvas-row-type';
+            ty.textContent = rowWord(item.Type === 'tv' ? 'tv' : 'movie');
+            link.appendChild(ty);
+        }
+        if (row.showRequester && item.RequestedBy) {
+            var by = document.createElement('span');
+            by.className = 'jellycanvas-row-by';
+            by.textContent = item.RequestedBy;
+            link.appendChild(by);
+        }
+        scalable.appendChild(link);
+        // Hover: the same kind of overlay Jellyfin's cards have, with one
+        // button - to the item here, or to Seerr.
+        var overlay = document.createElement('div');
+        overlay.className = 'cardOverlayContainer';
+        var btn = document.createElement('a');
+        btn.className = 'cardOverlayButton';
+        btn.href = href;
+        btn.title = rowWord(inLibrary ? 'open' : 'seerr');
+        if (!inLibrary) {
+            btn.target = '_blank';
+            btn.rel = 'noopener';
+        }
+        btn.innerHTML = '<span class="material-icons ' + (inLibrary ? 'play_arrow' : 'open_in_new') + '" aria-hidden="true"></span>';
+        overlay.appendChild(btn);
+        scalable.appendChild(overlay);
+        box.appendChild(scalable);
+        if (row.showTitle) {
+            var text = document.createElement('div');
+            text.className = 'cardText cardTextCentered cardText-first';
+            text.textContent = item.Title;
+            box.appendChild(text);
+        }
+        if (row.showSubtitle) {
+            var sub = document.createElement('div');
+            sub.className = 'cardText cardTextCentered cardText-secondary';
+            sub.textContent = rowIsRequests(row) && item.RequestedBy && !row.showRequester ? item.RequestedBy : (item.Date || '').slice(0, 4);
+            box.appendChild(sub);
+        }
+        card.appendChild(box);
+        return card;
+    }
+
+    function rowsRender() {
+        var container = rowsContainer();
+        if (!container) {
+            return;
+        }
+        rowsStyle();
+        rows.forEach(function (row) {
+            var items = rowsData[row.id];
+            var id = 'jellycanvasRow-' + row.id;
+            var existing = document.getElementById(id);
+            if (!items || !items.length) {
+                if (existing) {
+                    existing.remove();
+                }
+                return;
+            }
+            var wantTop = row.position === 'Top';
+            // Already in place (after the slideshow when there is one).
+            if (existing && existing.parentElement === container) {
+                var prev = existing.previousElementSibling;
+                var next = existing.nextElementSibling;
+                var ok = wantTop
+                    ? (prev === null || prev.id === SS_ID || (prev.classList.contains('jellycanvas-row') && prev.getAttribute('data-position') === 'Top'))
+                    : next === null || (next.classList.contains('jellycanvas-row') && next.getAttribute('data-position') === 'Bottom');
+                if (ok) {
+                    return;
+                }
+                existing.remove();
+            }
+            var section = document.createElement('div');
+            section.id = id;
+            section.className = 'verticalSection jellycanvas-row';
+            section.setAttribute('data-jellycanvas', '1');
+            section.setAttribute('data-position', row.position);
+            var head = document.createElement('div');
+            head.className = 'sectionTitleContainer sectionTitleContainer-cards padded-left';
+            var h2 = document.createElement('h2');
+            h2.className = 'sectionTitle sectionTitle-cards';
+            h2.textContent = rowTitle(row);
+            head.appendChild(h2);
+            section.appendChild(head);
+            var scroller = document.createElement('div');
+            scroller.className = 'itemsContainer scrollX hiddenScrollX padded-left padded-right';
+            scroller.style.cssText = 'display:flex;overflow-x:auto;white-space:nowrap;';
+            items.forEach(function (item) { scroller.appendChild(rowCard(item, row)); });
+            section.appendChild(scroller);
+            if (wantTop) {
+                var after = document.getElementById(SS_ID);
+                var custom = container.querySelectorAll('.jellycanvas-row[data-position="Top"]');
+                if (custom.length) {
+                    after = custom[custom.length - 1];
+                }
+                container.insertBefore(section, after ? after.nextSibling : container.firstChild);
+            } else {
+                container.appendChild(section);
+            }
+        });
+    }
+
+    function rowsLoad(row) {
+        var api = window.ApiClient;
+        if (!api || !api.getCurrentUserId() || rowsLoading[row.id] || rowsData[row.id]) {
+            return;
+        }
+        rowsLoading[row.id] = true;
+        api.getJSON(api.getUrl('Jellycanvas/Seerr/' + row.kind.toLowerCase(), { limit: row.limit })).then(function (items) {
+            rowsData[row.id] = items || [];
+            rowsLoading[row.id] = false;
+            rowsRender();
+        }, function () {
+            rowsData[row.id] = [];
+            rowsLoading[row.id] = false;
+        });
+    }
+
+    function rowsSync() {
+        if (!rows.length || disposed) {
+            return;
+        }
+        if (!rowsContainer()) {
+            return;
+        }
+        rows.forEach(rowsLoad);
+        rowsRender();
     }
 
     // ------------------------------------------------------------------
@@ -755,7 +1137,10 @@
         }
         var box = infoBarBox();
         var btn = document.getElementById('jellycanvasInfoClose');
-        if (!box) {
+        // The overlay of a custom button covers the strip; a close button
+        // floating above the overlay would be the one thing left of it.
+        var covered = buttons.some(isOpen);
+        if (!box || covered) {
             if (btn) {
                 btn.remove();
             }
@@ -1244,6 +1629,7 @@
         syncInfoBar();
         badgeSync();
         backdropSync();
+        rowsSync();
         var tv = isTv();
         var mobile = isMobile();
         var dashboard = document.body && document.body.classList.contains('dashboardDocument');
@@ -1424,10 +1810,10 @@
         style.id = SS_ID + '-style';
         style.textContent =
             '#' + SS_ID + ' { position: relative; height: ' + slideshow.height + 'vh; min-height: 260px; margin: 0 0 1.5em; border-radius: var(--jf-card-borderRadius, 0.2em); overflow: hidden; background: #000; contain: layout paint; }' +
-            '#' + SS_ID + ' .jcs-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.9s ease; pointer-events: none; }' +
+            '#' + SS_ID + ' .jcs-slide { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; transition: opacity 0.9s ease; pointer-events: none; }' +
             '#' + SS_ID + ' .jcs-slide.is-active { opacity: 1; pointer-events: auto; }' +
-            '#' + SS_ID + ' .jcs-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }' +
-            '#' + SS_ID + ' .jcs-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0) 75%), linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 40%); }' +
+            '#' + SS_ID + ' .jcs-bg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }' +
+            '#' + SS_ID + ' .jcs-shade { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0) 75%), linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 40%); }' +
             '#' + SS_ID + ' .jcs-text { position: absolute; left: 4%; right: 30%; bottom: 10%; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }' +
             '#' + SS_ID + ' .jcs-logo { max-width: min(420px, 45%); max-height: 22%; margin-bottom: 0.8em; display: block; }' +
             '#' + SS_ID + ' .jcs-title { font-size: 2.2em; font-weight: 700; margin: 0 0 0.2em; line-height: 1.1; }' +

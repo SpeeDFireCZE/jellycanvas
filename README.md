@@ -21,6 +21,29 @@ plugin when it is installed.
 > the web UI's TV layout (a browser or WebOS / Tizen app). Native apps
 > (Android TV, Swiftfin, Roku, Kodi) do not load custom CSS.
 
+## Screenshots
+
+All from the demo library in the plugin's own preview - the "frosted
+glass" look with islands, colorful card badges, an info bar and the
+item's backdrop behind its page.
+
+| Home (web) | Library |
+|---|---|
+| ![Home](images/screens/home.jpg) | ![Library](images/screens/library.jpg) |
+
+| Item page | Player controls & skip button |
+|---|---|
+| ![Item page](images/screens/detail.jpg) | ![Player](images/screens/player.jpg) |
+
+| TV layout | Phone |
+|---|---|
+| ![TV](images/screens/tv.jpg) | <img src="images/screens/mobile.jpg" alt="Phone" width="300"> |
+
+The designer itself - settings on the left, the live preview of the real
+client on the right:
+
+![The designer](images/screens/designer.jpg)
+
 ## Installation
 
 ### From the plugin repository (recommended)
@@ -118,8 +141,14 @@ other browsers may need a reload a little later.
   or a translucent fill over the poster; hover buttons off everywhere or
   only on series, seasons and collections.
 - **Card badges** (script) - resolution, HDR, codec, sound, audio and
-  subtitle languages (flags or codes) in the corners of movie and episode
-  cards; dark, accent, glass, or a color per value from a chosen range.
+  subtitle languages (flags or codes, preferred languages first, at most
+  1-4) in the corners of movie and episode cards; dark, accent, glass, or
+  a color per value from a chosen range.
+- **Seerr rows** (script) - rows on the home page from Jellyseerr /
+  Overseerr: coming soon (requested), recently requested, waiting for
+  approval, now available, trending, popular movies and series.
+- **Player** - the control bar, the progress slider, button size and the
+  "Skip intro / credits" button.
 - **Buttons & inputs**, **dialogs & menus** (and the player's "Up next"
   prompt), **item detail page** (title ribbon, poster, cast & crew as
   circles or squares, selectors / genres / tags / links as chips, section
@@ -128,9 +157,9 @@ other browsers may need a reload a little later.
   **home slideshow** (script), **login page** (background image or
   gradient, form as card or glass, field and button styles, texts),
   **typography** (bundled, system, Google Fonts), **TV** (the TV layout's
-  own top bar takes the bar settings, plus its height and icon size,
-  focus ring, card zoom) and **mobile** tweaks, and a free-form extra CSS
-  box.
+  own top bar takes the bar settings, plus its height and icon size, the
+  focused tab's look, focus ring, card zoom) and **mobile** tweaks, and a
+  free-form extra CSS box.
 
 ## Development
 

@@ -77,6 +77,7 @@ public static class CssBuilder
         AppendCards(sb, ctx);
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
+        AppendPlayer(sb, ctx);
         AppendBackdrop(sb, ctx);
         AppendDetail(sb, ctx);
         AppendLogin(sb, ctx);
@@ -239,12 +240,13 @@ public static class CssBuilder
         {
             // The bar itself goes transparent; its three groups get the look:
             // logo + links (.MuiStack-root), icons (.MuiBox-root) and the user
-            // (.MuiBox-root). The second toolbar (library title, filters) has
-            // the same kind of children, so it gets islands too.
+            // (.MuiBox-root). The second toolbar (library title, filters) is
+            // the library row's business (AppendLibraryRow) - its stack is a
+            // full-width flex spacer and would become a band across the row.
             sb.AppendLine($"{bars} {{ background: transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }}");
             sb.AppendLine($"{x.P}{Toolbar} {{ gap: 8px; }}");
-            sb.AppendLine($"{x.P}{Toolbar} > .MuiStack-root, {x.P}{Toolbar} > .MuiBox-root {{ {surface} border-radius: {Px(h.SectionRadius)} !important; padding: 2px 6px !important; box-shadow: {shadow} !important; border: {border}; }}");
-            sb.AppendLine($"{x.P}{Toolbar} > .MuiBox-root:empty {{ display: none; }}");
+            sb.AppendLine($"{x.P}{Toolbar}:first-child > .MuiStack-root, {x.P}{Toolbar}:first-child > .MuiBox-root {{ {surface} border-radius: {Px(h.SectionRadius)} !important; padding: 2px 6px !important; box-shadow: {shadow} !important; border: {border}; }}");
+            sb.AppendLine($"{x.P}{Toolbar}:first-child > .MuiBox-root:empty {{ display: none; }}");
             // The icon group has flex-grow: 1 (it stretches across the gap);
             // with its own background it would become a band across half the
             // bar. Stop the stretching and push it right with a margin instead;
@@ -472,25 +474,83 @@ public static class CssBuilder
     {
         var h = x.Config.Header;
         var sidebar = h.Layout == HeaderLayout.Sidebar;
-        if (!sidebar)
-        {
-            // Under a top bar the row is part of the bar and simply shares
-            // its look; only next to a sidebar is it a strip of its own.
-            return;
-        }
 
         // With the sidebar the row is styled under the sidebar's scope (which
         // carries an id in :has() and so outranks a plain selector) - the
         // rules here must be written under the same scope to win, plus the
-        // phone variant where the sidebar falls back to a top bar.
+        // phone variant where the sidebar falls back to a top bar. Under a
+        // top bar the row is the header's second toolbar.
         var row = sidebar
             ? $"{SidebarScope(x)} header.MuiAppBar-root .MuiToolbar-root:nth-child(2), {x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:nth-child(2)"
             : $"{x.P}{AppBar} .MuiToolbar-root:nth-child(2)";
+        // The row's parts: the library name button, the count chip, and in
+        // the stack the Play / Shuffle box, the filter-sort-view group and
+        // the paging group. Buttons are told apart by their MUI icon.
+        string Parts(string inner) => string.Join(", ", row.Split(", ").Select(r => $"{r} {inner}"));
+        var groups = Parts("> .MuiButton-root") + ", " + Parts("> .MuiBox-root:has(.MuiChip-root)") + ", " + Parts(".MuiStack-root > .MuiBox-root") + ", " + Parts(".MuiStack-root > .MuiButtonGroup-root");
 
         sb.AppendLine("/* --- library row --- */");
+        var hidden = new List<string>();
+        if (h.LibraryRowHideTitle)
+        {
+            hidden.Add(Parts("> .MuiButton-root"));
+        }
+
+        if (h.LibraryRowHideCount)
+        {
+            hidden.Add(Parts("> .MuiBox-root:has(.MuiChip-root)"));
+        }
+
+        if (h.LibraryRowHidePlay)
+        {
+            hidden.Add(Parts(".MuiStack-root > .MuiBox-root:has(.MuiButtonGroup-contained)"));
+        }
+
+        if (h.LibraryRowHideFilter)
+        {
+            hidden.Add(Parts("button:has(svg[data-testid=\"FilterAltIcon\"])"));
+        }
+
+        if (h.LibraryRowHideSort)
+        {
+            hidden.Add(Parts("button:has(svg[data-testid=\"SortByAlphaIcon\"])"));
+        }
+
+        if (h.LibraryRowHideView)
+        {
+            hidden.Add(Parts("button:has(svg[data-testid=\"ViewModuleIcon\"])"));
+        }
+
+        if (h.LibraryRowHidePaging)
+        {
+            hidden.Add(Parts(".MuiButtonGroup-root:has(svg[data-testid=\"NavigateNextIcon\"])"));
+        }
+
+        if (hidden.Count > 0)
+        {
+            sb.AppendLine($"{string.Join(", ", hidden)} {{ display: none !important; }}");
+        }
+
+        // Islands: the surface goes around each group rather than across
+        // the row - always so under an islands bar that the row follows.
+        var islands = h.LibraryRowIslands || (h.Layout == HeaderLayout.Sections && h.LibraryRow == LibraryRowStyle.SameAsBar);
+        var border = h.LibraryRowBorder ? $"border: 1px solid {x.Text.Rgba(0.15)};" : string.Empty;
+        SurfaceStyle? style = null;
+        Color color = x.Surface;
+        var opacity = h.LibraryRowOpacity;
+        var blur = h.LibraryRowBlur;
         switch (h.LibraryRow)
         {
             case LibraryRowStyle.SameAsBar:
+                if (islands)
+                {
+                    // The bar's own look, island by island.
+                    style = h.Style;
+                    color = x.HeaderColor;
+                    opacity = h.Opacity;
+                    blur = h.Blur;
+                }
+
                 break;
             case LibraryRowStyle.Hidden:
                 sb.AppendLine($"{row} {{ display: none !important; }}");
@@ -501,20 +561,36 @@ public static class CssBuilder
 
                 return;
             default:
-                var rowStyle = Enum.Parse<SurfaceStyle>(h.LibraryRow.ToString());
-                var rowColor = Color.Parse(h.LibraryRowColor, rowStyle switch
+                style = Enum.Parse<SurfaceStyle>(h.LibraryRow.ToString());
+                color = Color.Parse(h.LibraryRowColor, style switch
                 {
                     SurfaceStyle.Neumorphism => x.Background,
                     SurfaceStyle.NeoBrutalism => x.Accent,
                     _ => x.Surface,
                 });
-                sb.AppendLine($"{row} {{ {Surface(rowStyle, rowColor, h.LibraryRowOpacity, h.LibraryRowBlur, x, "90deg")} }}");
-                if (rowStyle == SurfaceStyle.NeoBrutalism)
-                {
-                    sb.AppendLine($"{row.Replace(", ", " *, ", StringComparison.Ordinal)} * {{ color: {rowColor.ContrastText} !important; }}");
-                }
-
                 break;
+        }
+
+        if (style is { } s && islands)
+        {
+            sb.AppendLine($"{row} {{ background: transparent !important; background-image: none !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 0 !important; gap: 8px; }}");
+            sb.AppendLine($"{groups} {{ {Surface(s, color, opacity, blur, x, "90deg")} border-radius: {Px(h.LibraryRowRadius > 0 ? h.LibraryRowRadius : (h.Layout == HeaderLayout.Sections ? h.SectionRadius : 10))} !important; padding: 2px 6px !important; {border} }}");
+            if (s == SurfaceStyle.NeoBrutalism)
+            {
+                sb.AppendLine($"{groups.Replace(", ", " *, ", StringComparison.Ordinal)} * {{ color: {color.ContrastText} !important; }}");
+            }
+        }
+        else if (style is { } s2)
+        {
+            sb.AppendLine($"{row} {{ {Surface(s2, color, opacity, blur, x, "90deg")} {border} }}");
+            if (s2 == SurfaceStyle.NeoBrutalism)
+            {
+                sb.AppendLine($"{row.Replace(", ", " *, ", StringComparison.Ordinal)} * {{ color: {color.ContrastText} !important; }}");
+            }
+        }
+        else if (h.LibraryRowBorder)
+        {
+            sb.AppendLine($"{row} {{ {border} }}");
         }
 
         if (x.LibraryRowSetHeight > 0)
@@ -524,7 +600,7 @@ public static class CssBuilder
             sb.AppendLine($"{row} {{ min-height: {Px(x.LibraryRowSetHeight)} !important; height: {Px(x.LibraryRowSetHeight)} !important; padding-top: 0 !important; padding-bottom: 0 !important; }}");
         }
 
-        if (h.LibraryRowRadius > 0)
+        if (h.LibraryRowRadius > 0 && !islands)
         {
             // Rounded corners need air around them; under a top bar the row is
             // in the flow (margins), next to a sidebar it is fixed (insets).
@@ -771,7 +847,7 @@ public static class CssBuilder
                 var width = h.LogoWidth > 0 ? h.LogoWidth : height * 3;
                 sb.AppendLine($"{icon} {{ position: relative !important; width: {Px(width)} !important; height: {Px(height)} !important; font-size: 0 !important; }}");
                 sb.AppendLine($"{icon} img {{ visibility: hidden !important; width: 100% !important; height: 100% !important; }}");
-                sb.AppendLine($"{icon}::before {{ content: ''; position: absolute; inset: 0; background: url({CssUrl(h.LogoUrl)}) center / contain no-repeat; }}");
+                sb.AppendLine($"{icon}::before {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: url({CssUrl(h.LogoUrl)}) center / contain no-repeat; }}");
                 sb.AppendLine($"{x.P}.pageTitleWithDefaultLogo {{ background-image: url({CssUrl(h.LogoUrl)}) !important; background-size: contain !important; }}");
                 break;
             default:
@@ -823,7 +899,9 @@ public static class CssBuilder
         // it; the base stylesheet has a plain 0.2em. When the theme file is
         // not there (a proxy that does not pass it on, a broken cache) the
         // variable is never used, so the same elements get the value directly.
-        sb.AppendLine($"{x.P}.blurhash-canvas, {x.P}.cardBox:not(.visualCardBox) .cardPadder, {x.P}.cardContent, {x.P}.cardImageContainer, {x.P}.cardOverlayContainer, {x.P}.visualCardBox, {x.P}.card:focus .cardBox:not(.visualCardBox) .cardScalable {{ border-radius: {Px(k.Radius)} !important; }}");
+        // (.cardBox too: on TV it is painted behind the title strip and
+        // would show square corners under a rounded image.)
+        sb.AppendLine($"{x.P}.blurhash-canvas, {x.P}.cardBox, {x.P}.cardBox:not(.visualCardBox) .cardPadder, {x.P}.cardContent, {x.P}.cardImageContainer, {x.P}.cardOverlayContainer, {x.P}.visualCardBox, {x.P}.card:focus .cardBox:not(.visualCardBox) .cardScalable {{ border-radius: {Px(k.Radius)} !important; }}");
         var image = $"{x.P}.cardBox:not(.visualCardBox) .cardScalable";
         var effects = new StringBuilder();
         if (k.Shadow)
@@ -1190,6 +1268,7 @@ public static class CssBuilder
                 // from side to side. Blur composes with the same rule.
                 sb.AppendLine($"{x.P}.backdropImage {{ background-size: 115% !important; animation: jellycanvas-pan 60s ease-in-out infinite alternate; {filter} }}");
                 sb.AppendLine("@keyframes jellycanvas-pan { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }");
+                sb.AppendLine(PortraitCover);
             }
             else if (bd.Blur > 0)
             {
@@ -1220,6 +1299,7 @@ public static class CssBuilder
         if (bd.Animate)
         {
             sb.AppendLine("@keyframes jellycanvas-pan { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }");
+            sb.AppendLine(PortraitCover);
         }
 
         if (bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0)
@@ -1229,7 +1309,36 @@ public static class CssBuilder
         }
 
         sb.AppendLine($"{container} {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; {pan} }}");
+        if (bd.ItemDetail)
+        {
+            // The item's backdrop goes on the script's layer over the image.
+            AppendBackdropLayers(sb, dim, bd.Animate);
+        }
     }
+
+    /// <summary>
+    /// The client script's backdrop layers inside the background container:
+    /// two divs it cross-fades between (rotation, an item's own backdrop)
+    /// and the dim over them - the dim only while a layer shows, so a
+    /// still background underneath is not dimmed twice.
+    /// </summary>
+    private static void AppendBackdropLayers(StringBuilder sb, string dim, bool animate)
+    {
+        var size = animate ? "background-size: 115% auto;" : "background-size: cover;";
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {dim}; opacity: 0; transition: opacity 1.6s ease-in-out; }}");
+        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop.is-active::after {{ opacity: 1; }}");
+    }
+
+    /// <summary>
+    /// The panning picture is 115% of the screen's width - on a phone held
+    /// upright that is a short band across the middle. Portrait screens
+    /// cover the height instead; a landscape picture is then wider than
+    /// the screen, so the pan still has room to move.
+    /// </summary>
+    private const string PortraitCover = "@media (orientation: portrait) { html .backdropImage, html .backgroundContainer, html .backgroundContainer::before, html .backgroundContainer::after, html .backgroundContainer > .jellycanvas-backdrop > div { background-size: cover !important; } }";
 
     /// <summary>
     /// A random backdrop that changes every few seconds - in pure CSS.
@@ -1246,7 +1355,7 @@ public static class CssBuilder
         var total = n * seconds;
         var size = animate ? "background-size: 115% auto;" : "background-size: cover;";
         var pan = animate ? ", jellycanvas-pan 60s ease-in-out infinite alternate" : string.Empty;
-        var layer = $"content: ''; position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; {size}";
+        var layer = $"content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size}";
 
         sb.AppendLine($"{container} {{ background-image: none !important; }}");
         // Layer A shows images 1, 3, 5...; layer B shows 2, 4, 6... When the
@@ -1255,10 +1364,7 @@ public static class CssBuilder
         sb.AppendLine($"{container}::before {{ {layer} animation: jellycanvas-fade-a {2 * seconds}s linear infinite, jellycanvas-images-a {total}s step-end infinite{pan}; }}");
         sb.AppendLine($"{container}::after {{ {layer} animation: jellycanvas-fade-b {2 * seconds}s linear infinite, jellycanvas-images-b {total}s step-end infinite{pan}; }}");
         sb.AppendLine($"html.jellycanvas-js-backdrop .backgroundContainer::before, html.jellycanvas-js-backdrop .backgroundContainer::after {{ display: none !important; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; inset: 0; overflow: hidden; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; inset: 0; background: {dim}; }}");
+        AppendBackdropLayers(sb, dim, animate);
 
         // Visibility over one two-slot period: A visible in the first half,
         // B in the second, with a cross-fade around the hand-over.
@@ -1304,7 +1410,7 @@ public static class CssBuilder
             // vanish). The ribbon only isolates the stacking so the layer
             // stays above the page background.
             sb.AppendLine($"{x.P}html .detailRibbon {{ background: transparent !important; position: relative; isolation: isolate; }}");
-            sb.AppendLine($"{x.P}html .detailRibbon::before {{ content: ''; position: absolute; inset: 0; z-index: -1; box-sizing: border-box; pointer-events: none; {Surface(ribbonStyle, ribbonColor, d.RibbonOpacity, d.RibbonBlur, x, "90deg")} }}");
+            sb.AppendLine($"{x.P}html .detailRibbon::before {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; box-sizing: border-box; pointer-events: none; {Surface(ribbonStyle, ribbonColor, d.RibbonOpacity, d.RibbonBlur, x, "90deg")} }}");
             if (ribbonStyle == SurfaceStyle.NeoBrutalism)
             {
                 sb.AppendLine($"{x.P}html .detailRibbon::before {{ border-left: 0 !important; border-right: 0 !important; }}");
@@ -1514,7 +1620,7 @@ public static class CssBuilder
             // but above html.
             var blur = l.BackgroundBlur > 0 ? $"filter: blur({Px(l.BackgroundBlur)}); transform: scale(1.06);" : string.Empty;
             sb.AppendLine($"{x.P}html #loginPage {{ position: relative; z-index: 0; }}");
-            sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; inset: 0; z-index: -1; background: url({CssUrl(l.BackgroundUrl)}) center / cover no-repeat; {blur} }}");
+            sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: url({CssUrl(l.BackgroundUrl)}) center / cover no-repeat; {blur} }}");
         }
         else if (l.GradientBackground)
         {
@@ -1528,7 +1634,7 @@ public static class CssBuilder
             var from = Color.Parse(l.GradientFrom, x.Background).RgbaPercent(l.GradientOpacity);
             var to = Color.Parse(l.GradientTo, x.Accent.Darken(0.55)).RgbaPercent(l.GradientOpacity);
             sb.AppendLine($"{x.P}html #loginPage {{ position: relative; z-index: 0; background: transparent !important; }}");
-            sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient({l.GradientAngle}deg, {from} 0%, {to} 100%); }}");
+            sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: linear-gradient({l.GradientAngle}deg, {from} 0%, {to} 100%); }}");
         }
 
         if (l.TransparentBar)
@@ -1788,6 +1894,36 @@ public static class CssBuilder
                 break;
         }
 
+        // Focus on a tab. Jellyfin scales the focused tab 1.3x with nothing
+        // else - a pill then runs into its neighbours and the slider clips
+        // it. The scale stays available; the others keep the tab in place.
+        sb.AppendLine($"{bar} .headerTabs, {bar} .emby-tabs-slider {{ overflow: visible !important; }}");
+        sb.AppendLine($"{tab} {{ transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease; }}");
+        sb.AppendLine($"{tab}.show-focus:focus {{ z-index: 1; }}");
+        var focus = x.Focus;
+        // The focus color defaults to the accent - the same as the active
+        // pill, which would make the two look alike; the fill then uses the
+        // text color instead (a light pill on a dark bar).
+        var fill = string.IsNullOrWhiteSpace(x.Config.Tv.FocusColor) ? x.Text : focus;
+        switch (x.Config.Tv.TabFocus)
+        {
+            case TabFocusStyle.Highlight:
+                sb.AppendLine($"{tab}.show-focus:focus {{ transform: none !important; background: {fill.Hex} !important; color: {fill.ContrastText} !important; border-radius: {(h.Nav == NavStyle.Pill ? "999px" : "0.4em")} !important; }}");
+                sb.AppendLine($"{tab}.show-focus:focus .emby-button-foreground {{ color: inherit !important; }}");
+                break;
+            case TabFocusStyle.Ring:
+                sb.AppendLine($"{tab}.show-focus:focus {{ transform: none !important; box-shadow: 0 0 0 {Px(Math.Max(2, x.Config.Tv.FocusWidth))} {focus.Hex} !important; border-radius: {(h.Nav == NavStyle.Pill ? "999px" : "0.4em")} !important; color: {x.Text.Hex} !important; }}");
+                break;
+            case TabFocusStyle.Glow:
+                sb.AppendLine($"{tab} {{ margin-left: 0.5em !important; margin-right: 0.5em !important; }}");
+                sb.AppendLine($"{tab}.show-focus:focus {{ transform: scale(1.1) !important; box-shadow: 0 0 14px 2px {focus.Rgba(0.7)} !important; border-radius: {(h.Nav == NavStyle.Pill ? "999px" : "0.4em")} !important; color: {x.Text.Hex} !important; }}");
+                break;
+            case TabFocusStyle.Scale:
+                // Room for the 1.3x tab, so it neither overlaps nor gets clipped.
+                sb.AppendLine($"{tab} {{ margin-left: 0.9em !important; margin-right: 0.9em !important; }}");
+                break;
+        }
+
         if (h.HideSyncPlay)
         {
             sb.AppendLine($"{bar} .headerSyncButton {{ display: none !important; }}");
@@ -1836,6 +1972,106 @@ public static class CssBuilder
             sb.AppendLine($"{bar} {{ contain: layout style !important; }}");
             sb.AppendLine($"{bar} .headerTop {{ position: relative; }}");
             sb.AppendLine($"{bar} .headerTop::after {{ content: {CssString(i.Text)}; position: absolute; top: 100%; left: {edge}; right: {edge}; z-index: 2; display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: {Px(Math.Max(20, i.Height))}; padding: 0.3em 1em; background: {bg.Hex}; color: {fg}; font-size: 0.92em; font-weight: 600; line-height: 1.3; text-align: center; white-space: normal; overflow-wrap: anywhere; border-radius: {Px(i.Radius)}; {(i.Radius > 0 ? "margin-top: 6px;" : string.Empty)} }}");
+        }
+    }
+
+    /// <summary>
+    /// The video player: the bottom control bar (.videoOsdBottom, a fade to
+    /// dark by default), the progress slider (emby-slider: .mdl-slider-*),
+    /// the control buttons, and the media-segment "Skip intro / credits"
+    /// button (.skip-button-container > .skip-button).
+    /// </summary>
+    private static void AppendPlayer(StringBuilder sb, Context x)
+    {
+        var p = x.Config.Player;
+        sb.AppendLine("/* --- video player --- */");
+        // The video must never end up under the theme's background layers.
+        sb.AppendLine($"{x.P}html .videoPlayerContainer {{ z-index: 1000 !important; }}");
+        var bar = $"{x.P}html .videoOsdBottom";
+
+        if (p.Osd != OsdStyle.Default)
+        {
+            var style = Enum.Parse<SurfaceStyle>(p.Osd.ToString());
+            var color = Color.Parse(p.OsdColor, style switch
+            {
+                SurfaceStyle.Neumorphism => x.Background,
+                SurfaceStyle.NeoBrutalism => x.Accent,
+                _ => x.Surface,
+            });
+            var radius = Px(p.OsdRadius);
+            // The bar's own fade goes; the surface takes its place. Floating:
+            // in from the edges, rounded all round; otherwise rounded on top.
+            sb.AppendLine($"{bar} {{ {Surface(style, color, p.OsdOpacity, p.OsdBlur, x, "0deg")} background-image: none !important; padding-top: 0.6em !important; }}");
+            if (p.OsdFloating)
+            {
+                sb.AppendLine($"{bar} {{ left: 16px !important; right: 16px !important; bottom: 16px !important; border-radius: {radius} !important; padding-bottom: 1em !important; }}");
+            }
+            else if (p.OsdRadius > 0)
+            {
+                sb.AppendLine($"{bar} {{ border-radius: {radius} {radius} 0 0 !important; }}");
+            }
+
+            if (style == SurfaceStyle.NeoBrutalism)
+            {
+                sb.AppendLine($"{bar}, {bar} .paper-icon-button-light {{ color: {color.ContrastText} !important; }}");
+            }
+
+            // The top fade (back button, title) takes the bar's color.
+            sb.AppendLine($"{x.P}html .skinHeader-withBackground.osdHeader {{ background: linear-gradient(180deg, {color.Rgba(0.75)}, {color.Rgba(0)}) !important; }}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(p.ProgressColor) || p.ProgressHeight > 0)
+        {
+            var progress = Color.Parse(p.ProgressColor, x.Accent);
+            sb.AppendLine($"{bar} .mdl-slider-background-lower {{ background-color: {progress.Hex} !important; }}");
+            sb.AppendLine($"{bar} .mdl-slider::-webkit-slider-thumb {{ background: {progress.Hex} !important; }}");
+            sb.AppendLine($"{bar} .mdl-slider::-moz-range-thumb {{ background: {progress.Hex} !important; }}");
+            sb.AppendLine($"{bar} .mdl-slider {{ color: {progress.Hex} !important; }}");
+            if (p.ProgressHeight > 0)
+            {
+                var h = Px(p.ProgressHeight);
+                sb.AppendLine($"{bar} .mdl-slider-background-flex {{ height: {h} !important; margin-top: calc({h} / -2) !important; border-radius: {h}; }}");
+            }
+        }
+
+        if (p.ButtonScale != 100)
+        {
+            sb.AppendLine($"{bar} .paper-icon-button-light {{ font-size: {p.ButtonScale}% !important; }}");
+        }
+
+        // The skip button.
+        var box = $"{x.P}html .skip-button-container";
+        var skip = $"{box} .skip-button";
+        if (p.Skip != SkipStyle.Default)
+        {
+            var fill = Color.Parse(p.SkipColor, p.Skip is SkipStyle.Accent or SkipStyle.NeoBrutalism ? x.Accent : x.Surface);
+            var look = p.Skip switch
+            {
+                SkipStyle.Accent => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);",
+                SkipStyle.Surface => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);",
+                SkipStyle.Glass => $"background: {fill.Rgba(0.35)} !important; color: {x.Text.Hex} !important; backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4); border: 1px solid {x.Text.Rgba(0.25)};",
+                SkipStyle.Outline => $"background: rgba(0, 0, 0, 0.25) !important; color: {x.Text.Hex} !important; border: 2px solid {fill.Hex};",
+                _ => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; border: 3px solid {x.Outline.Hex}; box-shadow: 5px 5px 0 {x.Outline.Hex};",
+            };
+            sb.AppendLine($"{skip} {{ {look} }}");
+        }
+
+        sb.AppendLine($"{skip} {{ border-radius: {Px(p.SkipRadius)} !important; {(p.SkipScale != 100 ? $"font-size: {1.2 * p.SkipScale / 100.0:0.##}em !important;" : string.Empty)} }}");
+        var offset = Px(Math.Max(0, p.SkipOffset));
+        switch (p.SkipPosition)
+        {
+            case SkipPosition.BottomLeft:
+                sb.AppendLine($"{box} {{ bottom: {offset} !important; }} {skip} {{ margin-left: 6rem !important; margin-right: auto !important; }}");
+                break;
+            case SkipPosition.BottomCenter:
+                sb.AppendLine($"{box} {{ bottom: {offset} !important; }} {skip} {{ margin-left: auto !important; margin-right: auto !important; }}");
+                break;
+            case SkipPosition.TopRight:
+                sb.AppendLine($"{box} {{ bottom: auto !important; top: {offset} !important; }}");
+                break;
+            default:
+                sb.AppendLine($"{box} {{ bottom: {offset} !important; }}");
+                break;
         }
     }
 

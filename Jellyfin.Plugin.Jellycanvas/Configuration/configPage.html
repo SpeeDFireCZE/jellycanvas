@@ -48,15 +48,22 @@
                 .jc-status.jc-status-on { color: #7bd88f; opacity: 1; }
 
                 /* Groups of sections */
-                .jc-group { margin: 0 0 1.4em; }
-                .jc-group-title { font-size: .78em; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin: 0 0 .5em .2em; }
-                .jc-section { border: 1px solid rgba(255,255,255,.08); border-radius: .6em; margin-bottom: .5em; background: rgba(255,255,255,.025); }
-                .jc-section > summary { cursor: pointer; padding: .75em 1em; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .6em; }
+                .jc-group { margin: 0 0 1.6em; }
+                /* Group headings: a colored label with a rule, so the groups read at a glance. */
+                .jc-group-title { display: flex; align-items: center; gap: .7em; font-size: .8em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--jf-palette-primary-main, #00a4dc); margin: 0 0 .6em .2em; }
+                .jc-group-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--jf-palette-primary-main, #00a4dc), transparent); opacity: .5; }
+                .jc-section { border: 1px solid rgba(255,255,255,.08); border-radius: .6em; margin-bottom: .5em; background: rgba(255,255,255,.025); transition: border-color .15s ease, box-shadow .15s ease; }
+                .jc-section > summary { cursor: pointer; padding: .75em 1em; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .6em; border-radius: .6em; }
+                .jc-section > summary:hover { background: rgba(255,255,255,.05); }
+                /* An open section stands out: accent frame, a glow, a tinted heading and a light body. */
+                .jc-section[open] { border-color: var(--jf-palette-primary-main, #00a4dc); box-shadow: 0 0 0 1px var(--jf-palette-primary-main, #00a4dc), 0 8px 24px rgba(0,0,0,.35); background: rgba(255,255,255,.045); }
+                .jc-section[open] > summary { background: color-mix(in srgb, var(--jf-palette-primary-main, #00a4dc) 22%, transparent); border-radius: .6em .6em 0 0; }
+                .jc-section[open] > summary .material-icons { opacity: 1; color: var(--jf-palette-primary-main, #00a4dc); }
                 .jc-section > summary::-webkit-details-marker { display: none; }
                 .jc-section > summary .material-icons { font-size: 1.2em; opacity: .75; }
                 .jc-section > summary .jc-caret { margin-left: auto; font-family: "Material Icons"; font-size: 1.3em; opacity: .6; }
                 .jc-section > summary .jc-caret::after { content: "expand_more"; }
-                .jc-section[open] > summary { border-bottom: 1px solid rgba(255,255,255,.08); }
+                .jc-section[open] > summary { border-bottom: 1px solid color-mix(in srgb, var(--jf-palette-primary-main, #00a4dc) 40%, transparent); }
                 .jc-section[open] > summary .jc-caret::after { content: "expand_less"; }
                 .jc-section.jc-flash > summary { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); border-radius: .6em .6em 0 0; }
                 .jc-sub.jc-flash, .jc-row.jc-flash, .checkboxContainer.jc-flash, .jc-color.jc-flash { outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 4px; border-radius: .3em; }
@@ -133,6 +140,8 @@
                 [data-when][hidden] { display: none !important; }
                 .jc-actions { display: flex; gap: .5em; flex-wrap: wrap; margin: .4em 0 .8em; }
                 .jc-plugins { display: flex; flex-direction: column; gap: .5em; }
+                .jc-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .2em .8em; margin: .3em 0 .6em; }
+                .jc-check-grid .emby-checkbox-label { margin: 0; }
                 .jc-plugin { display: grid; grid-template-columns: auto 1fr; gap: .2em .7em; align-items: start; padding: .6em .8em; border-radius: .5em; background: rgba(255,255,255,.05); }
                 .jc-plugin .material-icons { font-size: 1.3em; grid-row: span 3; margin-top: .1em; }
                 .jc-plugin.is-on .material-icons { color: #7ed957; }
@@ -298,8 +307,8 @@
                                     <div class="jc-slot" data-slot="SlotRight"><div class="jc-slot-title" data-i18n="slotRight">Right</div></div>
                                 </div>
 
-                                <h4 class="jc-sub" data-when="Header.Layout=Sidebar" data-i18n="libraryRowHeading">Library bar (title, sort, filter, view - next to the sidebar; under a top bar it shares the bar's look)</h4>
-                                <div class="selectContainer" data-when="Header.Layout=Sidebar">
+                                <h4 class="jc-sub" data-i18n="libraryRowHeading">Library bar (library name, count, play, filter, sort, view, paging)</h4>
+                                <div class="selectContainer">
                                     <label class="selectLabel" for="jcLibraryRow" data-i18n="style">Style</label>
                                     <select is="emby-select" id="jcLibraryRow" data-path="Header.LibraryRow" class="emby-select-withcolor emby-select">
                                         <option value="SameAsBar" data-i18n="libraryRowSame">Same as the top bar / sidebar</option>
@@ -314,11 +323,21 @@
                                         <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
-                                <div class="jc-color" data-when="Header.LibraryRow=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-color="Header.LibraryRowColor" data-optional="1" data-i18n-label="libraryRowColor">Row color (empty = surface color; accent for neo-brutalism)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=Glass|Gradient|Transparent|Glowmorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowHeight" data-min="44" data-max="96" data-unit="px" data-i18n-label="libraryRowHeight">Row height (52 = Jellyfin default, 44 = the least the controls fit in)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-when2="Header.Layout=Sidebar" data-slider="Header.LibraryRowRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="libraryRowRadius">Row corner radius (inset from the edges when rounded)</div>
+                                <div class="jc-color" data-when="Header.LibraryRow=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Header.LibraryRowColor" data-optional="1" data-i18n-label="libraryRowColor">Row color (empty = surface color; accent for neo-brutalism)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-slider="Header.LibraryRowOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=Glass|Gradient|Transparent|Glowmorphism" data-slider="Header.LibraryRowBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowHeight" data-min="44" data-max="96" data-unit="px" data-i18n-label="libraryRowHeight">Row height (52 = Jellyfin default, 44 = the least the controls fit in)</div>
+                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="libraryRowRadius">Row corner radius (inset from the edges when rounded)</div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowIslands"><span data-i18n="libraryRowIslands">Islands: the surface around each group, not across the whole row (always so under an islands bar with "same as bar")</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowBorder"><span data-i18n="libraryRowBorder">Thin outline</span></label></div>
+                                <div class="jc-hint" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-i18n="libraryRowHideHint">Hide parts of the row:</div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideTitle"><span data-i18n="libraryRowHideTitle">Library name</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideCount"><span data-i18n="libraryRowHideCount">Item count</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePlay"><span data-i18n="libraryRowHidePlay">Play all / Shuffle</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideFilter"><span data-i18n="libraryRowHideFilter">Filter</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideSort"><span data-i18n="libraryRowHideSort">Sort</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideView"><span data-i18n="libraryRowHideView">View settings</span></label></div>
+                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePaging"><span data-i18n="libraryRowHidePaging">Previous / Next paging</span></label></div>
 
                                 <h4 class="jc-sub" data-i18n="navHeading">Links &amp; icons</h4>
                                 <div class="selectContainer">
@@ -543,6 +562,62 @@
                             </div>
                         </details>
 
+                        <details class="jc-section" data-section="player">
+                            <summary><span class="material-icons" aria-hidden="true">play_circle</span><span data-i18n="player">Player</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="playerHint">The controls while a video plays. The preview shows them mocked over the home page (page "Player: controls & skip button").</div>
+                                <h4 class="jc-sub" data-i18n="osdHeading">Control bar</h4>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcOsdStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcOsdStyle" data-path="Player.Osd" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="osdDefault">Jellyfin's fade to dark</option>
+                                        <option value="Solid" data-i18n="solid">Solid</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="Transparent" data-i18n="transparent">Transparent</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Player.Osd=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Player.OsdColor" data-optional="1" data-i18n-label="osdColor">Bar color (empty = surface color; accent for neo-brutalism)</div>
+                                <div class="jc-row" data-when="Player.Osd=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-slider="Player.OsdOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div class="jc-row" data-when="Player.Osd=Glass|Gradient|Transparent|Glowmorphism" data-slider="Player.OsdBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div class="checkboxContainer" data-when="Player.Osd=Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Player.OsdFloating"><span data-i18n="osdFloating">Floating (detached from the edges)</span></label></div>
+                                <div class="jc-row" data-when="Player.Osd=Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Player.OsdRadius" data-min="0" data-max="40" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <h4 class="jc-sub" data-i18n="progressHeading">Progress slider &amp; buttons</h4>
+                                <div class="jc-color" data-color="Player.ProgressColor" data-optional="1" data-i18n-label="playerProgressColor">Played part and knob (empty = accent)</div>
+                                <div class="jc-row" data-slider="Player.ProgressHeight" data-min="0" data-max="12" data-unit="px" data-i18n-label="playerProgressHeight">Track height (0 = Jellyfin default)</div>
+                                <div class="jc-row" data-slider="Player.ButtonScale" data-min="70" data-max="160" data-unit="%" data-i18n-label="playerButtonScale">Buttons size</div>
+                                <h4 class="jc-sub" data-i18n="skipHeading">"Skip intro / credits" button</h4>
+                                <div class="jc-hint" data-i18n="skipHint">Jellyfin's own button for media segments (Settings → Playback → media segment actions: "Ask to skip"); plugins that mark intros and credits feed it.</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSkipStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcSkipStyle" data-path="Player.Skip" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="skipDefault">Jellyfin's dark box</option>
+                                        <option value="Accent" data-i18n="skipAccent">Accent fill</option>
+                                        <option value="Surface" data-i18n="skipSurface">Surface color</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Outline" data-i18n="skipOutline">Outline</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-when="Player.Skip=Accent|Surface|Glass|Outline|NeoBrutalism" data-color="Player.SkipColor" data-optional="1" data-i18n-label="skipColor">Button color (empty = accent or surface color by style)</div>
+                                <div class="jc-row" data-slider="Player.SkipRadius" data-min="0" data-max="40" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSkipPosition" data-i18n="skipPosition">Position</label>
+                                    <select is="emby-select" id="jcSkipPosition" data-path="Player.SkipPosition" class="emby-select-withcolor emby-select">
+                                        <option value="BottomRight" data-i18n="skipBottomRight">Bottom right (Jellyfin default)</option>
+                                        <option value="BottomCenter" data-i18n="skipBottomCenter">Bottom center</option>
+                                        <option value="BottomLeft" data-i18n="skipBottomLeft">Bottom left</option>
+                                        <option value="TopRight" data-i18n="skipTopRight">Top right</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-slider="Player.SkipOffset" data-min="16" data-max="400" data-step="4" data-unit="px" data-i18n-label="skipOffset">Distance from the edge</div>
+                                <div class="jc-row" data-slider="Player.SkipScale" data-min="60" data-max="180" data-unit="%" data-i18n-label="skipScale">Size</div>
+                            </div>
+                        </details>
                         <details class="jc-section" data-section="dialogs">
                             <summary><span class="material-icons" aria-hidden="true">web</span><span data-i18n="dialogs">Dialogs &amp; menus</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
@@ -760,6 +835,7 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
                                 <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
                                 <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
+                                <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
                             </div>
                         </details>
@@ -815,8 +891,82 @@
                                         <option value="FlagsAndCodes" data-i18n="badgeLangBoth">Flags and codes</option>
                                     </select>
                                 </div>
+                                <h4 class="jc-sub" data-i18n="badgeLangPickHeading">Which languages</h4>
+                                <div class="jc-hint" data-i18n="badgeLangPickHint">A card shows at most this many languages. The preferred ones come first when the item has them (codes like CS, EN - in your order); the rest fill up with the most widely spoken of what is left.</div>
+                                <div class="jc-row" data-slider="Scripts.CardBadges.AudioMax" data-min="1" data-max="4" data-unit="" data-i18n-label="badgeAudioMax">Audio languages at most</div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcBadgeAudioPref" data-i18n="badgeAudioPreferred">Preferred audio languages</label>
+                                    <input is="emby-input" type="text" id="jcBadgeAudioPref" data-path="Scripts.CardBadges.AudioPreferred" placeholder="cs, en">
+                                </div>
+                                <div class="jc-row" data-slider="Scripts.CardBadges.SubtitleMax" data-min="1" data-max="4" data-unit="" data-i18n-label="badgeSubtitleMax">Subtitle languages at most</div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcBadgeSubPref" data-i18n="badgeSubtitlePreferred">Preferred subtitle languages</label>
+                                    <input is="emby-input" type="text" id="jcBadgeSubPref" data-path="Scripts.CardBadges.SubtitlePreferred" placeholder="cs, en">
+                                </div>
+                                <h4 class="jc-sub" data-i18n="badgeLookHeading">Size and devices</h4>
                                 <div class="jc-row" data-slider="Scripts.CardBadges.Scale" data-min="50" data-max="200" data-unit="%" data-i18n-label="badgeScale">Size</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.HideOnMobile"><span data-i18n="badgesMobile">Hide on phones</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.HideOnTv"><span data-i18n="badgesTv">Hide on TV</span></label></div>
+                            </div>
+                        </details>
+                        <details class="jc-section" data-section="seerr" id="jcSeerrSection" hidden>
+                            <summary><span class="material-icons" aria-hidden="true">view_carousel</span><span data-i18n="seerr">Seerr rows</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="seerrHint">Rows on the home page from Seerr (Jellyseerr / Overseerr): what has been requested and is coming, the latest requests, what is trending. The server talks to Seerr with the API key; the key never reaches the browser and is not part of a shared theme. A poster opens the item here when the library has it, otherwise its page in Seerr.</div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSeerrUrl" data-i18n="seerrUrl">Seerr address (as the server reaches it)</label>
+                                    <input is="emby-input" type="text" id="jcSeerrUrl" data-path="Seerr.Url" placeholder="http://jellyseerr:5055">
+                                </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSeerrKey" data-i18n="seerrKey">API key (Seerr → Settings → General)</label>
+                                    <input is="emby-input" type="password" id="jcSeerrKey" data-path="Seerr.ApiKey" autocomplete="off">
+                                </div>
+                                <div class="jc-actions">
+                                    <button is="emby-button" type="button" class="raised emby-button" id="jcBtnSeerrTest"><span data-i18n="seerrTest">Test the connection</span></button>
+                                    <span id="jcSeerrTestResult" class="jc-hint"></span>
+                                </div>
+                                <h4 class="jc-sub" data-i18n="seerrRowsHeading">Rows</h4>
+                                <div class="jc-hint" data-i18n="seerrRowsHint">Each row lists one thing from Seerr; tick what the posters carry. An empty heading takes a default in the viewer's language.</div>
+                                <div id="jcSeerrRows"></div>
+                                <div class="jc-actions"><button is="emby-button" type="button" class="raised emby-button" id="jcBtnAddSeerrRow"><span data-i18n="seerrAddRow">Add a row</span></button></div>
+                                <template id="jcSeerrRowTemplate">
+                                    <div class="jc-btn">
+                                        <div class="jc-btn-head">
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="Enabled"><span data-i18n="btnEnabled">Enabled</span></label>
+                                            <button is="emby-button" type="button" class="raised emby-button jc-btn-remove"><span data-i18n="btnRemove">Remove</span></button>
+                                        </div>
+                                        <div class="selectContainer">
+                                            <label class="selectLabel" data-i18n="seerrKind">What to list</label>
+                                            <select is="emby-select" class="emby-select-withcolor emby-select" data-field="Kind">
+                                                <option value="Upcoming" data-i18n="kindUpcoming">Coming soon - approved requests not in the library yet, next release first</option>
+                                                <option value="Recent" data-i18n="kindRecent">Recently requested - the latest requests, any state</option>
+                                                <option value="Pending" data-i18n="kindPending">Waiting for approval</option>
+                                                <option value="Available" data-i18n="kindAvailable">Requests that have arrived in the library</option>
+                                                <option value="Trending" data-i18n="kindTrending">Trending (Seerr discover)</option>
+                                                <option value="PopularMovies" data-i18n="kindPopularMovies">Popular movies (Seerr discover)</option>
+                                                <option value="PopularTv" data-i18n="kindPopularTv">Popular series (Seerr discover)</option>
+                                            </select>
+                                        </div>
+                                        <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" data-i18n="rowTitle">Heading (empty = default in the viewer's language)</label><input is="emby-input" type="text" data-field="Title"></div>
+                                        <div class="selectContainer">
+                                            <label class="selectLabel" data-i18n="rowPosition">Place</label>
+                                            <select is="emby-select" class="emby-select-withcolor emby-select" data-field="Position">
+                                                <option value="Top" data-i18n="rowTop">Above Jellyfin's rows</option>
+                                                <option value="Bottom" data-i18n="rowBottom">Below them</option>
+                                            </select>
+                                        </div>
+                                        <div class="inputContainer"><label class="inputLabel inputLabelUnfocused" data-i18n="rowLimit">Posters at most</label><input is="emby-input" type="number" min="1" max="60" data-field="Limit"></div>
+                                        <div class="jc-hint" data-i18n="rowShowHint">On the posters:</div>
+                                        <div class="jc-check-grid">
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowTitle"><span data-i18n="rowShowTitle">Title</span></label>
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowSubtitle"><span data-i18n="rowShowSubtitle">Year / requester under the title</span></label>
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowDate"><span data-i18n="rowShowDate">Release date in the corner</span></label>
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowState"><span data-i18n="rowShowState">Request state (+ … ½ ✓)</span></label>
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowType"><span data-i18n="rowShowType">Movie / Series</span></label>
+                                            <label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-field="ShowRequester"><span data-i18n="rowShowRequester">Who requested it</span></label>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </details>
                         <details class="jc-section" data-section="slideshow" id="jcSlideshowSection" hidden>
@@ -945,6 +1095,15 @@
                                 <div class="jc-hint" data-i18n="tvBarHint">The TV layout keeps Jellyfin's classic top bar (logo, icons, tabs); it takes the style, colors and rounding from the Bar section. Its height and size are set here.</div>
                                 <div class="jc-row" data-slider="Tv.BarHeight" data-min="0" data-max="140" data-unit="px" data-i18n-label="tvBarHeight">Bar height (0 = Jellyfin default)</div>
                                 <div class="jc-row" data-slider="Tv.BarScale" data-min="80" data-max="160" data-unit="%" data-i18n-label="tvBarScale">Icons and tabs size</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcTvTabFocus" data-i18n="tvTabFocus">Focused tab (Home, Favorites, libraries)</label>
+                                    <select is="emby-select" id="jcTvTabFocus" data-path="Tv.TabFocus" class="emby-select-withcolor emby-select">
+                                        <option value="Highlight" data-i18n="tabFocusHighlight">Filled with the focus color</option>
+                                        <option value="Ring" data-i18n="tabFocusRing">Ring in the focus color</option>
+                                        <option value="Glow" data-i18n="tabFocusGlow">Gentle grow with a glow</option>
+                                        <option value="Scale" data-i18n="tabFocusScale">Jellyfin's own: grows 1.3x</option>
+                                    </select>
+                                </div>
                             </div>
                         </details>
                         <details class="jc-section" data-section="mobile">
@@ -1023,6 +1182,7 @@
                             <option value="library" data-i18n="pageLibrary">Library</option>
                             <option value="detail" data-i18n="pageDetail">Item detail</option>
                             <option value="login" data-i18n="pageLogin">Login</option>
+                            <option value="player" data-i18n="pagePlayer">Player: controls &amp; skip button</option>
                             <option value="upnext" data-i18n="pageUpNext">Player: next episode prompt</option>
                             <option value="stillwatching" data-i18n="pageStillWatching">Player: "Still watching?"</option>
                         </select>

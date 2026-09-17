@@ -5,6 +5,45 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.0.5 - 2026-09-17
+
+- Seerr rows (Jellyseerr / Overseerr) on the home page: coming soon
+  (approved requests not in the library yet, next release first),
+  recently requested, waiting for approval, requests now available,
+  trending, popular movies, popular series. Each row has a heading (a
+  default in the viewer's language), a place above or below Jellyfin's
+  rows, a limit, and what the posters carry (title, year / requester,
+  release date, request state, movie / series, who requested it). The
+  server talks to Seerr with the API key and serves the posters itself;
+  the address and key stay out of a shared theme. A poster opens the item
+  here when the library has it, otherwise its page in Seerr.
+- Player section: the control bar (style, color, opacity, blur, floating,
+  rounding), the progress slider (color, height), button size, and the
+  built-in "Skip intro / credits" button (style, color, rounding, position,
+  offset, size) - with a mocked player page in the preview.
+- Background: an item's page can show that item's own backdrop (random
+  and custom modes, client script).
+- Card badges: at most 1-4 audio and subtitle languages with preferred
+  languages first and the most widely spoken filling up; hide on TV; badges
+  keep clear of Jellyfin's own corner indicators and of the title strip
+  on TV cards; sound names shortened (DD+ Atmos 5.1).
+- Library row: styling under every bar layout, islands (the surface
+  around each group - automatic under an islands bar), a thin outline,
+  and hiding the library name, count, Play / Shuffle, Filter, Sort, View
+  and paging.
+- TV: the focused tab (Home, Favorites, libraries) can be filled, ringed,
+  glowing or Jellyfin's own grow, without running into its neighbours;
+  TV cards are rounded like the others.
+- The designer: group headings and the open section stand out.
+- Fixed: the split bar's surface ran across the whole library row; a
+  panning backdrop was a band across the middle of a phone screen; the
+  info bar's close button floated above a custom button's overlay; the
+  video player is kept above the theme's background layers; the CSS no
+  longer uses the `inset` shorthand (older TV browsers).
+- README: screenshots from the demo.
+- Release workflow: with a `RELEASE_TOKEN` secret the release and the
+  manifest commit are made under its owner's account.
+
 ## 1.0.4 - 2026-09-15
 
 - Card badges: the Colorful style gives every value its own color (4K

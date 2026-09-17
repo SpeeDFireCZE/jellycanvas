@@ -16,7 +16,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [] }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -47,8 +47,30 @@ public static class ScriptBuilder
         var bd = c.Backdrop;
         // Rotating random backdrops: the script does it with preloaded images
         // and a real cross-fade; the CSS version stays as the fallback.
-        var hasBackdrop = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
-        if (!s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop))
+        var rotation = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
+        var hasBackdrop = rotation || (bd.ItemDetail && bd.Mode != BackdropMode.Default);
+        // Seerr rows: only with an address and a key, one entry per row turned on.
+        var se = c.Seerr;
+        var rows = string.IsNullOrWhiteSpace(se.Url) || string.IsNullOrWhiteSpace(se.ApiKey)
+            ? Array.Empty<object>()
+            : se.Rows.Select((r, i) => (r, i)).Where(t => t.r.Enabled)
+                .Select(t => (object)new
+                {
+                    id = t.i + 1,
+                    kind = t.r.Kind.ToString(),
+                    title = (t.r.Title ?? string.Empty).Trim(),
+                    position = t.r.Position.ToString(),
+                    limit = Math.Clamp(t.r.Limit, 1, 60),
+                    showTitle = t.r.ShowTitle,
+                    showSubtitle = t.r.ShowSubtitle,
+                    showDate = t.r.ShowDate,
+                    showState = t.r.ShowState,
+                    showType = t.r.ShowType,
+                    showRequester = t.r.ShowRequester,
+                })
+                .ToArray();
+        var hasRows = rows.Length > 0;
+        if (!s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows))
         {
             return string.Empty;
         }
@@ -102,12 +124,17 @@ public static class ScriptBuilder
                 languages = cb.Languages.ToString(),
                 subtitleLanguages = cb.SubtitleLanguages.ToString(),
                 stacked = cb.Stacked,
+                hideOnTv = cb.HideOnTv,
+                audioMax = Math.Clamp(cb.AudioMax, 1, 4),
+                audioPreferred = LanguageList(cb.AudioPreferred),
+                subtitleMax = Math.Clamp(cb.SubtitleMax, 1, 4),
+                subtitlePreferred = LanguageList(cb.SubtitlePreferred),
             }
             : null;
 
-        var backdrop = hasBackdrop ? new { seconds = Math.Max(3, bd.RotateSeconds) } : null;
+        var backdrop = hasBackdrop ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail } : null;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop }, JsonOptions);
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows }, JsonOptions);
 
         // "</script>" inside a string would end the <script> element early if
         // the script were ever inlined; harmless to neutralise it always.
@@ -130,6 +157,11 @@ public static class ScriptBuilder
 
         return text;
     }
+
+    /// <summary>"cs, EN;de" → ["CS", "EN", "DE"]: the codes the badges use.</summary>
+    private static string[] LanguageList(string text)
+        => (text ?? string.Empty).Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(c => c.ToUpperInvariant()).Distinct().ToArray();
 
     private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles" };
 

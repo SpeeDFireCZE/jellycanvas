@@ -17,7 +17,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      # With a RELEASE_TOKEN secret (a fine-grained personal access token
+      # with "Contents: read and write" on this repository) the release and
+      # the manifest commit are made as its owner; without one they are
+      # made by github-actions[bot] with the workflow's own token.
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
         with:
           fetch-depth: 0
 
@@ -65,6 +71,7 @@ jobs:
       - name: GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
           name: Jellycanvas ${{ steps.ver.outputs.version }}
           body_path: dist/notes.md
           files: ${{ steps.pkg.outputs.zip }}
@@ -73,8 +80,10 @@ jobs:
         run: |
           version="${{ steps.ver.outputs.version }}"
           url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${{ steps.pkg.outputs.asset }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # The commit carries the tag pusher's name and no-reply address,
+          # so GitHub shows it under that account.
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
           git checkout main
           python3 scripts/update-manifest.py --version "$version" --zip "${{ steps.pkg.outputs.zip }}" --url "$url"
           git add manifest.json

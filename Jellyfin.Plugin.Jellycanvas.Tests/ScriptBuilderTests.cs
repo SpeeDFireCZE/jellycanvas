@@ -46,7 +46,7 @@ public class ScriptBuilderTests
             Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 20 },
         };
 
-        Assert.Contains("\"backdrop\":{\"seconds\":20}", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+        Assert.Contains("\"backdrop\":{\"seconds\":20,\"detail\":false}", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
     }
 
     [Fact]
