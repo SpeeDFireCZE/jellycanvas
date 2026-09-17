@@ -846,6 +846,8 @@
             '.jellycanvas-row .cardOverlayButton .material-icons { font-size: 1.6em; }' +
             '.jellycanvas-row .sectionTitleContainer { display: flex; align-items: center; }' +
             '.jellycanvas-row .jellycanvas-row-arrows { margin-left: auto; }' +
+            // Jellyfin's "display: flex" on .emby-scrollbuttons would beat the hidden attribute.
+            '.jellycanvas-row .jellycanvas-row-arrows[hidden] { display: none !important; }' +
             '.jellycanvas-row .itemsContainer::-webkit-scrollbar { display: none; }' +
             'html.layout-mobile .jellycanvas-row .jellycanvas-row-arrows, html.layout-tv .jellycanvas-row .jellycanvas-row-arrows { display: none; }';
         document.head.appendChild(style);
