@@ -224,7 +224,7 @@ public static class CssBuilder
         {
             FontFamily.Default => null,
             FontFamily.System => "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-            FontFamily.Custom => string.IsNullOrWhiteSpace(t.CustomFamily) ? null : $"'{t.CustomFamily.Trim().Replace("'", string.Empty, StringComparison.Ordinal)}', sans-serif",
+            FontFamily.Custom => string.IsNullOrWhiteSpace(t.CustomFamily) ? null : CssString(t.CustomFamily) + ", sans-serif",
             _ => $"'{t.Family}', sans-serif",
         };
 

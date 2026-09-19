@@ -94,6 +94,20 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Button_targets_are_web_addresses_or_client_paths_only()
+    {
+        // The script runs for every user: a target the browser would execute
+        // rather than open is dropped, and a button without a target is no button.
+        Assert.Equal(string.Empty, ScriptBuilder.Build(WithButton("javascript:alert(1)")));
+        Assert.Equal(string.Empty, ScriptBuilder.Build(WithButton("data:text/html,hi")));
+        Assert.Equal(string.Empty, ScriptBuilder.Build(WithButton(" JavaScript:void(0)")));
+        Assert.Contains("\"url\":\"https://requests.example/\"", ScriptBuilder.Build(WithButton(" https://requests.example/ ")), StringComparison.Ordinal);
+        Assert.Contains("\"url\":\"#/search?query=a:b\"", ScriptBuilder.Build(WithButton("#/search?query=a:b")), StringComparison.Ordinal);
+        Assert.Contains("\"url\":\"/web/index.html#/home\"", ScriptBuilder.Build(WithButton("/web/index.html#/home")), StringComparison.Ordinal);
+        Assert.Contains("\"url\":\"mailto:admin@example.com\"", ScriptBuilder.Build(WithButton("mailto:admin@example.com")), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Invalid_icon_name_falls_back()
     {
         var js = ScriptBuilder.Build(WithButton("https://x/", "<img onerror=1>"));

@@ -1613,14 +1613,18 @@
             el.rel = 'noopener';
         }
 
+        // The label is text, never markup (it comes from the settings, but
+        // the script runs for every user).
         if (b.placement === 'Nav' && isLegacyBar(bar)) {
             // On TV a link is an icon button with its label beside the icon.
-            el.innerHTML = '<span class="material-icons" aria-hidden="true">' + b.icon + '</span><span style="margin-left:0.35em;font-size:0.8em;white-space:nowrap">' + b.label + '</span>';
+            el.innerHTML = '<span class="material-icons" aria-hidden="true">' + b.icon + '</span><span style="margin-left:0.35em;font-size:0.8em;white-space:nowrap"></span>';
+            el.lastChild.textContent = b.label;
         } else if (b.placement === 'Nav') {
             // Same structure as Jellyfin's own links (icon in a
             // MuiButton-startIcon wrapper), so themes that style or collapse
             // the links treat ours the same way.
-            el.innerHTML = '<span class="MuiButton-icon MuiButton-startIcon"><span class="material-icons" aria-hidden="true" style="font-size:1.25em">' + b.icon + '</span></span>' + b.label;
+            el.innerHTML = '<span class="MuiButton-icon MuiButton-startIcon"><span class="material-icons" aria-hidden="true" style="font-size:1.25em">' + b.icon + '</span></span>';
+            el.appendChild(document.createTextNode(b.label));
         } else {
             el.innerHTML = '<span class="material-icons" aria-hidden="true">' + b.icon + '</span>';
         }

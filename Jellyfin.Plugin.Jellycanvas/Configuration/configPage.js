@@ -2075,6 +2075,28 @@
     function exportJson() {
         var copy = JSON.parse(JSON.stringify(state));
         delete copy.Enabled;
+        stripPrivate(copy);
+        // The per-device documents can carry the same things (a backdrop address, say).
+        if (copy.Overrides) {
+            ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+                var doc = null;
+                try {
+                    doc = copy.Overrides[d] ? JSON.parse(copy.Overrides[d]) : null;
+                } catch (e) {
+                    doc = null;
+                }
+                if (doc && typeof doc === 'object') {
+                    stripPrivate(doc);
+                    copy.Overrides[d] = JSON.stringify(doc);
+                } else {
+                    copy.Overrides[d] = '';
+                }
+            });
+        }
+        return JSON.stringify(copy, null, 2);
+    }
+
+    function stripPrivate(copy) {
         if (copy.Scripts) {
             delete copy.Scripts.ToolbarButtons;
         }
@@ -2097,7 +2119,6 @@
         if (copy.Backdrop && !isPublicUrl(copy.Backdrop.Url)) {
             delete copy.Backdrop.Url;
         }
-        return JSON.stringify(copy, null, 2);
     }
 
     // https on a real host name - not localhost, a bare name, a private

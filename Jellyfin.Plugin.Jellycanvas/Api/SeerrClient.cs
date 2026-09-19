@@ -37,6 +37,36 @@ public sealed class SeerrClient
     /// <summary>The row kinds (SeerrRowKind names, lower-case).</summary>
     public static readonly string[] Kinds = { "upcoming", "recent", "pending", "available", "trending", "popularmovies", "populartv" };
 
+    /// <summary>Poster paths Seerr has named - the only ones the image proxy fetches.</summary>
+    private static readonly HashSet<string> KnownPosters = new(StringComparer.Ordinal);
+
+    /// <summary>Whether a poster path came up in a Seerr answer since the server started.</summary>
+    public static bool IsKnownPoster(string path)
+    {
+        lock (KnownPosters)
+        {
+            return KnownPosters.Contains(path);
+        }
+    }
+
+    private static void RememberPoster(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        lock (KnownPosters)
+        {
+            if (KnownPosters.Count > 5000)
+            {
+                KnownPosters.Clear(); // a bound, not a policy: the next row load fills it again
+            }
+
+            KnownPosters.Add(path);
+        }
+    }
+
     /// <summary>Drops the cached answers (after the settings change).</summary>
     public static void Forget()
     {
@@ -134,8 +164,14 @@ public sealed class SeerrClient
 
     private HttpClient Create(SeerrSettings s)
     {
+        var baseUri = new Uri(s.Url.Trim().TrimEnd('/') + "/");
+        if (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps)
+        {
+            throw new UriFormatException("The Seerr address must start with http:// or https://");
+        }
+
         var client = _http.CreateClient("Jellycanvas.Seerr");
-        client.BaseAddress = new Uri(s.Url.Trim().TrimEnd('/') + "/");
+        client.BaseAddress = baseUri;
         client.Timeout = TimeSpan.FromSeconds(15);
         client.DefaultRequestHeaders.Add("X-Api-Key", s.ApiKey.Trim());
         return client;
@@ -170,7 +206,7 @@ public sealed class SeerrClient
         var wanted = new List<(string Type, int TmdbId, string By, DateTime Added)>();
         foreach (var r in Results(requests))
         {
-            if (!r.TryGetProperty("media", out var mediaEl) || !mediaEl.TryGetProperty("tmdbId", out var tmdb))
+            if (!r.TryGetProperty("media", out var mediaEl) || !mediaEl.TryGetProperty("tmdbId", out var tmdb) || tmdb.ValueKind != JsonValueKind.Number)
             {
                 continue;
             }
@@ -181,7 +217,7 @@ public sealed class SeerrClient
                 continue;
             }
 
-            var status = mediaEl.TryGetProperty("status", out var st) ? st.GetInt32() : 0;
+            var status = Int(mediaEl, "status");
             // Upcoming: approved but not in the library yet (5 = available).
             if (kind == "upcoming" && status >= 5)
             {
@@ -255,7 +291,7 @@ public sealed class SeerrClient
 
     private static SeerrItemDto? FromMedia(JsonElement m, string type, SeerrSettings s)
     {
-        var id = m.TryGetProperty("id", out var idEl) ? idEl.GetInt32() : 0;
+        var id = Int(m, "id");
         var title = Str(m, type == "tv" ? "name" : "title") ?? Str(m, "title") ?? Str(m, "name");
         if (id == 0 || string.IsNullOrEmpty(title))
         {
@@ -268,9 +304,11 @@ public sealed class SeerrClient
         string? jellyfinId = null;
         if (m.TryGetProperty("mediaInfo", out var info) && info.ValueKind == JsonValueKind.Object)
         {
-            status = info.TryGetProperty("status", out var st) ? st.GetInt32() : 0;
+            status = Int(info, "status");
             jellyfinId = Str(info, "jellyfinMediaId") ?? Str(info, "jellyfinMediaId4k");
         }
+
+        RememberPoster(poster);
 
         return new SeerrItemDto(
             title,
@@ -287,6 +325,9 @@ public sealed class SeerrClient
 
     private static string? Str(JsonElement el, string name)
         => el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private static int Int(JsonElement el, string name)
+        => el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) ? n : 0;
 }
 
 /// <summary>One poster in a Seerr row.</summary>

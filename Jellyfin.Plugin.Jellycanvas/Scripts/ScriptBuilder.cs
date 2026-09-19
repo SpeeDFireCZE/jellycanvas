@@ -31,7 +31,7 @@ public static class ScriptBuilder
     {
         ArgumentNullException.ThrowIfNull(c);
         var s = c.Scripts;
-        var hasButtons = s.ToolbarButtons.Any(b => b.Enabled && !string.IsNullOrWhiteSpace(b.Url));
+        var hasButtons = s.ToolbarButtons.Any(b => b.Enabled && CleanUrl(b.Url).Length > 0);
         var hasSlideshow = s.Slideshow.Enabled;
         var ib = c.InfoBar;
         var hasInfoBar = ib.Enabled && ib.Closable && !string.IsNullOrWhiteSpace(ib.Text);
@@ -84,7 +84,7 @@ public static class ScriptBuilder
             enabled = b.Enabled,
             label = Clean(b.Label, "Button"),
             icon = CleanIcon(b.Icon),
-            url = b.Url.Trim(),
+            url = CleanUrl(b.Url),
             action = b.Action.ToString(),
             placement = b.Placement.ToString(),
             hideOnTv = b.HideOnTv,
@@ -185,6 +185,32 @@ public static class ScriptBuilder
         return v.Length == 0 ? fallback : v;
     }
 
+    /// <summary>
+    /// A button target: a web address (http, https, mailto) or a path or
+    /// hash inside this client. Anything else - javascript:, data:, a
+    /// scheme the browser would run rather than open - is dropped, and a
+    /// button without a target is not shown.
+    /// </summary>
+    private static string CleanUrl(string? value)
+    {
+        var v = (value ?? string.Empty).Trim();
+        if (v.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var colon = v.IndexOf(':', StringComparison.Ordinal);
+        var slash = v.IndexOfAny(['/', '#', '?']);
+        var hasScheme = colon > 0 && (slash < 0 || colon < slash);
+        if (!hasScheme)
+        {
+            return v;
+        }
+
+        var scheme = v[..colon].ToLowerInvariant();
+        return scheme is "http" or "https" or "mailto" ? v : string.Empty;
+    }
+
     /// <summary>Material Icons names are lowercase letters, digits and underscores; anything else is not an icon.</summary>
     private static string CleanIcon(string? value)
     {
@@ -197,8 +223,8 @@ public static class ScriptBuilder
     {
         ArgumentNullException.ThrowIfNull(c);
         return c.Scripts.ToolbarButtons
-            .Where(b => b.Enabled && !string.IsNullOrWhiteSpace(b.Url))
-            .Select(b => $"{Clean(b.Label, "Button")} -> {b.Url.Trim()} ({b.Action}, {b.Placement})")
+            .Where(b => b.Enabled && CleanUrl(b.Url).Length > 0)
+            .Select(b => $"{Clean(b.Label, "Button")} -> {CleanUrl(b.Url)} ({b.Action}, {b.Placement})")
             .ToList();
     }
 }

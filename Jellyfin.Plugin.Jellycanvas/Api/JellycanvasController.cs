@@ -140,6 +140,7 @@ public class JellycanvasController : ControllerBase
         var css = CssBuilder.Build(settings);
         BrandingWriter.Write(_config, css);
         Plugin.Instance!.UpdateConfiguration(settings);
+        SeerrClient.Forget();
         _logger.LogInformation("Jellycanvas: theme applied ({Length} bytes of CSS written to branding)", css.Length);
         return new ApplyResultDto(css, true);
     }
@@ -154,6 +155,7 @@ public class JellycanvasController : ControllerBase
     {
         settings.Enabled = Plugin.Instance!.Configuration.Enabled;
         Plugin.Instance.UpdateConfiguration(settings);
+        SeerrClient.Forget();
         return NoContent();
     }
 
@@ -284,7 +286,10 @@ public class JellycanvasController : ControllerBase
         try
         {
             var items = await new SeerrClient(_http, _logger).GetAsync(s, kind, Math.Clamp(limit, 1, 60), media is "movies" or "series" ? media : "both", ct).ConfigureAwait(false);
-            return items.ToList();
+            // Who requested a title is shown only where a row asks for it;
+            // otherwise the names stay on the server.
+            var showsRequester = s.Rows.Any(r => r.Enabled && r.ShowRequester && string.Equals(r.Kind.ToString(), kind, StringComparison.OrdinalIgnoreCase));
+            return showsRequester ? items.ToList() : items.Select(i => i with { RequestedBy = string.Empty }).ToList();
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or UriFormatException)
         {
@@ -315,6 +320,14 @@ public class JellycanvasController : ControllerBase
         var file = Path.Combine(dir, p.TrimStart('/'));
         if (!System.IO.File.Exists(file) || DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
         {
+            // Only posters that came up in a Seerr answer are fetched: the
+            // address is open, and it must not be a way to make this server
+            // pull and store arbitrary TMDB files.
+            if (!SeerrClient.IsKnownPoster(p))
+            {
+                return NotFound();
+            }
+
             try
             {
                 using var client = _http.CreateClient("Jellycanvas.Tmdb");
@@ -331,6 +344,7 @@ public class JellycanvasController : ControllerBase
 
         var type = p.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : p.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" : "image/jpeg";
         Response.Headers.CacheControl = "public, max-age=604800";
+        Response.Headers.XContentTypeOptions = "nosniff";
         return PhysicalFile(file, type);
     }
 
@@ -424,6 +438,14 @@ public class JellycanvasController : ControllerBase
                 await file.CopyToAsync(stream).ConfigureAwait(false);
             }
 
+            // An SVG is a document the browser can run scripts from when it is
+            // opened by its address; a logo has no business carrying any.
+            if (ext.Equals(".svg", StringComparison.OrdinalIgnoreCase) && SvgHasScript(await System.IO.File.ReadAllTextAsync(temp).ConfigureAwait(false)))
+            {
+                System.IO.File.Delete(temp);
+                return BadRequest("The SVG contains script or event handlers - not allowed in a logo.");
+            }
+
             foreach (var old in Directory.EnumerateFiles(DataDir, "logo.*"))
             {
                 if (!string.Equals(old, temp, StringComparison.OrdinalIgnoreCase))
@@ -473,11 +495,18 @@ public class JellycanvasController : ControllerBase
         }
 
         Response.Headers.CacheControl = "public, max-age=86400";
+        Response.Headers.XContentTypeOptions = "nosniff";
+        // Opened by its address the file is a document of this origin; as an
+        // image (CSS, <img>) the policy is irrelevant. Scripts off, always.
+        Response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox";
         return PhysicalFile(path, LogoTypes[Path.GetExtension(path)]);
     }
 
     private string? FindLogo()
         => Directory.Exists(DataDir) ? Directory.EnumerateFiles(DataDir, "logo.*").FirstOrDefault() : null;
+
+    private static bool SvgHasScript(string svg)
+        => System.Text.RegularExpressions.Regex.IsMatch(svg, @"<\s*script|\son[a-z]+\s*=|javascript\s*:|<\s*foreignObject|<\s*iframe|<\s*embed", System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
 
     // ------------------------------------------------------------------
     // Random backdrop from the library.

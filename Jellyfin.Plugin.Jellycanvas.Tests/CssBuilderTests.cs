@@ -212,7 +212,7 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("family=Caacup%C3%A9+One&display=swap", css, StringComparison.Ordinal);
-        Assert.Contains("font-family: 'Caacupé One', sans-serif !important", css, StringComparison.Ordinal);
+        Assert.Contains("font-family: \"Caacupé One\", sans-serif !important", css, StringComparison.Ordinal);
     }
 
     [Fact]

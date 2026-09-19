@@ -18,6 +18,8 @@ All notable changes to Jellycanvas. The format follows
 - Seerr rows: popular movies / series have no movies-or-series choice (they are one type).
 - Home slideshow: more sources - newest releases (by premiere date), top rated (the TMDB / IMDb star rating), not played yet; continue watching is gone (a saved setting falls back to random) - and the button has its own settings: text (empty = the item's title), icon, style (accent, outline, glass, white), corner radius and size.
 
+- Hardening: the poster proxy fetches only posters Seerr has named (the address is open); an SVG logo with script or event handlers is refused and the logo is served with a script-free content security policy and nosniff; a custom button whose target is not a web address or a client path (javascript:, data:) is dropped; button labels are inserted as text; who requested a title leaves the server only for rows set to show it; a changed Seerr address or key takes effect on the next row load (no five-minute cache); a Seerr answer with an odd id or status no longer fails the row; the JSON export strips private values inside the per-device documents too; a custom font name is written as a proper CSS string.
+
 ## 1.1.1 - 2026-09-17
 
 - Fixed: the Seerr rows made the home page throw "pause is not a function"
