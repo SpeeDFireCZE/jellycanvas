@@ -838,6 +838,8 @@
                                 <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
                                 <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
                                 <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
+                                <h4 class="jc-sub" data-when="Backdrop.Mode=RandomLibrary|Custom" data-i18n="tvBackdropHeading">On TV</h4>
+                                <div class="checkboxContainer" data-when="Backdrop.Mode=RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background on TV: no rotation and no panning - one random backdrop (an item's own backdrop on its page still shows)</span></label></div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
                             </div>
                         </details>
@@ -1114,8 +1116,7 @@
                                         <option value="Scale" data-i18n="tabFocusScale">Jellyfin's own: grows 1.3x</option>
                                     </select>
                                 </div>
-                                <h4 class="jc-sub" data-i18n="tvBackdropHeading">Background on TV</h4>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background: no rotation and no panning on TV - one random backdrop (an item's own backdrop on its page still shows)</span></label></div>
+
                             </div>
                         </details>
                         <details class="jc-section" data-section="mobile">
