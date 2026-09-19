@@ -10,6 +10,7 @@ All notable changes to Jellycanvas. The format follows
 - On load the designer no longer opens the presets and colors once the theme has been applied, nor the companion plugins while one is installed and working.
 - Fixed: the mobile card radius did nothing (it set only the theme variable).
 - Fixed: with "hide the hover buttons on series, seasons and collections" on, a series in a Seerr row lost its open button too (the card carries the type); the rows' cards are exempt from it, and from "hide the hover buttons" altogether - their one button is the way to the title. Apply the theme once after updating - the rule lives in the generated CSS.
+- Fixed: on TV the split bar read as one long island with only the icons apart - Jellyfin lets the left group grow across the row; it now ends at its content. The default logo also sits in a square box (Jellyfin 12 draws its icon in the old banner's 13.2em box, leaving a gap before a custom button).
 - Fixed: the home slideshow crept down the page while scrolling (the gap it keeps under the top bar was re-measured against the viewport on every sync, so each scroll pushed it - and everything under it - further down).
 
 - TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.

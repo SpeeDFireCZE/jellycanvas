@@ -1893,6 +1893,10 @@ public static class CssBuilder
             sb.AppendLine($"{bar} .headerTop {{ gap: 10px; padding: 8px 12px !important; }}");
             sb.AppendLine($"{bar} .headerLeft, {bar} .headerRight, {bar} .headerTabs .emby-tabs-slider {{ {Surface(h.Style, color, h.Opacity, h.Blur, x, "90deg")} border-radius: {Px(h.SectionRadius)} !important; padding: 2px 10px !important; box-shadow: {shadow} !important; border: {border}; }}");
             sb.AppendLine($"{bar} .headerTabs .emby-tabs-slider {{ display: inline-flex !important; }}");
+            // Jellyfin lets the left group grow across the whole row; as an
+            // island it must end at its content, or it reads as one long
+            // bar with only the icon group split off.
+            sb.AppendLine($"{bar} .headerLeft {{ flex: 0 1 auto !important; margin-right: auto !important; }}");
         }
         else
         {
@@ -1905,6 +1909,16 @@ public static class CssBuilder
             {
                 sb.AppendLine($"{bar} {{ border-radius: 0 0 {radius} {radius} !important; box-shadow: {shadow} !important; border-bottom: {border}; }}");
             }
+        }
+
+        // Jellyfin 12 draws its square icon in a box made for the old wide
+        // banner (13.2em): most of it is empty, so a custom button next to
+        // the logo sits far off (and inside an island it reads as a gap). A
+        // square box for the default logo; a custom one is sized by its own
+        // settings below.
+        if (!h.HideLogo && h.Logo == LogoImage.Default)
+        {
+            sb.AppendLine($"{bar} .pageTitleWithDefaultLogo {{ width: auto !important; aspect-ratio: 1 / 1; }}");
         }
 
         // Jellyfin pulls the row of tabs up into the top row with a fixed
