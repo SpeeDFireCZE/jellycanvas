@@ -347,6 +347,34 @@ public enum SlideshowSource
 
     /// <summary>Items with a tag (<see cref="SlideshowSettings.Filter"/>).</summary>
     Tag,
+
+    /// <summary>The items this user has played most often (Jellyfin keeps play counts per user).</summary>
+    MostPlayed,
+
+    /// <summary>The best community rating.</summary>
+    TopRated,
+
+    /// <summary>The newest releases by premiere date (not by when they were added).</summary>
+    NewReleases,
+
+    /// <summary>Random items this user has not played yet.</summary>
+    Unplayed,
+}
+
+/// <summary>The look of the slideshow's button.</summary>
+public enum SlideshowButtonStyle
+{
+    /// <summary>Filled with the accent color.</summary>
+    Accent,
+
+    /// <summary>A thin outline, transparent inside.</summary>
+    Outline,
+
+    /// <summary>Frosted glass.</summary>
+    Glass,
+
+    /// <summary>White, dark text.</summary>
+    Light,
 }
 
 /// <summary>Item types the slideshow draws from.</summary>
@@ -387,6 +415,20 @@ public class SlideshowSettings
     public bool ShowOverview { get; set; } = true;
 
     public bool ShowButton { get; set; } = true;
+
+    /// <summary>The button's text; empty = the item's title.</summary>
+    public string ButtonLabel { get; set; } = string.Empty;
+
+    /// <summary>Material icon name in front of the text; empty = no icon.</summary>
+    public string ButtonIcon { get; set; } = "info";
+
+    public SlideshowButtonStyle ButtonStyle { get; set; } = SlideshowButtonStyle.Accent;
+
+    /// <summary>Corner radius in px; -1 = the card radius.</summary>
+    public int ButtonRadius { get; set; } = -1;
+
+    /// <summary>Size in percent of the default.</summary>
+    public int ButtonScale { get; set; } = 100;
 
     public bool HideOnTv { get; set; } = false;
 

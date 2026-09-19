@@ -123,5 +123,14 @@ public class ScriptBuilderTests
 
         Assert.Contains("\"slideshow\":{\"source\":\"Genre\",\"filter\":\"Action\",\"types\":\"MoviesAndSeries\",\"count\":5", js, StringComparison.Ordinal);
         Assert.Contains("jellycanvasSlideshow", js, StringComparison.Ordinal);
+        // the button's look and text travel with it; an empty icon stays empty (no icon), a bad one falls back
+        Assert.Contains("\"buttonLabel\":\"\",\"buttonIcon\":\"info\",\"buttonStyle\":\"Accent\",\"buttonRadius\":-1,\"buttonScale\":100", js, StringComparison.Ordinal);
+        cfg.Scripts.Slideshow.ButtonIcon = " ";
+        cfg.Scripts.Slideshow.ButtonLabel = " More info ";
+        cfg.Scripts.Slideshow.ButtonStyle = SlideshowButtonStyle.Glass;
+        cfg.Scripts.Slideshow.Source = SlideshowSource.MostPlayed;
+        var js2 = ScriptBuilder.Build(cfg);
+        Assert.Contains("\"source\":\"MostPlayed\"", js2, StringComparison.Ordinal);
+        Assert.Contains("\"buttonLabel\":\"More info\",\"buttonIcon\":\"\",\"buttonStyle\":\"Glass\"", js2, StringComparison.Ordinal);
     }
 }

@@ -1814,6 +1814,24 @@
                 q.SortOrder = 'Descending';
                 q.IncludeItemTypes = 'Movie,Episode';
                 break;
+            case 'MostPlayed':
+                // Play counts live in the user's data - "most played by you".
+                q.Filters = 'IsPlayed';
+                q.SortBy = 'PlayCount,DatePlayed';
+                q.SortOrder = 'Descending';
+                break;
+            case 'TopRated':
+                q.SortBy = 'CommunityRating,Random';
+                q.SortOrder = 'Descending';
+                q.MinCommunityRating = 1;
+                break;
+            case 'NewReleases':
+                q.SortBy = 'PremiereDate,DateCreated';
+                q.SortOrder = 'Descending';
+                break;
+            case 'Unplayed':
+                q.Filters = 'IsUnplayed';
+                break;
         }
         return api.getItems(userId, q);
     }
@@ -1877,6 +1895,22 @@
         return item.ProductionYear ? String(item.ProductionYear) : '';
     }
 
+    /** The button's look from the settings: fill, radius and size. */
+    function ssButtonLook() {
+        var radius = slideshow.buttonRadius >= 0 ? slideshow.buttonRadius + 'px' : 'var(--jf-card-borderRadius, 0.2em)';
+        var look = 'border-radius: ' + radius + '; font-size: ' + (slideshow.buttonScale || 100) / 100 + 'em; ';
+        switch (slideshow.buttonStyle) {
+            case 'Outline':
+                return look + 'background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.85);';
+            case 'Glass':
+                return look + 'background: rgba(255, 255, 255, 0.16); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);';
+            case 'Light':
+                return look + 'background: #fff; color: #111;';
+            default:
+                return look + 'background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000);';
+        }
+    }
+
     function ssStyle() {
         if (document.getElementById(SS_ID + '-style')) {
             return;
@@ -1894,7 +1928,8 @@
             '#' + SS_ID + ' .jcs-title { font-size: 2.2em; font-weight: 700; margin: 0 0 0.2em; line-height: 1.1; }' +
             '#' + SS_ID + ' .jcs-sub { opacity: 0.85; margin: 0 0 0.6em; font-size: 1em; }' +
             '#' + SS_ID + ' .jcs-overview { font-size: 1em; line-height: 1.45; max-height: 4.4em; overflow: hidden; margin: 0 0 1em; opacity: 0.92; }' +
-            '#' + SS_ID + ' .jcs-btn { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.6em 1.2em; border-radius: var(--jf-card-borderRadius, 0.2em); background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); font-weight: 600; text-decoration: none; }' +
+            '#' + SS_ID + ' .jcs-btn { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.6em 1.2em; font-weight: 600; text-decoration: none; ' + ssButtonLook() + ' }' +
+            '#' + SS_ID + ' .jcs-btn .material-icons { font-size: 1.25em; }' +
             '#' + SS_ID + ' .jcs-btn:hover { filter: brightness(1.1); }' +
             '#' + SS_ID + ' .jcs-dots { position: absolute; right: 2%; bottom: 6%; display: flex; gap: 6px; z-index: 2; }' +
             '#' + SS_ID + ' .jcs-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); border: 0; padding: 0; cursor: pointer; }' +
@@ -1968,8 +2003,14 @@
                 var btn = document.createElement('a');
                 btn.className = 'jcs-btn';
                 btn.href = href;
-                btn.innerHTML = '<span class="material-icons" aria-hidden="true">info</span>';
-                btn.appendChild(document.createTextNode(item.Type === 'Episode' ? (item.Name || '') : ssTitle(item)));
+                if (slideshow.buttonIcon) {
+                    var icon = document.createElement('span');
+                    icon.className = 'material-icons';
+                    icon.setAttribute('aria-hidden', 'true');
+                    icon.textContent = slideshow.buttonIcon;
+                    btn.appendChild(icon);
+                }
+                btn.appendChild(document.createTextNode(slideshow.buttonLabel || (item.Type === 'Episode' ? (item.Name || '') : ssTitle(item))));
                 text.appendChild(btn);
             }
             slide.appendChild(text);

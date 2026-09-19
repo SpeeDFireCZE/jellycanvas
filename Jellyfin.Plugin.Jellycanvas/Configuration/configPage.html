@@ -1032,13 +1032,18 @@
                                     <select is="emby-select" id="jcSsSource" data-path="Scripts.Slideshow.Source" class="emby-select-withcolor emby-select">
                                         <option value="Random" data-i18n="ssRandom">Random items</option>
                                         <option value="Latest" data-i18n="ssLatest">Recently added</option>
+                                        <option value="NewReleases" data-i18n="ssNewReleases">Newest releases (by premiere date)</option>
+                                        <option value="MostPlayed" data-i18n="ssMostPlayed">Most played (by this user)</option>
+                                        <option value="TopRated" data-i18n="ssTopRated">Top rated</option>
+                                        <option value="Unplayed" data-i18n="ssUnplayed">Not played yet (random)</option>
                                         <option value="ContinueWatching" data-i18n="ssContinue">Continue watching</option>
                                         <option value="Favorites" data-i18n="ssFavorites">Favorites</option>
                                         <option value="Genre" data-i18n="ssGenre">A genre (name below)</option>
                                         <option value="Tag" data-i18n="ssTag">A tag (name below)</option>
                                     </select>
                                 </div>
-                                <div class="inputContainer">
+                                <div class="jc-hint" data-when="Scripts.Slideshow.Source=MostPlayed" data-i18n="ssMostPlayedHint">Jellyfin keeps play counts per user, so each user sees what they themselves have played most.</div>
+                                <div class="inputContainer" data-when="Scripts.Slideshow.Source=Genre|Tag">
                                     <label class="inputLabel inputLabelUnfocused" for="jcSsFilter" data-i18n="slideshowFilter">Genre / tag name</label>
                                     <input is="emby-input" type="text" id="jcSsFilter" data-path="Scripts.Slideshow.Filter" placeholder="Science Fiction">
                                 </div>
@@ -1057,6 +1062,26 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowLogo"><span data-i18n="slideshowLogo">Use the title logo image when there is one</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowOverview"><span data-i18n="slideshowOverview">Show the overview</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.ShowButton"><span data-i18n="slideshowButton">Show a button to the item</span></label></div>
+                                <h4 class="jc-sub" data-when="Scripts.Slideshow.ShowButton=true" data-i18n="ssButtonHeading">Button</h4>
+                                <div class="inputContainer" data-when="Scripts.Slideshow.ShowButton=true">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSsButtonLabel" data-i18n="ssButtonLabel">Text (empty = the item's title)</label>
+                                    <input is="emby-input" type="text" id="jcSsButtonLabel" data-path="Scripts.Slideshow.ButtonLabel" placeholder="More info">
+                                </div>
+                                <div class="inputContainer" data-when="Scripts.Slideshow.ShowButton=true">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSsButtonIcon" data-i18n="ssButtonIcon">Icon (Material icon name, empty = none)</label>
+                                    <input is="emby-input" type="text" id="jcSsButtonIcon" data-path="Scripts.Slideshow.ButtonIcon" placeholder="info">
+                                </div>
+                                <div class="selectContainer" data-when="Scripts.Slideshow.ShowButton=true">
+                                    <label class="selectLabel" for="jcSsButtonStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcSsButtonStyle" data-path="Scripts.Slideshow.ButtonStyle" class="emby-select-withcolor emby-select">
+                                        <option value="Accent" data-i18n="ssBtnAccent">Accent color</option>
+                                        <option value="Outline" data-i18n="ssBtnOutline">Outline</option>
+                                        <option value="Glass" data-i18n="ssBtnGlass">Glass</option>
+                                        <option value="Light" data-i18n="ssBtnLight">White</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-when="Scripts.Slideshow.ShowButton=true" data-slider="Scripts.Slideshow.ButtonRadius" data-min="-1" data-max="40" data-unit="px" data-i18n-label="ssButtonRadius">Corner radius (-1 = same as cards)</div>
+                                <div class="jc-row" data-when="Scripts.Slideshow.ShowButton=true" data-slider="Scripts.Slideshow.ButtonScale" data-min="60" data-max="160" data-unit="%" data-i18n-label="ssButtonScale">Size</div>
                                 <h4 class="jc-sub" data-i18n="devicesHeading">Devices</h4>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.HideOnTv"><span data-i18n="btnHideTv">Hide on TV</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.Slideshow.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>

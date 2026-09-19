@@ -105,6 +105,11 @@ public static class ScriptBuilder
                 showLogo = ss.ShowLogo,
                 showOverview = ss.ShowOverview,
                 showButton = ss.ShowButton,
+                buttonLabel = (ss.ButtonLabel ?? string.Empty).Trim(),
+                buttonIcon = string.IsNullOrWhiteSpace(ss.ButtonIcon) ? string.Empty : CleanIcon(ss.ButtonIcon), // empty = no icon
+                buttonStyle = ss.ButtonStyle.ToString(),
+                buttonRadius = Math.Clamp(ss.ButtonRadius, -1, 999),
+                buttonScale = Math.Clamp(ss.ButtonScale, 60, 160),
                 hideOnTv = ss.HideOnTv,
                 hideOnMobile = ss.HideOnMobile,
             }
