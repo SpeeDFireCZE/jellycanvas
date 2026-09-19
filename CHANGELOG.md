@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.2.0 - 2026-09-19
+
+Several fixes live in the generated CSS: open the designer and press Apply once after updating.
+
 - Per-device settings: the designer edits the defaults (web and everything else) or, with the switch at the top, the TV or the phone - the same sections, and a value changed there applies to that device only while everything else keeps following the defaults; changed rows are marked and reset with one click, and in the default view a row a device overrides carries that device's tag (click it to get there). Ctrl+click in a TV or phone preview opens the device's own value when it has one, otherwise the default. The CSS carries a scoped copy of the theme for each device with changes, and the defaults stay off such a device (a full bar on the TV no longer shows the web's islands through it). In the TV and phone views the sidebar layout (a desktop thing), the other device's sections and the info bar and logo (defaults with their own "hide on TV / phone" switches) are out of the way; the TV and phone sections live in their device's view only.
 - The preview reminds you of Ctrl+click: a hint follows the mouse until the first click, and with Ctrl held the element under the mouse is framed and the hint names the section a click opens (gone as soon as Ctrl is released). The info strip - a pseudo-element with nothing to click on - is found by its place, so Ctrl+click on it opens the info bar section. The slideshow (its logo, overview and button land on their own switches) and the Seerr rows open their own sections instead of the toolbar buttons.
 - On load the designer no longer opens the presets and colors once the theme has been applied, nor the companion plugins while one is installed and working.
