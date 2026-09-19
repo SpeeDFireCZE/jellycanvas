@@ -9,7 +9,7 @@ All notable changes to Jellycanvas. The format follows
 - The preview reminds you of Ctrl+click: a hint follows the mouse until the first click, and with Ctrl held the element under the mouse is framed and the hint names the section a click opens (gone as soon as Ctrl is released). The info strip - a pseudo-element with nothing to click on - is found by its place, so Ctrl+click on it opens the info bar section. The slideshow (its logo, overview and button land on their own switches) and the Seerr rows open their own sections instead of the toolbar buttons.
 - On load the designer no longer opens the presets and colors once the theme has been applied, nor the companion plugins while one is installed and working.
 - Fixed: the mobile card radius did nothing (it set only the theme variable).
-- Fixed: with "hide the hover buttons on series, seasons and collections" on, a series in a Seerr row lost its open button too (the card carries the type); the rows' cards are exempt now. Apply the theme once after updating - the rule lives in the generated CSS.
+- Fixed: with "hide the hover buttons on series, seasons and collections" on, a series in a Seerr row lost its open button too (the card carries the type); the rows' cards are exempt from it, and from "hide the hover buttons" altogether - their one button is the way to the title. Apply the theme once after updating - the rule lives in the generated CSS.
 - Fixed: the home slideshow crept down the page while scrolling (the gap it keeps under the top bar was re-measured against the viewport on every sync, so each scroll pushed it - and everything under it - further down).
 
 - TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.

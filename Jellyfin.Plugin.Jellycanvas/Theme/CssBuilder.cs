@@ -1018,13 +1018,17 @@ public static class CssBuilder
                 break;
         }
 
+        // The Seerr rows' cards (marked data-jellycanvas) keep their one
+        // hover button under both options: it is the way to the title in
+        // Seerr, not one of the play / more buttons these options are about.
+        var own = ":not([data-jellycanvas])";
         if (k.HideOverlayButtons)
         {
             // Only the buttons: in Jellyfin 12 the overlay container also holds
             // the link that opens the item, so hiding the whole container
             // would kill the click-through.
-            sb.AppendLine($"{x.P}.cardOverlayContainer .cardOverlayButton, {x.P}.cardOverlayContainer .MuiButtonGroup-root, {x.P}.cardOverlayContainer > button {{ display: none !important; }}");
-            sb.AppendLine($"{x.P}.cardOverlayContainer {{ background: transparent !important; }}");
+            sb.AppendLine($"{x.P}.card{own} .cardOverlayContainer .cardOverlayButton, {x.P}.card{own} .cardOverlayContainer .MuiButtonGroup-root, {x.P}.card{own} .cardOverlayContainer > button {{ display: none !important; }}");
+            sb.AppendLine($"{x.P}.card{own} .cardOverlayContainer {{ background: transparent !important; }}");
         }
 
         if (k.HideOverlayButtonsOnFolders && !k.HideOverlayButtons)
@@ -1032,10 +1036,8 @@ public static class CssBuilder
             // Cards carry the item type in data-type; series, seasons and
             // collections open a list rather than play, so their hover
             // buttons are mostly noise. Movies and episodes keep theirs.
-            // The Seerr rows' cards carry the type too (data-jellycanvas marks
-            // them); their one button opens the title, not a list - it stays.
             var folders = new[] { "Series", "Season", "BoxSet", "CollectionFolder", "Folder" };
-            var card = ".card:not([data-jellycanvas])";
+            var card = ".card" + own;
             var buttons = string.Join(", ", folders.Select(f => $"{x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer .cardOverlayButton, {x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer .MuiButtonGroup-root, {x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer > button"));
             var containers = string.Join(", ", folders.Select(f => $"{x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer"));
             sb.AppendLine($"{buttons} {{ display: none !important; }}");

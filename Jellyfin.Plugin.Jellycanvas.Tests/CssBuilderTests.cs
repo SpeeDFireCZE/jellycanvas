@@ -539,6 +539,11 @@ public class CssBuilderTests
         var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { HideOverlayButtonsOnFolders = true } });
         Assert.Contains(".card:not([data-jellycanvas])[data-type=\"Series\"] .cardOverlayContainer .cardOverlayButton", css, StringComparison.Ordinal);
         Assert.DoesNotContain(" .card[data-type=\"Series\"] .cardOverlayContainer .cardOverlayButton", css, StringComparison.Ordinal);
+
+        // the same for "hide the hover buttons" altogether
+        var all = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { HideOverlayButtons = true } });
+        Assert.Contains(".card:not([data-jellycanvas]) .cardOverlayContainer .cardOverlayButton", all, StringComparison.Ordinal);
+        Assert.DoesNotContain(" .cardOverlayContainer .cardOverlayButton, html .cardOverlayContainer", all, StringComparison.Ordinal);
     }
 
     [Fact]
