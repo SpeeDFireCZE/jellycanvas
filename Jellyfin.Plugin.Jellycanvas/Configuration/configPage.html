@@ -48,6 +48,17 @@
                 .jc-status.jc-status-on { color: #7bd88f; opacity: 1; }
 
                 /* Groups of sections */
+                .jc-edit-device { display: flex; align-items: center; gap: .4em; flex-wrap: wrap; margin: 0 0 .6em; padding: .5em .7em; border-radius: .6em; background: rgba(255,255,255,.04); }
+                .jc-edit-device-label { font-size: .78em; letter-spacing: .1em; text-transform: uppercase; opacity: .7; margin-right: .3em; }
+                .jc-edit-device .emby-button { margin: 0; padding: .35em .8em; }
+                .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
+                .jc-edit-hint { margin: 0 0 1em; }
+                .jc-device-mode .jc-section[data-nodevice] { display: none; }
+                .jc-device-mode .jc-group:not(:has(.jc-section:not([data-nodevice]))) { display: none; }
+                /* A row whose value is overridden for the device being edited. */
+                .jc-overridden { position: relative; box-shadow: -3px 0 0 var(--jf-palette-primary-main, #00a4dc); padding-left: .5em !important; }
+                .jc-reset-override { position: absolute; right: 0; top: 0; border: 0; background: transparent; color: var(--jf-palette-primary-main, #00a4dc); cursor: pointer; font-size: 1.1em; line-height: 1; padding: .1em .3em; display: none; }
+                .jc-overridden > .jc-reset-override { display: inline-block; }
                 .jc-group { margin: 0 0 1.6em; }
                 /* Group headings: a colored label with a rule, so the groups read at a glance. */
                 .jc-group-title { display: flex; align-items: center; gap: .7em; font-size: .8em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--jf-palette-primary-main, #00a4dc); margin: 0 0 .6em .2em; }
@@ -180,16 +191,24 @@
                 <!-- ================= LEFT COLUMN: CONTROLS ================= -->
                 <div class="jc-controls">
 
+                    <div class="jc-edit-device" id="jcEditDevice">
+                        <span class="jc-edit-device-label" data-i18n="editDevice">Editing</span>
+                        <button is="emby-button" type="button" class="raised emby-button jc-edit-btn jc-active" data-edit="All"><span data-i18n="editAll">Default (web and everything else)</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Tv"><span data-i18n="editTv">TV</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Mobile"><span data-i18n="editMobile">Mobile</span></button>
+                    </div>
+                    <div class="jc-hint jc-edit-hint" id="jcEditHint" hidden data-i18n="editHint">The same sections as the default, but a value changed here applies to this device only and overrides the default; what is left alone keeps following the default. A changed row is marked, ↺ puts the default back. Script features, Seerr and sharing are set once for all devices.</div>
+
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupStart">Start</h3>
-                        <details class="jc-section" data-section="plugins" open>
+                        <details class="jc-section" data-nodevice="1" data-section="plugins" open>
                             <summary><span class="material-icons" aria-hidden="true">extension</span><span data-i18n="plugins">Companion plugins</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="pluginsHint">Everything in the theme is plain CSS and needs nothing else. A few features need JavaScript in the web client; their sections appear only while one of these plugins is installed.</div>
                                 <div class="jc-plugins" id="jcPlugins"></div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="presets" open>
+                        <details class="jc-section" data-nodevice="1" data-section="presets" open>
                             <summary><span class="material-icons" aria-hidden="true">auto_awesome</span><span data-i18n="presets">Presets</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-presets" id="jcPresets"></div>
@@ -202,7 +221,7 @@
                                 </div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="share">
+                        <details class="jc-section" data-nodevice="1" data-section="share">
                             <summary><span class="material-icons" aria-hidden="true">swap_horiz</span><span data-i18n="share">Share / import</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the info bar text, the login title, the uploaded logo, image links on private addresses. Copy it to share; paste one - or a link to one (a raw GitHub file, for example) - to try it. Nothing is applied until you click Apply.</div>
@@ -390,7 +409,7 @@
                         </details>
 
                         <p class="fieldDescription" id="jcScriptsMissing" hidden></p>
-                        <details class="jc-section" data-section="scripts" id="jcScriptsSection" hidden>
+                        <details class="jc-section" data-nodevice="1" data-section="scripts" id="jcScriptsSection" hidden>
                             <summary><span class="material-icons" aria-hidden="true">smart_button</span><span data-i18n="scripts">Custom toolbar buttons</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="scriptsHint">Custom buttons in the top bar - for example "Requests" opening Seerr in an overlay under the bar. They show up in the preview after Save or Apply.</div>
@@ -847,7 +866,7 @@
                             </div>
                         </details>
 
-                        <details class="jc-section" data-section="badges" id="jcBadgesSection" hidden>
+                        <details class="jc-section" data-nodevice="1" data-section="badges" id="jcBadgesSection" hidden>
                             <summary><span class="material-icons" aria-hidden="true">sell</span><span data-i18n="badges">Card badges (resolution, languages)</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="badgesHint">Resolution, HDR and the audio / subtitle languages on movie and episode cards, read from the media streams by the client script (one request per batch of cards, cached). Needs the script features enabled. Shows in the preview after Save or Apply.</div>
@@ -916,7 +935,7 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.HideOnTv"><span data-i18n="badgesTv">Hide on TV</span></label></div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="seerr" id="jcSeerrSection" hidden>
+                        <details class="jc-section" data-nodevice="1" data-section="seerr" id="jcSeerrSection" hidden>
                             <summary><span class="material-icons" aria-hidden="true">view_carousel</span><span data-i18n="seerr">Seerr rows</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="seerrHint">Rows on the home page from Seerr (Jellyseerr / Overseerr): what has been requested and is coming, the latest requests, what is trending. The server talks to Seerr with the API key; the key never reaches the browser and is not part of a shared theme. A poster opens the item here when the library has it, otherwise its page in Seerr.</div>
@@ -984,7 +1003,7 @@
                                 </template>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="slideshow" id="jcSlideshowSection" hidden>
+                        <details class="jc-section" data-nodevice="1" data-section="slideshow" id="jcSlideshowSection" hidden>
                             <summary><span class="material-icons" aria-hidden="true">slideshow</span><span data-i18n="slideshow">Home slideshow</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="slideshowHint">A hero carousel at the top of the home page: backdrop, logo or title, overview and a button to the item. Needs the script features enabled (Custom toolbar buttons section). Shows in the preview after Save or Apply.</div>
@@ -1160,7 +1179,7 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupAdvanced">Advanced</h3>
-                        <details class="jc-section" data-section="misc">
+                        <details class="jc-section" data-nodevice="1" data-section="misc">
                             <summary><span class="material-icons" aria-hidden="true">tune</span><span data-i18n="misc">Misc</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.HideScrollbars"><span data-i18n="hideScrollbars">Hide scrollbars</span></label></div>
@@ -1173,7 +1192,7 @@
                                 </div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="extra">
+                        <details class="jc-section" data-nodevice="1" data-section="extra">
                             <summary><span class="material-icons" aria-hidden="true">code</span><span data-i18n="extra">Extra CSS &amp; export</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="extraHint">Anything the controls above cannot do. Appended after the generated CSS.</div>

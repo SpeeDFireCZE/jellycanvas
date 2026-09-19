@@ -58,13 +58,44 @@ public static class CssBuilder
         ArgumentNullException.ThrowIfNull(c);
 
         var sb = new StringBuilder();
-        var ctx = new Context(c);
-
         sb.AppendLine(StartMarker);
         sb.AppendLine("/* Jellycanvas theme " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC */");
 
         // @import has to be the very first thing in a stylesheet, hence fonts first.
         AppendFontImport(sb, c.Typography);
+
+        // The defaults for everyone, then - for each device with changes of
+        // its own - the whole theme again from the merged settings, every
+        // selector scoped to that device's layout class. The scope adds
+        // specificity, so the device's rules win over the defaults.
+        sb.Append(BuildScoped(c, null));
+        foreach (var (name, scope) in DeviceOverrides.Devices)
+        {
+            var json = DeviceOverrides.For(c, name);
+            if (!DeviceOverrides.HasContent(json))
+            {
+                continue;
+            }
+
+            sb.AppendLine($"/* ===== {name}: the defaults with this device's changes ===== */");
+            sb.Append(BuildScoped(DeviceOverrides.Merge(c, json), scope));
+        }
+
+        if (!string.IsNullOrWhiteSpace(c.ExtraCss))
+        {
+            sb.AppendLine("/* --- extra CSS from the plugin page --- */");
+            sb.AppendLine(c.ExtraCss.Trim());
+        }
+
+        sb.AppendLine(EndMarker);
+        return sb.ToString();
+    }
+
+    /// <summary>The theme's rules for one configuration; scope = a device's layout selector, or null for the defaults.</summary>
+    private static string BuildScoped(PluginConfiguration c, string? scope)
+    {
+        var sb = new StringBuilder();
+        var ctx = new Context(c, scope);
 
         AppendPalette(sb, ctx);
         ThemeBridge.Append(sb, ctx.P);
@@ -88,19 +119,14 @@ public static class CssBuilder
         var css = sb.ToString();
         if (ctx.P.Length > 0)
         {
-            // The dark-only prefix is itself "html:not(...)"; a selector that
-            // starts with html (a third of them do) would become
-            // "html:not(...) html ..." - html under html, which matches
+            // The prefix is itself "html..." (dark-only guard, device scope);
+            // a selector that starts with html (a third of them do) would
+            // become "html... html ..." - html under html, which matches
             // nothing. Fold the two into one.
             css = css.Replace(ctx.P + "html", ctx.P.TrimEnd(), StringComparison.Ordinal);
         }
 
-        if (!string.IsNullOrWhiteSpace(c.ExtraCss))
-        {
-            css += "/* --- extra CSS from the plugin page --- */" + Environment.NewLine + c.ExtraCss.Trim() + Environment.NewLine;
-        }
-
-        return css + EndMarker + Environment.NewLine;
+        return css;
     }
 
     // ------------------------------------------------------------------
@@ -2134,7 +2160,11 @@ public static class CssBuilder
         sb.AppendLine("/* --- mobile layout --- */");
         if (m.CardRadius >= 0)
         {
+            // The variable and, like the card section, the elements themselves
+            // (the variable alone reaches only a current theme.css).
+            var mob = $"{x.P}html.layout-mobile";
             sb.AppendLine($"{x.RootMobile} {{ --jf-card-borderRadius: {Px(m.CardRadius)} !important; }}");
+            sb.AppendLine($"{mob} .blurhash-canvas, {mob} .cardBox, {mob} .cardBox:not(.visualCardBox) .cardPadder, {mob} .cardContent, {mob} .cardImageContainer, {mob} .cardOverlayContainer, {mob} .visualCardBox, {mob} .card:focus .cardBox:not(.visualCardBox) .cardScalable {{ border-radius: {Px(m.CardRadius)} !important; }}");
         }
 
         if (m.FontScale > 0)
@@ -2224,7 +2254,7 @@ public static class CssBuilder
     /// </summary>
     private sealed class Context
     {
-        public Context(PluginConfiguration config)
+        public Context(PluginConfiguration config, string? scope = null)
         {
             Config = config;
             Accent = Color.Parse(config.Colors.Accent, "#00a4dc");
@@ -2249,15 +2279,23 @@ public static class CssBuilder
             // selector prefix - "html:not([data-theme=light])" only matches
             // on dark themes.
             var darkOnly = config.ApplyTo == ApplyTo.DarkOnly;
-            P = darkOnly ? "html:not([data-theme=\"light\"]) " : string.Empty;
+            // The selector prefix: the dark-only guard and / or the device
+            // scope ("html.layout-tv"), both starting with html so they fold
+            // into selectors that start with html themselves.
+            var dark = darkOnly ? ":not([data-theme=\"light\"])" : string.Empty;
+            var device = scope is null ? string.Empty : scope.Substring(4); // ".layout-tv" / ":not(.layout-tv)..."
+            P = darkOnly || scope is not null ? "html" + dark + device + " " : string.Empty;
 
             // Palette variables: MUI writes them on [data-theme="dark"]
             // (specificity 0,1,0). "html[data-theme]" is 0,1,1 and always wins;
             // ":root" additionally covers the moment after load when the
-            // attribute is not set yet.
-            Root = darkOnly
-                ? "html[data-theme]:not([data-theme=\"light\"])"
-                : ":root, html[data-theme]";
+            // attribute is not set yet. A device scope carries them on the
+            // scoped html element.
+            Root = scope is not null
+                ? "html" + dark + device + ", html[data-theme]" + dark + device
+                : darkOnly
+                    ? "html[data-theme]:not([data-theme=\"light\"])"
+                    : ":root, html[data-theme]";
             RootTv = darkOnly ? "html.layout-tv[data-theme]:not([data-theme=\"light\"])" : "html.layout-tv, html.layout-tv[data-theme]";
             RootMobile = darkOnly ? "html.layout-mobile[data-theme]:not([data-theme=\"light\"])" : "html.layout-mobile, html.layout-mobile[data-theme]";
         }

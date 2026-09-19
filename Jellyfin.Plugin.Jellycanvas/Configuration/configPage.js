@@ -53,7 +53,7 @@
             pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
-            importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            resetOverride: 'Back to the default', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
@@ -110,7 +110,7 @@
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
-            misc: 'Různé', hideScrollbars: 'Schovat posuvníky',
+            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
@@ -202,6 +202,133 @@
         return path.split('.').reduce(function (o, k) { return o == null ? undefined : o[k]; }, obj);
     }
 
+    // ------------------------------------------------------------------
+    // Per-device editing. "All" edits the defaults (state). A device
+    // (Web / Tv / Mobile) edits a sparse object of its own changes, laid
+    // over the defaults for display; the server lays it over the defaults
+    // the same way and scopes the result to that device. The objects
+    // travel inside state.Overrides as JSON strings.
+    // ------------------------------------------------------------------
+    var editDevice = 'All';
+    var overrides = { Web: {}, Tv: {}, Mobile: {} };
+
+    function overridesFromState() {
+        ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+            var text = state.Overrides && state.Overrides[d];
+            try {
+                overrides[d] = text ? JSON.parse(text) : {};
+            } catch (e) {
+                overrides[d] = {};
+            }
+        });
+    }
+
+    function overridesIntoState() {
+        if (!state.Overrides) {
+            state.Overrides = {};
+        }
+        ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+            state.Overrides[d] = Object.keys(overrides[d]).length ? JSON.stringify(overrides[d]) : '';
+        });
+    }
+
+    function deepMerge(target, source) {
+        Object.keys(source).forEach(function (k) {
+            var v = source[k];
+            if (v && typeof v === 'object' && !Array.isArray(v) && target[k] && typeof target[k] === 'object' && !Array.isArray(target[k])) {
+                deepMerge(target[k], v);
+            } else {
+                target[k] = v;
+            }
+        });
+        return target;
+    }
+
+    /** What the controls show: the defaults, or the defaults with the device's changes. */
+    function view() {
+        if (editDevice === 'All') {
+            return state;
+        }
+        return deepMerge(JSON.parse(JSON.stringify(state)), overrides[editDevice]);
+    }
+
+    /** Writes a control's value where the current mode says: the defaults, or the device's changes. */
+    function writePath(path, value) {
+        if (editDevice === 'All') {
+            setPath(state, path, value);
+            return;
+        }
+        setPath(overrides[editDevice], path, value);
+        overridesIntoState();
+        markOverrides();
+    }
+
+    function hasOverride(path) {
+        return editDevice !== 'All' && getPath(overrides[editDevice], path) !== undefined;
+    }
+
+    /** Drops the device's change for one path (the default shows again). */
+    function resetOverride(path) {
+        var keys = path.split('.');
+        var last = keys.pop();
+        var parent = getPath(overrides[editDevice], keys.join('.'));
+        if (parent) {
+            delete parent[last];
+            // Empty branches go too, so "nothing changed" stays an empty object.
+            while (keys.length) {
+                var holder = getPath(overrides[editDevice], keys.join('.'));
+                if (holder && Object.keys(holder).length === 0) {
+                    var k = keys.pop();
+                    var up = keys.length ? getPath(overrides[editDevice], keys.join('.')) : overrides[editDevice];
+                    delete up[k];
+                } else {
+                    break;
+                }
+            }
+        }
+        overridesIntoState();
+        refreshControls();
+        schedulePreview();
+    }
+
+    /** The mark and the ↺ on every control whose value is overridden for the device being edited. */
+    function markOverrides() {
+        page.querySelectorAll('[data-path], [data-color]').forEach(function (el) {
+            var path = el.getAttribute('data-path') || el.getAttribute('data-color');
+            var box = el.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer');
+            if (!box || box.closest('.jc-btn')) {
+                return;
+            }
+            var on = hasOverride(path);
+            box.classList.toggle('jc-overridden', on);
+            var btn = box.querySelector(':scope > .jc-reset-override');
+            if (on && !btn) {
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'jc-reset-override';
+                btn.title = t('resetOverride');
+                btn.textContent = '\u21BA';
+                btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); resetOverride(path); });
+                box.appendChild(btn);
+            }
+        });
+    }
+
+    function setEditDevice(d) {
+        editDevice = d;
+        page.querySelectorAll('#jcEditDevice .jc-edit-btn').forEach(function (b) {
+            b.classList.toggle('jc-active', b.getAttribute('data-edit') === d);
+        });
+        page.querySelector('.jc-controls').classList.toggle('jc-device-mode', d !== 'All');
+        page.querySelector('#jcEditHint').hidden = d === 'All';
+        refreshControls();
+        // The preview shows the device being edited.
+        var want = d === 'Tv' ? 'tv' : d === 'Mobile' ? 'mobile' : 'web';
+        if (device !== want) {
+            selectDevice(want);
+        }
+    }
+
     function setPath(obj, path, value) {
         var keys = path.split('.');
         var last = keys.pop();
@@ -263,7 +390,7 @@
                 if (!fromNumber || document.activeElement !== numInput) {
                     numInput.value = v;
                 }
-                setPath(state, path, v);
+                writePath(path, v);
                 followPreview(path);
                 if (path.indexOf('Scripts.') === 0) {
                     scheduleScriptPreview();
@@ -277,7 +404,7 @@
 
             input.addEventListener('input', function () { commit(parseInt(input.value, 10), false); });
             numInput.addEventListener('input', function () { commit(parseInt(numInput.value, 10), true); });
-            numInput.addEventListener('blur', function () { numInput.value = getPath(state, path); });
+            numInput.addEventListener('blur', function () { numInput.value = getPath(view(), path); });
             input.jcShow = function (v) {
                 input.value = v;
                 numInput.value = v;
@@ -315,7 +442,7 @@
             }
 
             function apply(v) {
-                setPath(state, path, v);
+                writePath(path, v);
                 show(v);
                 followPreview(path);
                 schedulePreview();
@@ -338,7 +465,7 @@
                 } else if (!v && optional) {
                     apply('');
                 } else {
-                    show(getPath(state, path));
+                    show(getPath(view(), path));
                 }
             });
             row.jcShow = show;
@@ -357,7 +484,12 @@
             var path = el.getAttribute('data-path');
             var event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, function () {
-                setPath(state, path, el.type === 'checkbox' ? el.checked : el.type === 'number' ? (parseInt(el.value, 10) || 0) : el.value);
+                var val = el.type === 'checkbox' ? el.checked : el.type === 'number' ? (parseInt(el.value, 10) || 0) : el.value;
+                if (el.closest('.jc-btn')) {
+                    setPath(state, path, val); // list editors (buttons, Seerr rows) are defaults only
+                } else {
+                    writePath(path, val);
+                }
                 followPreview(path);
                 if (path === 'Header.Layout') {
                     renderSlots();
@@ -387,7 +519,7 @@
     function refreshConditions() {
         var holds = function (cond) {
             var parts = cond.split('=');
-            return parts[1].split('|').indexOf(String(getPath(state, parts[0]))) >= 0;
+            return parts[1].split('|').indexOf(String(getPath(view(), parts[0]))) >= 0;
         };
         var scriptAvailable = !!(status && (status.FileTransformation || status.JsInjector));
         page.querySelectorAll('[data-when]').forEach(function (el) {
@@ -400,19 +532,20 @@
 
     /** Pushes "state" into every control (after load, a preset, a reset). */
     function refreshControls() {
+        var shown = view();
         refreshConditions();
         page.querySelectorAll('[data-slider]').forEach(function (row) {
             var input = row.querySelector('input[type=range]');
-            input.jcShow(getPath(state, input.getAttribute('data-path')));
+            input.jcShow(getPath(shown, input.getAttribute('data-path')));
         });
         page.querySelectorAll('[data-color]').forEach(function (row) {
-            row.jcShow(getPath(state, row.getAttribute('data-color')) || '');
+            row.jcShow(getPath(shown, row.getAttribute('data-color')) || '');
         });
         page.querySelectorAll(BOUND_INPUTS).forEach(function (el) {
             if (el.closest('.jc-btn')) {
                 return; // the toolbar-button rows are rendered from state by renderButtons
             }
-            var v = getPath(state, el.getAttribute('data-path'));
+            var v = getPath(shown, el.getAttribute('data-path'));
             if (el.type === 'checkbox') {
                 el.checked = !!v;
             } else {
@@ -423,6 +556,7 @@
         renderSeerrRows();
         renderSlots();
         renderBadgeZones();
+        markOverrides();
     }
 
     // ------------------------------------------------------------------
@@ -633,6 +767,7 @@
         state.Enabled = keep.Enabled;
         state.Scripts = keep.Scripts;
         state.Header.LogoUrl = keep.LogoUrl;
+        overridesFromState();
         refreshControls();
         schedulePreview();
     }
@@ -1130,6 +1265,12 @@
         if (!details || details.hidden) {
             return;
         }
+        // Ctrl+click in a TV or phone preview lands on that device's own
+        // values; in the web preview on the defaults.
+        var wantEdit = device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : 'All';
+        if (editDevice !== wantEdit && !details.hasAttribute('data-nodevice')) {
+            setEditDevice(wantEdit);
+        }
         details.open = true;
         // A sub-heading or a control inside the section, when one is known
         // and currently shown; otherwise the section's top.
@@ -1584,6 +1725,10 @@
         }).catch(fail);
     });
 
+    page.querySelectorAll('#jcEditDevice .jc-edit-btn').forEach(function (b) {
+        b.addEventListener('click', function () { setEditDevice(b.getAttribute('data-edit')); });
+    });
+
     function refreshStatus() {
         return ApiClient.getJSON(ApiClient.getUrl('Jellycanvas/Status')).then(function (s) {
             status = s;
@@ -1742,6 +1887,7 @@
         }
         var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl };
         mergeKnown(state, data);
+        overridesFromState();
         state.Enabled = keep.Enabled;
         if (!data.Header || !data.Header.LogoUrl) {
             state.Header.LogoUrl = keep.LogoUrl;
@@ -1894,6 +2040,7 @@
         ]).then(function (r) {
             state = r[0];
             presets = r[1];
+            overridesFromState();
             renderPresets();
             refreshControls();
             selectDevice('web');

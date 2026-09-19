@@ -572,4 +572,40 @@ public class CssBuilderTests
         var badge = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Radius = 20, Played = PlayedStyle.Badge } });
         Assert.Contains(".card .cardIndicators { top: calc(0.225em + 6px)", badge, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Device_overrides_add_a_scoped_copy_of_the_theme()
+    {
+        var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#00a4dc" } };
+        cfg.Overrides.Tv = "{\"Colors\":{\"Accent\":\"#ff0000\"},\"Cards\":{\"Radius\":30}}";
+        cfg.Overrides.Mobile = "{}";
+
+        var css = CssBuilder.Build(cfg);
+
+        // the defaults, unscoped
+        Assert.Contains("--jf-palette-primary-main: #00a4dc !important;", css, StringComparison.Ordinal);
+        // the TV copy, every selector under html.layout-tv, with the TV's own accent and radius
+        Assert.Contains("/* ===== Tv: the defaults with this device's changes ===== */", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv, html[data-theme].layout-tv {", css, StringComparison.Ordinal);
+        Assert.Contains("--jf-palette-primary-main: #ff0000 !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv .cardImageContainer, html.layout-tv .cardOverlayContainer", css, StringComparison.Ordinal);
+        Assert.Contains("border-radius: 30px !important;", css, StringComparison.Ordinal);
+        // "html.layout-tv html ..." never appears (the prefix folds into html selectors)
+        Assert.DoesNotContain("html.layout-tv html", css, StringComparison.Ordinal);
+        // an empty document adds nothing
+        Assert.DoesNotContain("===== Mobile", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Device_override_merge_keeps_the_server_side_parts()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Scripts.Enabled = true;
+        var merged = DeviceOverrides.Merge(cfg, "{\"Cards\":{\"Radius\":9},\"Scripts\":{\"Enabled\":false},\"Header\":{\"Style\":\"Glass\"}}");
+
+        Assert.Equal(9, merged.Cards.Radius);
+        Assert.Equal(SurfaceStyle.Glass, merged.Header.Style);
+        Assert.True(merged.Scripts.Enabled);
+        Assert.Same(cfg, DeviceOverrides.Merge(cfg, "not json"));
+    }
 }

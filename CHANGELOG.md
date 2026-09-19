@@ -5,6 +5,9 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Per-device settings: the designer edits the defaults (web and everything else) or, with the switch at the top, the TV or the phone - the same sections, and a value changed there applies to that device only while everything else keeps following the defaults; changed rows are marked and reset with one click. Ctrl+click in a TV or phone preview lands on that device. The CSS carries a scoped copy of the theme for each device with changes.
+- Fixed: the mobile card radius did nothing (it set only the theme variable).
+
 - TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.
 - Card badges follow the card width (down to about three quarters on a dense library grid), two corners of one edge that would run into each other stack instead, a pill never runs past the card, and the bottom corners sit right above an overlaid title (they were lifted twice).
 - Test media: The Matrix carries the widest badges (DD+ 7.1, two audio flags, four subtitle codes).

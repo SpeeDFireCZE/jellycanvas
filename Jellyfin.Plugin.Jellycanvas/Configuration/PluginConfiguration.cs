@@ -723,6 +723,23 @@ public class CardSettings
     public bool HideOverlayButtonsOnFolders { get; set; } = false;
 }
 
+/// <summary>
+/// Per-device changes on top of the defaults: each device is a sparse JSON
+/// document with only the settings the admin changed for it (the designer
+/// writes it; <c>Theme/DeviceOverrides</c> merges it over the defaults).
+/// </summary>
+public class DeviceOverrideSettings
+{
+    /// <summary>Desktop browsers (neither the TV nor the phone layout).</summary>
+    public string Web { get; set; } = string.Empty;
+
+    /// <summary>The TV layout.</summary>
+    public string Tv { get; set; } = string.Empty;
+
+    /// <summary>The phone layout.</summary>
+    public string Mobile { get; set; } = string.Empty;
+}
+
 /// <summary>The video player's on-screen controls (bottom bar, progress, buttons) and the "Skip intro / credits" button.</summary>
 public class PlayerSettings
 {
@@ -1409,4 +1426,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Custom CSS appended after the generated block - for anything the controls do not cover.</summary>
     public string ExtraCss { get; set; } = string.Empty;
+
+    /// <summary>Per-device changes on top of these defaults (web, TV, phone).</summary>
+    public DeviceOverrideSettings Overrides { get; set; } = new();
 }
