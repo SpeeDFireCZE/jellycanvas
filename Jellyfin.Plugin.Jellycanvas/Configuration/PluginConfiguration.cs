@@ -336,7 +336,7 @@ public enum SlideshowSource
     /// <summary>The most recently added.</summary>
     Latest,
 
-    /// <summary>Items the user has started and not finished.</summary>
+    /// <summary>No longer offered (behaves as Random); kept so a saved configuration still loads.</summary>
     ContinueWatching,
 
     /// <summary>The user's favorites.</summary>

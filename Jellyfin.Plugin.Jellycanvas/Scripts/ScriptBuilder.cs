@@ -96,7 +96,7 @@ public static class ScriptBuilder
         var slideshow = hasSlideshow
             ? new
             {
-                source = ss.Source.ToString(),
+                source = ss.Source == SlideshowSource.ContinueWatching ? "Random" : ss.Source.ToString(), // a value from before it was removed
                 filter = (ss.Filter ?? string.Empty).Trim(),
                 types = ss.Types.ToString(),
                 count = Math.Clamp(ss.Count, 1, 30),

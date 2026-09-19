@@ -1808,12 +1808,6 @@
             case 'Tag':
                 q.Tags = slideshow.filter;
                 break;
-            case 'ContinueWatching':
-                q.Filters = 'IsResumable';
-                q.SortBy = 'DatePlayed';
-                q.SortOrder = 'Descending';
-                q.IncludeItemTypes = 'Movie,Episode';
-                break;
             case 'TopRated':
                 q.SortBy = 'CommunityRating,Random';
                 q.SortOrder = 'Descending';
