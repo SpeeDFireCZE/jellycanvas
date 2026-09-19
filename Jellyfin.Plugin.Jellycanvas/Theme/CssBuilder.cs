@@ -1032,9 +1032,12 @@ public static class CssBuilder
             // Cards carry the item type in data-type; series, seasons and
             // collections open a list rather than play, so their hover
             // buttons are mostly noise. Movies and episodes keep theirs.
+            // The Seerr rows' cards carry the type too (data-jellycanvas marks
+            // them); their one button opens the title, not a list - it stays.
             var folders = new[] { "Series", "Season", "BoxSet", "CollectionFolder", "Folder" };
-            var buttons = string.Join(", ", folders.Select(f => $"{x.P}.card[data-type=\"{f}\"] .cardOverlayContainer .cardOverlayButton, {x.P}.card[data-type=\"{f}\"] .cardOverlayContainer .MuiButtonGroup-root, {x.P}.card[data-type=\"{f}\"] .cardOverlayContainer > button"));
-            var containers = string.Join(", ", folders.Select(f => $"{x.P}.card[data-type=\"{f}\"] .cardOverlayContainer"));
+            var card = ".card:not([data-jellycanvas])";
+            var buttons = string.Join(", ", folders.Select(f => $"{x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer .cardOverlayButton, {x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer .MuiButtonGroup-root, {x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer > button"));
+            var containers = string.Join(", ", folders.Select(f => $"{x.P}{card}[data-type=\"{f}\"] .cardOverlayContainer"));
             sb.AppendLine($"{buttons} {{ display: none !important; }}");
             sb.AppendLine($"{containers} {{ background: transparent !important; }}");
         }

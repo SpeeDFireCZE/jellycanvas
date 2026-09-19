@@ -533,6 +533,15 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Folder_overlay_buttons_hide_on_library_cards_only()
+    {
+        // A Seerr row card is typed "Series" too, but its button opens the title.
+        var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { HideOverlayButtonsOnFolders = true } });
+        Assert.Contains(".card:not([data-jellycanvas])[data-type=\"Series\"] .cardOverlayContainer .cardOverlayButton", css, StringComparison.Ordinal);
+        Assert.DoesNotContain(" .card[data-type=\"Series\"] .cardOverlayContainer .cardOverlayButton", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Card_radius_is_set_directly_as_well_as_through_the_variable()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Radius = 18 } });
