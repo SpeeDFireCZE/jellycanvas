@@ -182,8 +182,8 @@
                 .jc-frame-wrap { position: absolute; left: 0; top: 0; transform-origin: top left; }
                 .jc-frame { border: 0; background: #101010; display: block; }
                 /* The Ctrl+click reminder over the preview: shows on hover, names the section while Ctrl is held. */
-                .jc-click-tip { position: absolute; right: .6em; bottom: .6em; z-index: 5; display: flex; align-items: center; gap: .45em; padding: .35em .7em; border-radius: 999px; background: rgba(16, 16, 16, .82); color: #fff; font-size: .8em; line-height: 1.3; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 2px 10px rgba(0,0,0,.4); opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 1.2em); }
-                .jc-stage:hover .jc-click-tip, .jc-click-tip.jc-armed { opacity: 1; }
+                .jc-click-tip { position: absolute; left: 0; top: 0; z-index: 5; white-space: nowrap; display: flex; align-items: center; gap: .45em; padding: .35em .7em; border-radius: 999px; background: rgba(16, 16, 16, .82); color: #fff; font-size: .8em; line-height: 1.3; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 2px 10px rgba(0,0,0,.4); opacity: 0; transition: opacity .15s; pointer-events: none; }
+                .jc-click-tip.jc-show { opacity: 1; }
                 .jc-click-tip.jc-armed { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); border-color: transparent; }
                 .jc-click-tip kbd { font: inherit; font-weight: 700; padding: 0 .4em; border-radius: .3em; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25); }
                 .jc-click-tip.jc-armed kbd { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.25); }
@@ -219,14 +219,14 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupStart">Start</h3>
-                        <details class="jc-section" data-nodevice="1" data-section="plugins" open>
+                        <details class="jc-section" data-nodevice="1" data-section="plugins">
                             <summary><span class="material-icons" aria-hidden="true">extension</span><span data-i18n="plugins">Companion plugins</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="pluginsHint">Everything in the theme is plain CSS and needs nothing else. A few features need JavaScript in the web client; their sections appear only while one of these plugins is installed.</div>
                                 <div class="jc-plugins" id="jcPlugins"></div>
                             </div>
                         </details>
-                        <details class="jc-section" data-nodevice="1" data-section="presets" open>
+                        <details class="jc-section" data-nodevice="1" data-section="presets">
                             <summary><span class="material-icons" aria-hidden="true">auto_awesome</span><span data-i18n="presets">Presets</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-presets" id="jcPresets"></div>
@@ -259,7 +259,7 @@
                                 </div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="colors" open>
+                        <details class="jc-section" data-section="colors">
                             <summary><span class="material-icons" aria-hidden="true">palette</span><span data-i18n="colors">Colors</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-color" data-color="Colors.Accent" data-i18n-label="accent">Accent</div>

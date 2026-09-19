@@ -1311,13 +1311,16 @@
         return { section: section, anchor: anchor };
     }
 
-    // The reminder over the preview: on hover "Ctrl + click opens the
-    // settings"; with Ctrl held the element under the mouse is outlined and
-    // the reminder names the section a click would open - the feature is
-    // easy to miss otherwise.
+    // The reminder next to the mouse in the preview: "Ctrl + click opens
+    // the settings" follows the pointer until the first click (then the
+    // user knows); with Ctrl held the element under the pointer is
+    // outlined and the reminder names the section a click would open,
+    // and it goes as soon as Ctrl is released.
     var clickTip = page.querySelector('#jcClickTip');
     var clickTipText = page.querySelector('#jcClickTipText');
-    var armed = null; // the outlined preview element and its own outline
+    var armed = null; // the outlined preview element
+    var tipSeen = false; // clicked in the preview once - the plain reminder is done
+    var tipPos = null; // the pointer's last place inside the preview document
 
     function showClickTip(target) {
         var hit = target && target.nodeType === 1 ? resolveClick(target) : null;
@@ -1334,28 +1337,91 @@
         clickTipText.innerHTML = t('clickTipOpens', name ? name.textContent : hit.section);
     }
 
+    /** Puts the reminder next to the pointer (preview coordinates -> the stage, through the preview's scale). */
+    function placeClickTip() {
+        var show = tipPos && (armed || !tipSeen);
+        clickTip.classList.toggle('jc-show', !!show);
+        if (!show) {
+            return;
+        }
+        var stage = page.querySelector('#jcStage').getBoundingClientRect();
+        var fr = frame.getBoundingClientRect();
+        var scale = frame.clientWidth ? fr.width / frame.clientWidth : 1;
+        var x = fr.left - stage.left + tipPos.x * scale + 16;
+        var y = fr.top - stage.top + tipPos.y * scale + 20;
+        var w = clickTip.offsetWidth;
+        var h = clickTip.offsetHeight;
+        if (x + w > stage.width - 6) {
+            x = Math.max(6, fr.left - stage.left + tipPos.x * scale - w - 12);
+        }
+        if (y + h > stage.height - 6) {
+            y = Math.max(6, fr.top - stage.top + tipPos.y * scale - h - 12);
+        }
+        clickTip.style.left = x + 'px';
+        clickTip.style.top = y + 'px';
+    }
+
+    /** The frame drawn around the element under the pointer: its own box in the preview, so overflow clipping and stacking cannot hide it. */
+    function pickBox(doc) {
+        var box = doc.getElementById('jellycanvasPick');
+        if (!box) {
+            box = doc.createElement('div');
+            box.id = 'jellycanvasPick';
+            box.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;box-sizing:border-box;border:2px solid var(--jf-palette-primary-main,#00a4dc);border-radius:4px;box-shadow:0 0 0 2px rgba(0,0,0,.35);display:none;';
+            doc.body.appendChild(box);
+        }
+        return box;
+    }
+
     function disarm() {
         if (armed) {
-            armed.el.style.outline = armed.outline;
-            armed.el.style.outlineOffset = armed.offset;
+            pickBox(armed.ownerDocument).style.display = 'none';
             armed = null;
         }
         showClickTip(null);
+        placeClickTip();
     }
 
     function arm(el) {
-        if (armed && armed.el === el) {
+        if (armed === el) {
+            placeClickTip();
             return;
         }
         disarm();
-        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body) {
+        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body || el.id === 'jellycanvasPick') {
             return;
         }
-        armed = { el: el, outline: el.style.outline, offset: el.style.outlineOffset };
-        el.style.outline = '2px solid var(--jf-palette-primary-main, #00a4dc)';
-        el.style.outlineOffset = '-2px';
+        armed = el;
+        var r = el.getBoundingClientRect();
+        var box = pickBox(el.ownerDocument);
+        box.style.left = (r.left - 2) + 'px';
+        box.style.top = (r.top - 2) + 'px';
+        box.style.width = (r.width + 4) + 'px';
+        box.style.height = (r.height + 4) + 'px';
+        box.style.display = 'block';
         showClickTip(el);
+        placeClickTip();
     }
+
+    function tipLeave() {
+        tipPos = null;
+        disarm();
+    }
+
+    // Ctrl pressed or released while the pointer rests in the preview: the
+    // key events land wherever the focus is, so both documents listen.
+    function tipKey(e) {
+        if (e.key !== 'Control' && e.key !== 'Meta') {
+            return;
+        }
+        if (e.type === 'keyup') {
+            disarm();
+        } else if (tipPos && frame.contentDocument) {
+            arm(frame.contentDocument.elementFromPoint(tipPos.x, tipPos.y));
+        }
+    }
+    document.addEventListener('keydown', tipKey, true);
+    document.addEventListener('keyup', tipKey, true);
 
     function hookPreviewClicks(doc) {
         if (doc.jcHooked) {
@@ -1363,7 +1429,9 @@
         }
         doc.jcHooked = true;
         doc.addEventListener('click', function (e) {
+            tipSeen = true;
             if (!e.ctrlKey && !e.metaKey) {
+                disarm();
                 return;
             }
             e.preventDefault();
@@ -1373,18 +1441,17 @@
             openSection(hit.section, hit.anchor);
         }, true);
         doc.addEventListener('mousemove', function (e) {
+            tipPos = { x: e.clientX, y: e.clientY };
             if (e.ctrlKey || e.metaKey) {
                 arm(e.target);
-            } else if (armed) {
+            } else {
                 disarm();
             }
         }, true);
-        doc.addEventListener('keyup', function (e) {
-            if (e.key === 'Control' || e.key === 'Meta') {
-                disarm();
-            }
-        }, true);
-        doc.addEventListener('mouseleave', disarm, true);
+        doc.addEventListener('keydown', tipKey, true);
+        doc.addEventListener('keyup', tipKey, true);
+        doc.addEventListener('mouseleave', tipLeave, true);
+        doc.defaultView.addEventListener('blur', tipLeave);
     }
     showClickTip(null);
 
@@ -2188,8 +2255,19 @@
             loadPreview();
             requestPreview();
             scheduleScriptPreview();
-            return refreshStatus();
+            return refreshStatus().then(openStartSections);
         }).catch(fail).finally(Dashboard.hideLoadingMsg);
+    }
+
+    // What opens by itself on load: the presets and colors only until the
+    // theme has been applied once (a first-time start), the companion
+    // plugins only while the client script has nothing to run in.
+    function openStartSections() {
+        var fresh = !(status.Enabled || status.PresentInBranding);
+        var scriptless = !(status.FileTransformation || status.JsInjector);
+        page.querySelector('.jc-section[data-section="plugins"]').open = scriptless;
+        page.querySelector('.jc-section[data-section="presets"]').open = fresh;
+        page.querySelector('.jc-section[data-section="colors"]').open = fresh;
     }
 
     page.addEventListener('pageshow', init);
