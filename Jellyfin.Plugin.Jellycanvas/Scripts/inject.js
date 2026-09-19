@@ -2011,13 +2011,20 @@
         var hb = header.getBoundingClientRect();
         var rb = root.getBoundingClientRect();
         var current = parseFloat(root.style.marginTop) || 0;
-        var overlap = hb.bottom - (rb.top - current);
-        // A sidebar (bar on the left) does not overlap at all.
-        if (hb.width < window.innerWidth * 0.5 || overlap <= 0) {
-            root.style.marginTop = '';
-            return;
+        // The rects are viewport-relative and the page may be scrolled (this
+        // runs on every sync): measure against where the slideshow sits
+        // with the page at the top, or the margin would grow with every
+        // scroll and push the whole page down.
+        var scrolled = window.pageYOffset || 0;
+        for (var p = root.parentElement; p && p !== document.body && p !== document.documentElement; p = p.parentElement) {
+            scrolled += p.scrollTop || 0; // a scrolling page container, if the client has one
         }
-        root.style.marginTop = Math.round(overlap) + 'px';
+        var overlap = hb.bottom - (rb.top + scrolled - current);
+        // A sidebar (bar on the left) does not overlap at all.
+        var margin = hb.width < window.innerWidth * 0.5 || overlap <= 0 ? '' : Math.round(overlap) + 'px';
+        if (root.style.marginTop !== margin) {
+            root.style.marginTop = margin;
+        }
     }
 
     function ssShow(i) {

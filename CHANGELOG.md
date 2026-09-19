@@ -9,6 +9,7 @@ All notable changes to Jellycanvas. The format follows
 - The preview reminds you of Ctrl+click: a hint follows the mouse until the first click, and with Ctrl held the element under the mouse is framed and the hint names the section a click opens (gone as soon as Ctrl is released). The info strip - a pseudo-element with nothing to click on - is found by its place, so Ctrl+click on it opens the info bar section.
 - On load the designer no longer opens the presets and colors once the theme has been applied, nor the companion plugins while one is installed and working.
 - Fixed: the mobile card radius did nothing (it set only the theme variable).
+- Fixed: the home slideshow crept down the page while scrolling (the gap it keeps under the top bar was re-measured against the viewport on every sync, so each scroll pushed it - and everything under it - further down).
 
 - TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.
 - Card badges follow the card width (down to about three quarters on a dense library grid), two corners of one edge that would run into each other stack instead, a pill never runs past the card, and the bottom corners sit right above an overlaid title (they were lifted twice).
