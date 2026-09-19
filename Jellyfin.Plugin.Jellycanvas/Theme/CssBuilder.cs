@@ -64,11 +64,14 @@ public static class CssBuilder
         // @import has to be the very first thing in a stylesheet, hence fonts first.
         AppendFontImport(sb, c.Typography);
 
-        // The defaults for everyone, then - for each device with changes of
-        // its own - the whole theme again from the merged settings, every
-        // selector scoped to that device's layout class. The scope adds
-        // specificity, so the device's rules win over the defaults.
-        sb.Append(BuildScoped(c, null));
+        // A device with changes of its own gets the whole theme again, built
+        // from the merged settings and scoped to its layout class - and the
+        // defaults are kept OFF that device (":not(.layout-tv)"): a rule the
+        // device's settings do not produce (islands on a bar the TV wants
+        // full) must not leak in from the defaults, and CSS can only add.
+        var own = DeviceOverrides.Devices.Where(d => d.Name != "Web" && DeviceOverrides.HasContent(DeviceOverrides.For(c, d.Name))).ToList();
+        var defaultScope = own.Count == 0 ? null : "html" + string.Concat(own.Select(d => ":not(" + d.Scope.Substring(4) + ")"));
+        sb.Append(BuildScoped(c, defaultScope));
         foreach (var (name, scope) in DeviceOverrides.Devices)
         {
             var json = DeviceOverrides.For(c, name);
@@ -77,8 +80,15 @@ public static class CssBuilder
                 continue;
             }
 
+            var merged = DeviceOverrides.Merge(c, json);
+            if (name != "Web" && merged.Header.Layout == HeaderLayout.Sidebar)
+            {
+                // The sidebar is a desktop thing; the TV and the phone keep a plain top bar.
+                merged.Header.Layout = HeaderLayout.Full;
+            }
+
             sb.AppendLine($"/* ===== {name}: the defaults with this device's changes ===== */");
-            sb.Append(BuildScoped(DeviceOverrides.Merge(c, json), scope));
+            sb.Append(BuildScoped(merged, scope));
         }
 
         if (!string.IsNullOrWhiteSpace(c.ExtraCss))

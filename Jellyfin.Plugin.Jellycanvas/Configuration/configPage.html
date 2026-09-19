@@ -54,6 +54,9 @@
                 .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
                 .jc-edit-hint { margin: 0 0 1em; }
                 .jc-device-mode .jc-section[data-nodevice] { display: none; }
+                /* Things that exist on one device only: the phone's side menu, "hide on TV"... - in device mode shown to that device alone. */
+                .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
+                .jc-device-mode option[data-nodevice] { display: none; }
                 .jc-device-mode .jc-group:not(:has(.jc-section:not([data-nodevice]))) { display: none; }
                 /* A row whose value is overridden for the device being edited. */
                 .jc-overridden { position: relative; box-shadow: -3px 0 0 var(--jf-palette-primary-main, #00a4dc); padding-left: .5em !important; }
@@ -295,7 +298,7 @@
                                     <select is="emby-select" id="jcHeaderLayout" data-path="Header.Layout" class="emby-select-withcolor emby-select">
                                         <option value="Full" data-i18n="layoutFull">One full-width bar at the top</option>
                                         <option value="Sections" data-i18n="layoutSections">Top bar split into sections (islands)</option>
-                                        <option value="Sidebar" data-i18n="layoutSidebar">Vertical sidebar on the left (pre-12 feel; phones and TV keep a top bar)</option>
+                                        <option value="Sidebar" data-nodevice="1" data-i18n="layoutSidebar">Vertical sidebar on the left (pre-12 feel; phones and TV keep a top bar)</option>
                                     </select>
                                 </div>
                                 <h4 class="jc-sub" data-when="Header.Layout=Full|Sections" data-i18n="topBarHeading">Top bar</h4>
@@ -488,8 +491,8 @@
                                 <div class="jc-row" data-slider="InfoBar.Height" data-min="20" data-max="80" data-unit="px" data-i18n-label="infobarHeight">Height</div>
                                 <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
                                 <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer" data-device="Mobile"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
+                                <div class="checkboxContainer" data-device="Tv"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
@@ -1124,7 +1127,7 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupDevices">Devices</h3>
-                        <details class="jc-section" data-section="tv">
+                        <details class="jc-section" data-section="tv" data-device="Tv">
                             <summary><span class="material-icons" aria-hidden="true">tv</span><span data-i18n="tv">TV layout</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-color" data-color="Tv.FocusColor" data-optional="1" data-i18n-label="focusColor">Focus color (empty = accent)</div>
@@ -1146,14 +1149,14 @@
 
                             </div>
                         </details>
-                        <details class="jc-section" data-section="mobile">
+                        <details class="jc-section" data-section="mobile" data-device="Mobile">
                             <summary><span class="material-icons" aria-hidden="true">smartphone</span><span data-i18n="mobile">Mobile layout</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-row" data-slider="Mobile.CardRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="cardRadiusMobile">Card radius (-1 = same as web)</div>
                                 <div class="jc-row" data-slider="Mobile.FontScale" data-min="0" data-max="125" data-unit="%" data-i18n-label="fontScaleMobile">Font size (0 = same as web)</div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="drawer">
+                        <details class="jc-section" data-section="drawer" data-device="Mobile">
                             <summary><span class="material-icons" aria-hidden="true">menu_open</span><span data-i18n="drawer">Side menu (phone / narrow window)</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="drawerHint">The hamburger menu that opens from the left in the mobile layout (and in narrow windows). On the desktop the links live in the top bar.</div>

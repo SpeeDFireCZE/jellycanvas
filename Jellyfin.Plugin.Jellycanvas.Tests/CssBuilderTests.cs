@@ -574,6 +574,28 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Device_copy_replaces_the_defaults_and_keeps_the_sidebar_off_the_tv()
+    {
+        // Islands on the web; the TV asks for a full bar - the web's island
+        // surfaces must not reach the TV, whose copy has nothing to undo them with.
+        var cfg = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sections } };
+        cfg.Overrides.Tv = "{\"Header\":{\"Layout\":\"Full\"}}";
+        var css = CssBuilder.Build(cfg);
+        var tvPart = css.Substring(css.IndexOf("===== Tv:", StringComparison.Ordinal));
+        Assert.Contains("html:not(.layout-tv) header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiStack-root", css, StringComparison.Ordinal);
+        Assert.Contains("> .MuiBox-root { background", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("> .MuiBox-root { background", tvPart, StringComparison.Ordinal);
+
+        // The sidebar is a desktop layout: a TV with changes of its own gets the plain bar (with the slots) instead.
+        var side = new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar } };
+        side.Overrides.Tv = "{\"Cards\":{\"Radius\":30}}";
+        var sideCss = CssBuilder.Build(side);
+        var sideTv = sideCss.Substring(sideCss.IndexOf("===== Tv:", StringComparison.Ordinal));
+        Assert.DoesNotContain("/* --- sidebar layout --- */", sideTv, StringComparison.Ordinal);
+        Assert.DoesNotContain(":not(.layout-tv)", sideTv, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Device_overrides_add_a_scoped_copy_of_the_theme()
     {
         var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#00a4dc" } };
@@ -582,8 +604,10 @@ public class CssBuilderTests
 
         var css = CssBuilder.Build(cfg);
 
-        // the defaults, unscoped
+        // the defaults, kept off the TV (the TV has its own copy)
         Assert.Contains("--jf-palette-primary-main: #00a4dc !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.layout-tv) .cardImageContainer", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("html:not(.layout-tv):not(.layout-mobile)", css, StringComparison.Ordinal);
         // the TV copy, every selector under html.layout-tv, with the TV's own accent and radius
         Assert.Contains("/* ===== Tv: the defaults with this device's changes ===== */", css, StringComparison.Ordinal);
         Assert.Contains("html.layout-tv, html[data-theme].layout-tv {", css, StringComparison.Ordinal);

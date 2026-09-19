@@ -249,7 +249,13 @@
         if (editDevice === 'All') {
             return state;
         }
-        return deepMerge(JSON.parse(JSON.stringify(state)), overrides[editDevice]);
+        var v = deepMerge(JSON.parse(JSON.stringify(state)), overrides[editDevice]);
+        // The sidebar is a desktop thing: the TV and the phone keep a plain
+        // top bar with it, so that is what their view shows.
+        if (v.Header.Layout === 'Sidebar') {
+            v.Header.Layout = 'Full';
+        }
+        return v;
     }
 
     /** Writes a control's value where the current mode says: the defaults, or the device's changes. */
@@ -349,7 +355,10 @@
         page.querySelectorAll('#jcEditDevice .jc-edit-btn').forEach(function (b) {
             b.classList.toggle('jc-active', b.getAttribute('data-edit') === d);
         });
-        page.querySelector('.jc-controls').classList.toggle('jc-device-mode', d !== 'All');
+        var controls = page.querySelector('.jc-controls');
+        controls.classList.toggle('jc-device-mode', d !== 'All');
+        controls.classList.toggle('jc-edit-tv', d === 'Tv');
+        controls.classList.toggle('jc-edit-mobile', d === 'Mobile');
         page.querySelector('#jcEditHint').hidden = d === 'All';
         refreshControls();
         // The switch also turns the preview to the device being edited
