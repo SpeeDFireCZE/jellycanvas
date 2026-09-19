@@ -348,10 +348,7 @@ public enum SlideshowSource
     /// <summary>Items with a tag (<see cref="SlideshowSettings.Filter"/>).</summary>
     Tag,
 
-    /// <summary>The items this user has played most often (Jellyfin keeps play counts per user).</summary>
-    MostPlayed,
-
-    /// <summary>The best community rating.</summary>
+    /// <summary>The best community rating (the TMDB / IMDb star rating Jellyfin shows on the item).</summary>
     TopRated,
 
     /// <summary>The newest releases by premiere date (not by when they were added).</summary>

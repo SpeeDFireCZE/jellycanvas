@@ -1814,12 +1814,6 @@
                 q.SortOrder = 'Descending';
                 q.IncludeItemTypes = 'Movie,Episode';
                 break;
-            case 'MostPlayed':
-                // Play counts live in the user's data - "most played by you".
-                q.Filters = 'IsPlayed';
-                q.SortBy = 'PlayCount,DatePlayed';
-                q.SortOrder = 'Descending';
-                break;
             case 'TopRated':
                 q.SortBy = 'CommunityRating,Random';
                 q.SortOrder = 'Descending';

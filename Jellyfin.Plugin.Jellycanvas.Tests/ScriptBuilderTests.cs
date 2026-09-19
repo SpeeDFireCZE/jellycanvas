@@ -128,9 +128,9 @@ public class ScriptBuilderTests
         cfg.Scripts.Slideshow.ButtonIcon = " ";
         cfg.Scripts.Slideshow.ButtonLabel = " More info ";
         cfg.Scripts.Slideshow.ButtonStyle = SlideshowButtonStyle.Glass;
-        cfg.Scripts.Slideshow.Source = SlideshowSource.MostPlayed;
+        cfg.Scripts.Slideshow.Source = SlideshowSource.TopRated;
         var js2 = ScriptBuilder.Build(cfg);
-        Assert.Contains("\"source\":\"MostPlayed\"", js2, StringComparison.Ordinal);
+        Assert.Contains("\"source\":\"TopRated\"", js2, StringComparison.Ordinal);
         Assert.Contains("\"buttonLabel\":\"More info\",\"buttonIcon\":\"\",\"buttonStyle\":\"Glass\"", js2, StringComparison.Ordinal);
     }
 }

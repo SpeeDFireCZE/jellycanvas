@@ -16,7 +16,7 @@ All notable changes to Jellycanvas. The format follows
 - Test media: The Matrix carries the widest badges (DD+ 7.1, two audio flags, four subtitle codes).
 
 - Seerr rows: popular movies / series have no movies-or-series choice (they are one type).
-- Home slideshow: more sources - newest releases (by premiere date), most played (by the user watching), top rated, not played yet - and the button has its own settings: text (empty = the item's title), icon, style (accent, outline, glass, white), corner radius and size.
+- Home slideshow: more sources - newest releases (by premiere date), top rated (the TMDB / IMDb star rating), not played yet - and the button has its own settings: text (empty = the item's title), icon, style (accent, outline, glass, white), corner radius and size.
 
 ## 1.1.1 - 2026-09-17
 

@@ -1033,8 +1033,7 @@
                                         <option value="Random" data-i18n="ssRandom">Random items</option>
                                         <option value="Latest" data-i18n="ssLatest">Recently added</option>
                                         <option value="NewReleases" data-i18n="ssNewReleases">Newest releases (by premiere date)</option>
-                                        <option value="MostPlayed" data-i18n="ssMostPlayed">Most played (by this user)</option>
-                                        <option value="TopRated" data-i18n="ssTopRated">Top rated</option>
+                                        <option value="TopRated" data-i18n="ssTopRated">Top rated (the TMDB / IMDb star rating)</option>
                                         <option value="Unplayed" data-i18n="ssUnplayed">Not played yet (random)</option>
                                         <option value="ContinueWatching" data-i18n="ssContinue">Continue watching</option>
                                         <option value="Favorites" data-i18n="ssFavorites">Favorites</option>
@@ -1042,7 +1041,6 @@
                                         <option value="Tag" data-i18n="ssTag">A tag (name below)</option>
                                     </select>
                                 </div>
-                                <div class="jc-hint" data-when="Scripts.Slideshow.Source=MostPlayed" data-i18n="ssMostPlayedHint">Jellyfin keeps play counts per user, so each user sees what they themselves have played most.</div>
                                 <div class="inputContainer" data-when="Scripts.Slideshow.Source=Genre|Tag">
                                     <label class="inputLabel inputLabelUnfocused" for="jcSsFilter" data-i18n="slideshowFilter">Genre / tag name</label>
                                     <input is="emby-input" type="text" id="jcSsFilter" data-path="Scripts.Slideshow.Filter" placeholder="Science Fiction">
