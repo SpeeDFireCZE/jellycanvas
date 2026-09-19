@@ -1241,10 +1241,16 @@
         ['header.MuiAppBar-root .MuiToolbar-root:nth-child(2)', 'header', 'libraryRowHeading'],
         ['header.MuiAppBar-root .MuiStack-root > a.MuiButton-sizeMedium, header.MuiAppBar-root [aria-controls], header.MuiAppBar-root a[href^="#/search"]', 'header', 'navHeading'],
         ['#jellycanvasInfoClose', 'infobar'],
+        // The script's own blocks (slideshow, Seerr rows) before the general
+        // marker, which otherwise sends everything to the toolbar buttons.
+        ['#jellycanvasSlideshow .jcs-logo', 'slideshow', '[data-path="Scripts.Slideshow.ShowLogo"]'],
+        ['#jellycanvasSlideshow .jcs-overview', 'slideshow', '[data-path="Scripts.Slideshow.ShowOverview"]'],
+        ['#jellycanvasSlideshow .jcs-btn', 'slideshow', '[data-path="Scripts.Slideshow.ShowButton"]'],
+        ['#jellycanvasSlideshow', 'slideshow'],
+        ['.jellycanvas-row', 'seerr', 'seerrRowsHeading'],
         ['[data-jellycanvas]', 'scripts'],
         ['header.MuiAppBar-root, .skinHeader', 'header', 'lookHeading'],
         ['.mainDrawer, .MuiDrawer-paper', 'drawer'],
-        ['#jellycanvasSlideshow', 'slideshow'],
         ['.upNextContainer', 'dialogs', '[data-path="Dialogs.UpNext"]'],
         ['.skip-button-container', 'player', 'skipHeading'],
         ['.videoOsdBottom, .osdHeader', 'player', 'osdHeading'],
@@ -1293,7 +1299,7 @@
         // Plain text (a title, a card caption, a description) belongs
         // to typography even when it sits inside a card or the header;
         // text on a button or link still belongs to that control.
-        if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a')) {
+        if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a, #jellycanvasSlideshow, .jellycanvas-row')) {
             section = 'typography';
         } else {
             for (var i = 0; i < CLICK_MAP.length; i++) {
