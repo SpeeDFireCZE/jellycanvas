@@ -57,6 +57,9 @@
                 /* Things that exist on one device only: the phone's side menu, "hide on TV"... - in device mode shown to that device alone. */
                 .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
                 .jc-device-mode option[data-nodevice] { display: none; }
+                /* The TV / phone sections live in that device's view only (the default view has nothing of theirs to show). */
+                .jc-section.jc-off-device { display: none; }
+                .jc-group:not(:has(.jc-section:not([hidden]):not(.jc-off-device))) { display: none; }
                 .jc-device-mode .jc-group:not(:has(.jc-section:not([data-nodevice]))) { display: none; }
                 /* A row whose value is overridden for the device being edited. */
                 .jc-overridden { position: relative; box-shadow: -3px 0 0 var(--jf-palette-primary-main, #00a4dc); padding-left: .5em !important; }
@@ -178,6 +181,13 @@
                 .jc-stage { position: relative; width: 100%; background: #000; border-radius: .6em; overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
                 .jc-frame-wrap { position: absolute; left: 0; top: 0; transform-origin: top left; }
                 .jc-frame { border: 0; background: #101010; display: block; }
+                /* The Ctrl+click reminder over the preview: shows on hover, names the section while Ctrl is held. */
+                .jc-click-tip { position: absolute; right: .6em; bottom: .6em; z-index: 5; display: flex; align-items: center; gap: .45em; padding: .35em .7em; border-radius: 999px; background: rgba(16, 16, 16, .82); color: #fff; font-size: .8em; line-height: 1.3; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 2px 10px rgba(0,0,0,.4); opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 1.2em); }
+                .jc-stage:hover .jc-click-tip, .jc-click-tip.jc-armed { opacity: 1; }
+                .jc-click-tip.jc-armed { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); border-color: transparent; }
+                .jc-click-tip kbd { font: inherit; font-weight: 700; padding: 0 .4em; border-radius: .3em; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25); }
+                .jc-click-tip.jc-armed kbd { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.25); }
+                .jc-click-tip .material-icons { font-size: 1.25em; }
                 .jc-css { width: 100%; min-height: 14em; font-family: monospace; font-size: 85%; white-space: pre; }
                 .fieldDescription { margin-top: .2em; }
             </style>
@@ -386,7 +396,7 @@
                             </div>
                         </details>
 
-                        <details class="jc-section" data-section="logo">
+                        <details class="jc-section" data-nodevice="1" data-section="logo">
                             <summary><span class="material-icons" aria-hidden="true">image</span><span data-i18n="logo">Logo</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="logoTextHeading">Server name</h4>
@@ -469,7 +479,7 @@
                         </template>
 
 
-                        <details class="jc-section" data-section="infobar">
+                        <details class="jc-section" data-nodevice="1" data-section="infobar">
                             <summary><span class="material-icons" aria-hidden="true">campaign</span><span data-i18n="infobar">Info bar</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="infobarTextHeading">Text &amp; placement</h4>
@@ -491,8 +501,8 @@
                                 <div class="jc-row" data-slider="InfoBar.Height" data-min="20" data-max="80" data-unit="px" data-i18n-label="infobarHeight">Height</div>
                                 <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
                                 <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
-                                <div class="checkboxContainer" data-device="Mobile"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
-                                <div class="checkboxContainer" data-device="Tv"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
@@ -1127,7 +1137,7 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupDevices">Devices</h3>
-                        <details class="jc-section" data-section="tv" data-device="Tv">
+                        <details class="jc-section jc-off-device" data-section="tv" data-device="Tv" data-device-only="1">
                             <summary><span class="material-icons" aria-hidden="true">tv</span><span data-i18n="tv">TV layout</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-color" data-color="Tv.FocusColor" data-optional="1" data-i18n-label="focusColor">Focus color (empty = accent)</div>
@@ -1149,7 +1159,7 @@
 
                             </div>
                         </details>
-                        <details class="jc-section" data-section="mobile" data-device="Mobile">
+                        <details class="jc-section jc-off-device" data-section="mobile" data-device="Mobile" data-device-only="1">
                             <summary><span class="material-icons" aria-hidden="true">smartphone</span><span data-i18n="mobile">Mobile layout</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-row" data-slider="Mobile.CardRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="cardRadiusMobile">Card radius (-1 = same as web)</div>
@@ -1236,6 +1246,7 @@
                         <div class="jc-frame-wrap" id="jcFrameWrap">
                             <iframe class="jc-frame" id="jcFrame" title="Preview"></iframe>
                         </div>
+                        <div class="jc-click-tip" id="jcClickTip" aria-hidden="true"><span class="material-icons" aria-hidden="true">ads_click</span><span id="jcClickTipText"></span></div>
                     </div>
                     <p class="jc-hint" data-i18n="previewHint">The preview is the real web client with your CSS injected - you can click around in it; Ctrl+click an element to jump to its settings. Custom CSS reaches browser-based clients (web, Jellyfin Media Player, the Android app); native TV apps ignore it.</p>
                 </div>

@@ -53,6 +53,7 @@
             pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
+            clickTip: '<kbd>Ctrl</kbd> + click an element to open its settings', clickTipOpens: '<kbd>Ctrl</kbd> + click opens: {0}',
             editTv: 'TV', editMobile: 'Mobile', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
@@ -83,7 +84,7 @@
             extra: 'Vlastní CSS a export', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
             exportHint: 'Vygenerované CSS - jen pro čtení. Zkopíruj, pokud ho chceš použít jinde.',
             devWeb: 'Web', devTv: 'TV', devMobile: 'Mobil', pageHome: 'Domů', pageLibrary: 'Knihovna', pageDetail: 'Detail položky', pageLogin: 'Přihlášení', pageUpNext: 'Přehrávač: další díl', pageStillWatching: 'Přehrávač: „Stále se díváte?“', mockNext: 'Další díl začne za {0} s', mockSkip: 'Přeskočit úvod', mockEndsAt: 'Konec ve 21:35', mockEpisode: 'S1:E2 – Název epizody', mockStartNow: 'Spustit hned', mockHide: 'Skrýt', mockStill: 'Stále se díváte?', mockStop: 'Přestat sledovat', mockContinue: 'Pokračovat ve sledování',
-            previewHint: 'Náhled je skutečný webový klient s vloženým CSS - dá se v něm klikat. Ctrl+klik na prvek otevře jeho nastavení. Vlastní CSS se projeví v klientech založených na webu (prohlížeč, Jellyfin Media Player, aplikace pro Android); nativní TV aplikace ho ignorují.',
+            clickTip: '<kbd>Ctrl</kbd> + klik na prvek otevře jeho nastavení', clickTipOpens: '<kbd>Ctrl</kbd> + klik otevře: {0}', previewHint: 'Náhled je skutečný webový klient s vloženým CSS - dá se v něm klikat. Ctrl+klik na prvek otevře jeho nastavení. Vlastní CSS se projeví v klientech založených na webu (prohlížeč, Jellyfin Media Player, aplikace pro Android); nativní TV aplikace ho ignorují.',
             statusOn: 'Téma je zapnuté a zapsané v Brandingu.', statusOff: 'Téma zatím není na serveru použité - zatím jen náhled.',
             statusMissing: 'Téma je zapnuté, ale v Brandingu chybí (někdo ho smazal ručně). Klikni na Použít.',
             statusForeign: 'V Brandingu je i cizí CSS ({0} znaků) - zůstane zachované.',
@@ -186,6 +187,9 @@
         translate(page);
         if (status) {
             refreshStatus();
+        }
+        if (typeof showClickTip === 'function') {
+            showClickTip(null);
         }
     }
 
@@ -359,6 +363,9 @@
         controls.classList.toggle('jc-device-mode', d !== 'All');
         controls.classList.toggle('jc-edit-tv', d === 'Tv');
         controls.classList.toggle('jc-edit-mobile', d === 'Mobile');
+        page.querySelectorAll('.jc-section[data-device-only]').forEach(function (s) {
+            s.classList.toggle('jc-off-device', s.getAttribute('data-device') !== d);
+        });
         page.querySelector('#jcEditHint').hidden = d === 'All';
         refreshControls();
         // The switch also turns the preview to the device being edited
@@ -1275,6 +1282,81 @@
         return true;
     }
 
+    /** Which section (and sub-heading) a Ctrl+click on this preview element opens. */
+    function resolveClick(target) {
+        var section = 'colors';
+        var anchor = null;
+        // Plain text (a title, a card caption, a description) belongs
+        // to typography even when it sits inside a card or the header;
+        // text on a button or link still belongs to that control.
+        if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a')) {
+            section = 'typography';
+        } else {
+            for (var i = 0; i < CLICK_MAP.length; i++) {
+                if (target.closest && target.closest(CLICK_MAP[i][0])) {
+                    section = CLICK_MAP[i][1];
+                    anchor = CLICK_MAP[i][2] || null;
+                    break;
+                }
+            }
+        }
+        // The bar itself: its own sub-heading depends on the layout.
+        if (section === 'header' && anchor === 'lookHeading') {
+            anchor = state.Header.Layout === 'Sidebar' ? 'sidebarHeading' : 'topBarHeading';
+        }
+        // Under a top bar the library row has no settings of its own.
+        if (anchor === 'libraryRowHeading' && state.Header.Layout !== 'Sidebar') {
+            anchor = 'topBarHeading';
+        }
+        return { section: section, anchor: anchor };
+    }
+
+    // The reminder over the preview: on hover "Ctrl + click opens the
+    // settings"; with Ctrl held the element under the mouse is outlined and
+    // the reminder names the section a click would open - the feature is
+    // easy to miss otherwise.
+    var clickTip = page.querySelector('#jcClickTip');
+    var clickTipText = page.querySelector('#jcClickTipText');
+    var armed = null; // the outlined preview element and its own outline
+
+    function showClickTip(target) {
+        var hit = target && target.nodeType === 1 ? resolveClick(target) : null;
+        var details = hit && page.querySelector('.jc-section[data-section="' + hit.section + '"]');
+        if (!details || details.hidden) {
+            hit = null;
+        }
+        clickTip.classList.toggle('jc-armed', !!hit);
+        if (!hit) {
+            clickTipText.innerHTML = t('clickTip');
+            return;
+        }
+        var name = details.querySelector('summary [data-i18n]');
+        clickTipText.innerHTML = t('clickTipOpens', name ? name.textContent : hit.section);
+    }
+
+    function disarm() {
+        if (armed) {
+            armed.el.style.outline = armed.outline;
+            armed.el.style.outlineOffset = armed.offset;
+            armed = null;
+        }
+        showClickTip(null);
+    }
+
+    function arm(el) {
+        if (armed && armed.el === el) {
+            return;
+        }
+        disarm();
+        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body) {
+            return;
+        }
+        armed = { el: el, outline: el.style.outline, offset: el.style.outlineOffset };
+        el.style.outline = '2px solid var(--jf-palette-primary-main, #00a4dc)';
+        el.style.outlineOffset = '-2px';
+        showClickTip(el);
+    }
+
     function hookPreviewClicks(doc) {
         if (doc.jcHooked) {
             return;
@@ -1286,34 +1368,25 @@
             }
             e.preventDefault();
             e.stopPropagation();
-            var target = e.target;
-            var section = 'colors';
-            var anchor = null;
-            // Plain text (a title, a card caption, a description) belongs
-            // to typography even when it sits inside a card or the header;
-            // text on a button or link still belongs to that control.
-            if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a')) {
-                section = 'typography';
-            } else {
-                for (var i = 0; i < CLICK_MAP.length; i++) {
-                    if (target.closest && target.closest(CLICK_MAP[i][0])) {
-                        section = CLICK_MAP[i][1];
-                        anchor = CLICK_MAP[i][2] || null;
-                        break;
-                    }
-                }
-            }
-            // The bar itself: its own sub-heading depends on the layout.
-            if (section === 'header' && anchor === 'lookHeading') {
-                anchor = state.Header.Layout === 'Sidebar' ? 'sidebarHeading' : 'topBarHeading';
-            }
-            // Under a top bar the library row has no settings of its own.
-            if (anchor === 'libraryRowHeading' && state.Header.Layout !== 'Sidebar') {
-                anchor = 'topBarHeading';
-            }
-            openSection(section, anchor);
+            var hit = resolveClick(e.target);
+            disarm();
+            openSection(hit.section, hit.anchor);
         }, true);
+        doc.addEventListener('mousemove', function (e) {
+            if (e.ctrlKey || e.metaKey) {
+                arm(e.target);
+            } else if (armed) {
+                disarm();
+            }
+        }, true);
+        doc.addEventListener('keyup', function (e) {
+            if (e.key === 'Control' || e.key === 'Meta') {
+                disarm();
+            }
+        }, true);
+        doc.addEventListener('mouseleave', disarm, true);
     }
+    showClickTip(null);
 
     function openSection(name, anchor) {
         var details = page.querySelector('.jc-section[data-section="' + name + '"]');
@@ -1326,7 +1399,10 @@
         // what the device shows then. The preview stays where it is.
         var previewDev = device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
         var wantEdit = 'All';
-        if (previewDev && !details.hasAttribute('data-nodevice')) {
+        if (details.hasAttribute('data-device-only')) {
+            // A section one device alone has (the phone's side menu): only its view shows it.
+            wantEdit = details.getAttribute('data-device');
+        } else if (previewDev && !details.hasAttribute('data-nodevice')) {
             var spotEl = anchor && anchor.charAt(0) === '[' ? details.querySelector(anchor) : null;
             var paths = spotEl ? pathsIn(spotEl.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer') || spotEl) : [];
             if (deviceOverrides(previewDev, paths.length ? paths : pathsIn(details))) {
