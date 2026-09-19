@@ -133,7 +133,7 @@ public static class ScriptBuilder
             }
             : null;
 
-        var backdrop = hasBackdrop ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail } : null;
+        var backdrop = hasBackdrop ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail, tvStatic = c.Tv.StaticBackdrop } : null;
 
         var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows }, JsonOptions);
 

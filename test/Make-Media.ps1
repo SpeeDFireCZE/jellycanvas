@@ -31,7 +31,7 @@ $profiles = @{
     'Blade Runner 2049 (2017)'                   = @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:8', 'cze:6', 'slo:2'); subs = @('cze', 'slo', 'eng', 'ger') }
     'Dune (2021)'                                = @{ w = 1920; h = 1080; codec = 'h264'; audio = @('eng:6', 'cze:6'); subs = @('cze') }
     'Interstellar (2014)'                        = @{ w = 1920; h = 1080; codec = 'hevc'; audio = @('eng:8'); subs = @('eng', 'fre', 'ger', 'spa') }
-    'The Matrix (1999)'                          = @{ w = 1280; h = 720;  codec = 'h264'; audio = @('cze:2', 'eng:2'); subs = @() }
+    'The Matrix (1999)'                          = @{ w = 1920; h = 1080; codec = 'hevc'; audio = @('eng:8', 'cze:2'); subs = @('cze', 'eng', 'ger', 'fre') }   # the widest badges: DD+ 7.1 (same width as DD+ Atmos 5.1), two flags, four subtitle codes
     'Mad Max: Fury Road (2015)'                  = @{ w = 1920; h = 1080; codec = 'h264'; audio = @('eng:6', 'jpn:2', 'kor:2'); subs = @('cze', 'eng', 'jpn') }
     'Inception (2010)'                           = @{ w = 1920; h = 800;  codec = 'h264'; audio = @('eng:6'); subs = @('cze', 'eng') }
     'Her (2013)'                                 = @{ w = 1280; h = 720;  codec = 'h264'; audio = @('eng:2'); subs = @('cze') }

@@ -1339,6 +1339,9 @@ public class TvSettings
 
     /// <summary>What a focused tab in the TV bar (Home, Favorites, libraries) does.</summary>
     public TabFocusStyle TabFocus { get; set; } = TabFocusStyle.Highlight;
+
+    /// <summary>On TV keep the background still: no rotation, no panning - one random backdrop (an item's own backdrop on its page still shows).</summary>
+    public bool StaticBackdrop { get; set; } = false;
 }
 
 /// <summary>Tweaks for the mobile layout (<c>html.layout-mobile</c>).</summary>

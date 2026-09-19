@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.
+- Card badges follow the card width (down to about three quarters on a dense library grid), two corners of one edge that would run into each other stack instead, a pill never runs past the card, and the bottom corners sit right above an overlaid title (they were lifted twice).
+- Test media: The Matrix carries the widest badges (DD+ 7.1, two audio flags, four subtitle codes).
+
 - Seerr rows: popular movies / series have no movies-or-series choice (they are one type).
 
 ## 1.1.1 - 2026-09-17

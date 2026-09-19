@@ -77,7 +77,7 @@
             fontCustomName: 'Název vlastního písma (přesně jako na Google Fonts)', googleFonts: 'Načíst z Google Fonts',
             googleFontsHint: 'Inter, Roboto, Poppins, Nunito i vlastní název. Vypni, pokud prohlížeče nesmí na internet.', fontScale: 'Velikost',
             backdrop: 'Obrázek na pozadí', dim: 'Ztmavení', loginGradient: 'Pozadí přechodem', gradientFrom: 'Přechod od (prázdné = barva pozadí)', gradientTo: 'Přechod do (prázdné = tmavé zvýraznění)', gradientAngle: 'Směr přechodu', gradientOpacity: 'Krytí přechodu (pod 100 prosvítá backdrop)', loginGradientHint: 'Adresa obrázku na pozadí výše má před přechodem přednost.', loginTransparentBar: 'Na přihlášení bez lišty - jen logo přes pozadí', loginTitle: 'Text nadpisu (prázdné = „Prosíme, přihlaste se“)', loginFieldsHeading: 'Pole a tlačítka', loginFormWidth: 'Šířka formuláře (0 = výchozí)', loginInputs: 'Textová pole', loginButtons: 'Tlačítka', loginInputsDefault: 'Výchozí Jellyfin', loginInputRadius: 'Zaoblení polí a tlačítek (-1 = jako formulář)', loginInputScale: 'Výška polí', loginHideTitle: 'Schovat nadpis', loginHideQuick: 'Schovat tlačítko Rychlé připojení', loginHideForgot: 'Schovat tlačítko Zapomenuté heslo', loginRadius: 'Zaoblení rohů',
-            tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek', tvTabFocus: 'Záložka s fokusem (Domů, Oblíbené, knihovny)', tabFocusHighlight: 'Vyplnit barvou fokusu', tabFocusRing: 'Rámeček v barvě fokusu', tabFocusGlow: 'Jemné zvětšení se září', tabFocusScale: 'Jako Jellyfin: zvětší se 1,3×',
+            tvBarHeading: 'Horní lišta na TV', tvBarHint: 'TV rozložení má klasickou horní lištu Jellyfinu (logo, ikony, záložky); styl, barvy a zaoblení bere ze sekce Lišta. Výška a velikost se nastavují tady.', tvBarHeight: 'Výška lišty (0 = výchozí Jellyfin)', tvBarScale: 'Velikost ikon a záložek', tvTabFocus: 'Záložka s fokusem (Domů, Oblíbené, knihovny)', tabFocusHighlight: 'Vyplnit barvou fokusu', tabFocusRing: 'Rámeček v barvě fokusu', tabFocusGlow: 'Jemné zvětšení se září', tabFocusScale: 'Jako Jellyfin: zvětší se 1,3×', tvBackdropHeading: 'Pozadí na TV', tvStaticBackdrop: 'Klidné pozadí: na TV bez střídání a bez posouvání – jeden náhodný backdrop (vlastní backdrop položky na její stránce zůstává)',
             tv: 'Rozložení TV', focusColor: 'Barva zaměření (prázdné = zvýraznění)', focusWidth: 'Tloušťka rámečku zaměření', focusScale: 'Zvětšení zaměřené karty',
             mobile: 'Rozložení mobil', cardRadiusMobile: 'Zaoblení karet (-1 = jako web)', fontScaleMobile: 'Velikost písma (0 = jako web)',
             extra: 'Vlastní CSS a export', importPlaceholder2: 'Sem vlož JSON tématu nebo odkaz na něj', importFetchFail: 'Odkaz se nepodařilo načíst (web musí povolit cross-origin požadavky; raw odkazy z GitHubu to umí).', extraHint: 'Cokoli, co ovládací prvky neumí. Připojí se za vygenerované CSS.',
@@ -269,7 +269,7 @@
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
-                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0) {
+                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0 || path === 'Tv.StaticBackdrop') {
                         scheduleScriptPreview(); // the close button and the backdrop rotation live in the script
                     }
                 }
@@ -371,7 +371,7 @@
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
-                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0) {
+                    if (path.indexOf('InfoBar.') === 0 || path.indexOf('Backdrop.') === 0 || path === 'Tv.StaticBackdrop') {
                         scheduleScriptPreview(); // the close button and the backdrop rotation live in the script
                     }
                 }

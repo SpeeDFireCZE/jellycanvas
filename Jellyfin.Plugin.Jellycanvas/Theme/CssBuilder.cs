@@ -973,8 +973,8 @@ public static class CssBuilder
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText-first:last-child {{ bottom: 0.4em; }}");
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText-secondary {{ bottom: 0.4em; color: rgba(255, 255, 255, 0.7) !important; }}");
                 sb.AppendLine($"{x.P}.cardBox-bottompadded {{ margin-bottom: 0.6em !important; }}");
-                // The script's card badges would sit on the title - lift the bottom corners above it.
-                sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) .jellycanvas-badges-bl, {x.P}.cardBox:not(.visualCardBox) .jellycanvas-badges-br {{ bottom: 2.6em !important; }}");
+                // (The script's card badges measure the title strip themselves
+                // and stop right above it - no fixed lift here, the two added up.)
                 break;
             case CardText.Hidden:
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText {{ display: none !important; }}");
@@ -1310,6 +1310,7 @@ public static class CssBuilder
         if (bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0)
         {
             AppendBackdropRotation(sb, container, dim, bd.RotateSeconds, bd.Animate);
+            AppendTvStaticBackdrop(sb, x, dim, url);
             return;
         }
 
@@ -1319,6 +1320,26 @@ public static class CssBuilder
             // The item's backdrop goes on the script's layer over the image.
             AppendBackdropLayers(sb, dim, bd.Animate);
         }
+
+        AppendTvStaticBackdrop(sb, x, dim, url);
+    }
+
+    /// <summary>
+    /// TV with "still background": the CSS rotation layers go, the panning
+    /// stops, and one random (or the custom) picture sits on the container;
+    /// the script's layer for an item's own backdrop stays available.
+    /// </summary>
+    private static void AppendTvStaticBackdrop(StringBuilder sb, Context x, string dim, string url)
+    {
+        if (!x.Config.Tv.StaticBackdrop)
+        {
+            return;
+        }
+
+        var tv = $"{x.P}html.layout-tv";
+        sb.AppendLine($"{tv} .backgroundContainer::before, {tv} .backgroundContainer::after {{ display: none !important; animation: none !important; }}");
+        sb.AppendLine($"{tv} .backgroundContainer {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; animation: none !important; }}");
+        sb.AppendLine($"{tv} .backgroundContainer > .jellycanvas-backdrop > div, {tv} .backdropImage {{ animation: none !important; background-size: cover !important; }}");
     }
 
     /// <summary>

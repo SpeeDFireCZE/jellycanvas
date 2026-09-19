@@ -147,7 +147,7 @@
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
             stacked +
-            '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.02em; white-space: nowrap; ' + look + ' }' +
+            '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
             colorful +
             '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
             '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
@@ -509,6 +509,11 @@
             }
         }
         var above = Math.max(0, Math.round(hostRect.bottom - textTop) - inset + 2);
+        // Smaller cards (a dense library grid) get smaller badges: the size
+        // follows the card's width down to about three quarters.
+        var hostWidth = hostRect.width || host.clientWidth || 200;
+        var shrink = Math.max(0.72, Math.min(1, hostWidth / 220));
+        var made = {};
         Object.keys(badges.corners).forEach(function (corner) {
             var ids = badges.corners[corner];
             var box = null;
@@ -521,6 +526,9 @@
                     box = document.createElement('div');
                     box.className = 'jellycanvas-badges jellycanvas-badges-' + corner;
                     box.style.padding = inset + 'px';
+                    if (shrink < 1) {
+                        box.style.fontSize = (11 * badges.scale / 100 * shrink).toFixed(1) + 'px';
+                    }
                     if (below[corner]) {
                         box.style.marginTop = below[corner] + 'px';
                     }
@@ -532,6 +540,21 @@
             });
             if (box) {
                 host.appendChild(box);
+                made[corner] = box;
+            }
+        });
+        // Two corners of one edge that would run into each other: the right
+        // one moves past the left one (down at the top, up at the bottom).
+        [['tl', 'tr', 'marginTop'], ['bl', 'br', 'marginBottom']].forEach(function (pair) {
+            var left = made[pair[0]];
+            var right = made[pair[1]];
+            if (!left || !right) {
+                return;
+            }
+            var lr = left.getBoundingClientRect();
+            var rr = right.getBoundingClientRect();
+            if (lr.right > rr.left && lr.bottom > rr.top && lr.top < rr.bottom) {
+                right.style[pair[2]] = ((parseFloat(right.style[pair[2]]) || 0) + lr.height - inset) + 'px';
             }
         });
     }
@@ -696,9 +719,14 @@
         return base + '../Jellycanvas/Backdrop?n=' + Math.floor(Math.random() * 1e9);
     }
 
+    // Rotation is off on a TV that asked for a still background.
+    function backdropRotates() {
+        return backdrop.seconds > 0 && !(backdrop.tvStatic && isTv());
+    }
+
     function backdropNext() {
         // Paused while an item's page shows its own backdrop.
-        if (bdBusy || !bdHost || document.hidden || bdDetailId) {
+        if (bdBusy || !bdHost || document.hidden || bdDetailId || !backdropRotates()) {
             return;
         }
         bdBusy = true;
@@ -747,7 +775,7 @@
             container.appendChild(bdHost);
             bdCurrent = 1;
             bdDetailId = null;
-            if (backdrop.seconds > 0) {
+            if (backdropRotates()) {
                 document.documentElement.classList.add('jellycanvas-js-backdrop');
                 backdropNext();
                 bdTimer = setInterval(backdropNext, backdrop.seconds * 1000);
@@ -770,7 +798,7 @@
         bdDetailId = id;
         if (id) {
             backdropShowItem(id);
-        } else if (backdrop.seconds > 0) {
+        } else if (backdropRotates()) {
             backdropNext();
         } else {
             backdropClear();
