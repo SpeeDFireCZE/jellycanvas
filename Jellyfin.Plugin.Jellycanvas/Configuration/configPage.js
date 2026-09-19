@@ -1283,9 +1283,13 @@
     }
 
     /** Which section (and sub-heading) a Ctrl+click on this preview element opens. */
-    function resolveClick(target) {
+    function resolveClick(target, x, y) {
         var section = 'colors';
         var anchor = null;
+        // The info strip is a pseudo-element - nothing to hit, only a place.
+        if (x !== undefined && infoBarRect(target.ownerDocument, x, y)) {
+            return { section: 'infobar', anchor: null, rect: infoBarRect(target.ownerDocument, x, y) };
+        }
         // Plain text (a title, a card caption, a description) belongs
         // to typography even when it sits inside a card or the header;
         // text on a button or link still belongs to that control.
@@ -1322,8 +1326,59 @@
     var tipSeen = false; // clicked in the preview once - the plain reminder is done
     var tipPos = null; // the pointer's last place inside the preview document
 
-    function showClickTip(target) {
-        var hit = target && target.nodeType === 1 ? resolveClick(target) : null;
+    /**
+     * Where the info strip is drawn: a pseudo-element on the header (under
+     * the bar) or on <main> (fixed: the top of the content next to a
+     * sidebar, or the bottom edge). Its box comes from the computed styles;
+     * with a point given, only when the point lies inside it.
+     */
+    function infoBarRect(doc, x, y) {
+        if (!doc || !view().InfoBar.Enabled || doc.documentElement.classList.contains('jellycanvas-infobar-closed')) {
+            return null;
+        }
+        var win = doc.defaultView;
+        var spots = [
+            [doc.querySelector('header.MuiAppBar-root'), '::after'],
+            [doc.querySelector('header.MuiAppBar-root ~ main'), '::before'],
+            [doc.querySelector('header.MuiAppBar-root ~ main'), '::after']
+        ];
+        for (var i = 0; i < spots.length; i++) {
+            var el = spots[i][0];
+            if (!el) {
+                continue;
+            }
+            var cs = win.getComputedStyle(el, spots[i][1]);
+            if (cs.content === 'none' || cs.content === 'normal' || cs.display === 'none') {
+                continue;
+            }
+            var h = parseFloat(cs.height) || 0;
+            var r;
+            if (cs.position === 'fixed') {
+                var top = cs.top !== 'auto' ? parseFloat(cs.top) : null;
+                var bottom = cs.bottom !== 'auto' ? parseFloat(cs.bottom) : null;
+                var left = parseFloat(cs.left) || 0;
+                var right = parseFloat(cs.right) || 0;
+                r = { left: left, right: win.innerWidth - right, top: top !== null ? top : win.innerHeight - bottom - h };
+                r.bottom = r.top + h;
+            } else {
+                // In flow at the end of the header: the header's last rows.
+                var hr = el.getBoundingClientRect();
+                var mb = parseFloat(cs.marginBottom) || 0;
+                r = { left: hr.left + (parseFloat(cs.marginLeft) || 0), right: hr.right - (parseFloat(cs.marginRight) || 0), bottom: hr.bottom - mb };
+                r.top = r.bottom - h;
+            }
+            if (h <= 0 || r.right <= r.left) {
+                continue;
+            }
+            if (x === undefined || (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    function showClickTip(target, x, y) {
+        var hit = target && target.nodeType === 1 ? resolveClick(target, x, y) : null;
         var details = hit && page.querySelector('.jc-section[data-section="' + hit.section + '"]');
         if (!details || details.hidden) {
             hit = null;
@@ -1374,32 +1429,36 @@
     }
 
     function disarm() {
-        if (armed) {
-            pickBox(armed.ownerDocument).style.display = 'none';
-            armed = null;
+        if (armed && frame.contentDocument) {
+            pickBox(frame.contentDocument).style.display = 'none';
         }
+        armed = null;
         showClickTip(null);
         placeClickTip();
     }
 
-    function arm(el) {
-        if (armed === el) {
+    function arm(el, x, y) {
+        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body || el.id === 'jellycanvasPick') {
+            disarm();
+            return;
+        }
+        // The info strip has no element of its own: the frame follows its box instead.
+        var strip = infoBarRect(el.ownerDocument, x, y);
+        var key = strip ? 'infobar' : el;
+        if (armed === key) {
             placeClickTip();
             return;
         }
         disarm();
-        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body || el.id === 'jellycanvasPick') {
-            return;
-        }
-        armed = el;
-        var r = el.getBoundingClientRect();
+        armed = key;
+        var r = strip || el.getBoundingClientRect();
         var box = pickBox(el.ownerDocument);
         box.style.left = (r.left - 2) + 'px';
         box.style.top = (r.top - 2) + 'px';
-        box.style.width = (r.width + 4) + 'px';
-        box.style.height = (r.height + 4) + 'px';
+        box.style.width = (r.right - r.left + 4) + 'px';
+        box.style.height = (r.bottom - r.top + 4) + 'px';
         box.style.display = 'block';
-        showClickTip(el);
+        showClickTip(el, x, y);
         placeClickTip();
     }
 
@@ -1417,7 +1476,7 @@
         if (e.type === 'keyup') {
             disarm();
         } else if (tipPos && frame.contentDocument) {
-            arm(frame.contentDocument.elementFromPoint(tipPos.x, tipPos.y));
+            arm(frame.contentDocument.elementFromPoint(tipPos.x, tipPos.y), tipPos.x, tipPos.y);
         }
     }
     document.addEventListener('keydown', tipKey, true);
@@ -1436,14 +1495,14 @@
             }
             e.preventDefault();
             e.stopPropagation();
-            var hit = resolveClick(e.target);
+            var hit = resolveClick(e.target, e.clientX, e.clientY);
             disarm();
             openSection(hit.section, hit.anchor);
         }, true);
         doc.addEventListener('mousemove', function (e) {
             tipPos = { x: e.clientX, y: e.clientY };
             if (e.ctrlKey || e.metaKey) {
-                arm(e.target);
+                arm(e.target, e.clientX, e.clientY);
             } else {
                 disarm();
             }
