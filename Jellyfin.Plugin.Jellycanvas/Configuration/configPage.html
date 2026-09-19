@@ -59,6 +59,11 @@
                 .jc-overridden { position: relative; box-shadow: -3px 0 0 var(--jf-palette-primary-main, #00a4dc); padding-left: .5em !important; }
                 .jc-reset-override { position: absolute; right: 0; top: 0; border: 0; background: transparent; color: var(--jf-palette-primary-main, #00a4dc); cursor: pointer; font-size: 1.1em; line-height: 1; padding: .1em .3em; display: none; }
                 .jc-overridden > .jc-reset-override { display: inline-block; }
+                /* In the default view: the devices that override this row. */
+                .jc-row, .jc-color, .jc-section-body .selectContainer, .jc-section-body .inputContainer, .jc-section-body .checkboxContainer { position: relative; }
+                .jc-dev-tags { position: absolute; right: 0; top: -.15em; display: flex; gap: .25em; }
+                .jc-dev-tag { border: 1px solid var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-main, #00a4dc); background: transparent; border-radius: 999px; font-size: .66em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: .05em .5em; cursor: pointer; line-height: 1.5; }
+                .jc-dev-tag:hover { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
                 .jc-group { margin: 0 0 1.6em; }
                 /* Group headings: a colored label with a rule, so the groups read at a glance. */
                 .jc-group-title { display: flex; align-items: center; gap: .7em; font-size: .8em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--jf-palette-primary-main, #00a4dc); margin: 0 0 .6em .2em; }

@@ -5,7 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
-- Per-device settings: the designer edits the defaults (web and everything else) or, with the switch at the top, the TV or the phone - the same sections, and a value changed there applies to that device only while everything else keeps following the defaults; changed rows are marked and reset with one click. Ctrl+click in a TV or phone preview lands on that device. The CSS carries a scoped copy of the theme for each device with changes.
+- Per-device settings: the designer edits the defaults (web and everything else) or, with the switch at the top, the TV or the phone - the same sections, and a value changed there applies to that device only while everything else keeps following the defaults; changed rows are marked and reset with one click, and in the default view a row a device overrides carries that device's tag (click it to get there). Ctrl+click in a TV or phone preview opens the device's own value when it has one, otherwise the default. The CSS carries a scoped copy of the theme for each device with changes.
 - Fixed: the mobile card radius did nothing (it set only the theme variable).
 
 - TV: a still background - no rotation and no panning on TV, one random backdrop; an item page still shows its own backdrop.

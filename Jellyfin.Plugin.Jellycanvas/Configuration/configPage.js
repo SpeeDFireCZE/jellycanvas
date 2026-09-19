@@ -53,7 +53,7 @@
             pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
-            resetOverride: 'Back to the default', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            editTv: 'TV', editMobile: 'Mobile', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
@@ -110,7 +110,7 @@
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
-            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu',
+            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
@@ -299,6 +299,36 @@
             if (!box || box.closest('.jc-btn')) {
                 return;
             }
+            // In the default view: which devices go their own way here.
+            var tags = box.querySelector(':scope > .jc-dev-tags');
+            if (tags) {
+                tags.remove();
+            }
+            if (editDevice === 'All') {
+                var devs = ['Tv', 'Mobile'].filter(function (d) { return getPath(overrides[d], path) !== undefined; });
+                if (devs.length) {
+                    tags = document.createElement('span');
+                    tags.className = 'jc-dev-tags';
+                    devs.forEach(function (d) {
+                        var tag = document.createElement('button');
+                        tag.type = 'button';
+                        tag.className = 'jc-dev-tag';
+                        tag.textContent = d === 'Tv' ? t('editTv') : t('editMobile');
+                        tag.title = t('devTagHint');
+                        tag.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setEditDevice(d);
+                            var again = page.querySelector('[data-path="' + path + '"], [data-color="' + path + '"]');
+                            if (again) {
+                                again.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                            }
+                        });
+                        tags.appendChild(tag);
+                    });
+                    box.appendChild(tags);
+                }
+            }
             var on = hasOverride(path);
             box.classList.toggle('jc-overridden', on);
             var btn = box.querySelector(':scope > .jc-reset-override');
@@ -314,7 +344,7 @@
         });
     }
 
-    function setEditDevice(d) {
+    function setEditDevice(d, keepPreview) {
         editDevice = d;
         page.querySelectorAll('#jcEditDevice .jc-edit-btn').forEach(function (b) {
             b.classList.toggle('jc-active', b.getAttribute('data-edit') === d);
@@ -322,11 +352,27 @@
         page.querySelector('.jc-controls').classList.toggle('jc-device-mode', d !== 'All');
         page.querySelector('#jcEditHint').hidden = d === 'All';
         refreshControls();
-        // The preview shows the device being edited.
+        // The switch also turns the preview to the device being edited
+        // (a Ctrl+click from a preview leaves the preview where it is).
         var want = d === 'Tv' ? 'tv' : d === 'Mobile' ? 'mobile' : 'web';
-        if (device !== want) {
+        if (!keepPreview && device !== want) {
             selectDevice(want);
         }
+    }
+
+    /** The settings paths a section (or one control inside it) covers. */
+    function pathsIn(el) {
+        var out = [];
+        el.querySelectorAll('[data-path], [data-color]').forEach(function (c) {
+            if (!c.closest('.jc-btn')) {
+                out.push(c.getAttribute('data-path') || c.getAttribute('data-color'));
+            }
+        });
+        return out;
+    }
+
+    function deviceOverrides(dev, paths) {
+        return paths.some(function (p) { return getPath(overrides[dev], p) !== undefined; });
     }
 
     function setPath(obj, path, value) {
@@ -1265,11 +1311,21 @@
         if (!details || details.hidden) {
             return;
         }
-        // Ctrl+click in a TV or phone preview lands on that device's own
-        // values; in the web preview on the defaults.
-        var wantEdit = device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : 'All';
-        if (editDevice !== wantEdit && !details.hasAttribute('data-nodevice')) {
-            setEditDevice(wantEdit);
+        // Where is this thing set? In a TV or phone preview: on that device
+        // when the device overrides the clicked control (or, failing that,
+        // anything in the section); otherwise on the defaults, which is
+        // what the device shows then. The preview stays where it is.
+        var previewDev = device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
+        var wantEdit = 'All';
+        if (previewDev && !details.hasAttribute('data-nodevice')) {
+            var spotEl = anchor && anchor.charAt(0) === '[' ? details.querySelector(anchor) : null;
+            var paths = spotEl ? pathsIn(spotEl.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer') || spotEl) : [];
+            if (deviceOverrides(previewDev, paths.length ? paths : pathsIn(details))) {
+                wantEdit = previewDev;
+            }
+        }
+        if (editDevice !== wantEdit) {
+            setEditDevice(wantEdit, true);
         }
         details.open = true;
         // A sub-heading or a control inside the section, when one is known
