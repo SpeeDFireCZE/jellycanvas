@@ -760,6 +760,61 @@ public class CardSettings
 
     /// <summary>Hover buttons (play, menu) off on series, seasons and collections only - movies and episodes keep them.</summary>
     public bool HideOverlayButtonsOnFolders { get; set; } = false;
+
+    /// <summary>The play button on a poster (the hover button on the web, the fixed one touch clients draw): its look.</summary>
+    public PlayButtonStyle PlayStyle { get; set; } = PlayButtonStyle.Default;
+
+    /// <summary>Its background; empty = what the style says.</summary>
+    public string PlayColor { get; set; } = string.Empty;
+
+    /// <summary>Its corner radius in px; -1 = the icon-button radius, 999 = round.</summary>
+    public int PlayRadius { get; set; } = -1;
+
+    /// <summary>Where it sits on the poster.</summary>
+    public PlayButtonPosition PlayPosition { get; set; } = PlayButtonPosition.Default;
+
+    /// <summary>Its size in percent.</summary>
+    public int PlayScale { get; set; } = 100;
+
+    /// <summary>No play button on phones (touch clients keep one on every poster otherwise).</summary>
+    public bool PlayHideOnMobile { get; set; } = false;
+}
+
+/// <summary>The look of the poster's play button.</summary>
+public enum PlayButtonStyle
+{
+    /// <summary>Jellyfin's own (a dark disc).</summary>
+    Default,
+
+    /// <summary>Filled with the accent color.</summary>
+    Accent,
+
+    /// <summary>Dark, near-opaque.</summary>
+    Dark,
+
+    /// <summary>White, dark icon.</summary>
+    Light,
+
+    /// <summary>Frosted glass.</summary>
+    Glass,
+}
+
+/// <summary>Where the poster's play button sits.</summary>
+public enum PlayButtonPosition
+{
+    /// <summary>Where Jellyfin puts it: the middle of the poster on the web, the bottom right on phones.</summary>
+    Default,
+
+    /// <summary>The middle of the poster.</summary>
+    Center,
+
+    TopLeft,
+
+    TopRight,
+
+    BottomLeft,
+
+    BottomRight,
 }
 
 /// <summary>

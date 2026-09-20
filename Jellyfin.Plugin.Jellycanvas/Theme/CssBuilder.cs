@@ -116,6 +116,7 @@ public static class CssBuilder
         AppendLogo(sb, ctx);
         AppendDrawer(sb, ctx);
         AppendCards(sb, ctx);
+        AppendPlayButton(sb, ctx);
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
         AppendPlayer(sb, ctx);
@@ -922,6 +923,143 @@ public static class CssBuilder
         if (d.Radius > 0)
         {
             sb.AppendLine($"{x.P}html .mainDrawer, {x.P}html .MuiDrawer-paper {{ border-radius: 0 {Px(d.Radius)} {Px(d.Radius)} 0 !important; overflow: hidden; }}");
+        }
+    }
+
+    /// <summary>
+    /// The play button on a poster. Jellyfin 12 draws it twice: on the web
+    /// a button in the middle of the hover overlay, on touch clients a
+    /// fixed one at the bottom right (in a button group inside the card
+    /// link). The TV has neither, so nothing here is scoped to it.
+    /// </summary>
+    private static void AppendPlayButton(StringBuilder sb, Context x)
+    {
+        var k = x.Config.Cards;
+        var custom = !string.IsNullOrWhiteSpace(k.PlayColor);
+        if (k.PlayStyle == PlayButtonStyle.Default && !custom && k.PlayRadius < 0 && k.PlayPosition == PlayButtonPosition.Default && k.PlayScale == 100 && !k.PlayHideOnMobile)
+        {
+            return;
+        }
+
+        sb.AppendLine("/* --- the play button on posters --- */");
+        var web = $"{x.P}.card .cardOverlayContainer > button[data-action=\"play\"]";
+        var mobileGroup = $"{x.P}html.layout-mobile .card .cardScalable > a > .MuiButtonGroup-root";
+        var mobile = $"{mobileGroup} > button[data-action=\"play\"]";
+        var both = $"{web}, {mobile}";
+
+        // Look: a fill and the icon's color to go with it.
+        string? fill = null;
+        string? ink = null;
+        var extra = string.Empty;
+        switch (k.PlayStyle)
+        {
+            case PlayButtonStyle.Accent:
+                fill = x.Accent.Hex;
+                ink = x.Accent.ContrastText;
+                break;
+            case PlayButtonStyle.Dark:
+                fill = "rgba(0, 0, 0, 0.8)";
+                ink = "#ffffff";
+                break;
+            case PlayButtonStyle.Light:
+                fill = "rgba(255, 255, 255, 0.94)";
+                ink = "rgba(0, 0, 0, 0.87)";
+                break;
+            case PlayButtonStyle.Glass:
+                fill = "rgba(255, 255, 255, 0.18)";
+                ink = "#ffffff";
+                extra = " backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important;";
+                break;
+        }
+
+        if (custom)
+        {
+            var c = Color.Parse(k.PlayColor, x.Accent);
+            fill = c.Hex;
+            ink = c.ContrastText;
+        }
+
+        if (fill is not null)
+        {
+            sb.AppendLine($"{both} {{ background: {fill} !important; color: {ink} !important;{extra} }}");
+            sb.AppendLine($"{both}:hover {{ filter: brightness(1.12); }}");
+        }
+
+        if (k.PlayRadius >= 0)
+        {
+            var r = Px(Math.Min(999, k.PlayRadius));
+            sb.AppendLine($"{both}, {mobileGroup} {{ border-radius: {r} !important; }}");
+        }
+
+        // Size: scaled in place (the web button is centred by its margins,
+        // the phone's sits in a corner - each scales from where it hangs).
+        var scale = Math.Clamp(k.PlayScale, 50, 200);
+        var webTransform = scale != 100 ? $"scale({Dec(scale / 100.0)})" : string.Empty;
+        var mobileTransform = webTransform;
+        var mobileOrigin = "bottom right";
+
+        // Place: the web button is Jellyfin's centred FAB (top/left 50% and
+        // negative margins); a corner takes it out of that. On the phone the
+        // whole group moves (it holds the play button alone).
+        var pos = k.PlayPosition;
+        if (pos != PlayButtonPosition.Default)
+        {
+            const string edge = "10px";
+            // With the title printed over the image, a bottom corner starts above it.
+            var bottom = k.Text == CardText.Overlay ? $"calc({edge} + 3em)" : edge;
+            string webPlace;
+            string mobilePlace;
+            switch (pos)
+            {
+                case PlayButtonPosition.TopLeft:
+                    webPlace = $"top: {edge}; left: {edge}; right: auto; bottom: auto; margin: 0;";
+                    mobilePlace = $"top: {edge}; left: {edge}; right: auto; bottom: auto;";
+                    mobileOrigin = "top left";
+                    break;
+                case PlayButtonPosition.TopRight:
+                    webPlace = $"top: {edge}; right: {edge}; left: auto; bottom: auto; margin: 0;";
+                    mobilePlace = $"top: {edge}; right: {edge}; left: auto; bottom: auto;";
+                    mobileOrigin = "top right";
+                    break;
+                case PlayButtonPosition.BottomLeft:
+                    webPlace = $"bottom: {bottom}; left: {edge}; top: auto; right: auto; margin: 0;";
+                    mobilePlace = $"bottom: {bottom}; left: {edge}; top: auto; right: auto;";
+                    mobileOrigin = "bottom left";
+                    break;
+                case PlayButtonPosition.BottomRight:
+                    // The web's bottom right holds the small mark / favourite / menu group: the button sits above it.
+                    webPlace = $"bottom: calc({bottom} + 44px); right: {edge}; top: auto; left: auto; margin: 0;";
+                    mobilePlace = $"bottom: {bottom}; right: {edge}; top: auto; left: auto;";
+                    break;
+                default: // Center
+                    webPlace = string.Empty; // that is where Jellyfin has it
+                    mobilePlace = "top: 50%; left: 50%; right: auto; bottom: auto;";
+                    mobileTransform = "translate(-50%, -50%)" + (webTransform.Length > 0 ? " " + webTransform : string.Empty);
+                    mobileOrigin = "center";
+                    break;
+            }
+
+            if (webPlace.Length > 0)
+            {
+                sb.AppendLine($"{web} {{ {webPlace} }}");
+            }
+
+            sb.AppendLine($"{mobileGroup} {{ {mobilePlace} }}");
+        }
+
+        if (webTransform.Length > 0)
+        {
+            sb.AppendLine($"{web} {{ transform: {webTransform}; transform-origin: center; }}");
+        }
+
+        if (mobileTransform.Length > 0)
+        {
+            sb.AppendLine($"{mobileGroup} {{ transform: {mobileTransform}; transform-origin: {mobileOrigin}; }}");
+        }
+
+        if (k.PlayHideOnMobile)
+        {
+            sb.AppendLine($"{mobileGroup} {{ display: none !important; }}");
         }
     }
 

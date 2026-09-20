@@ -540,6 +540,33 @@
                                 </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtons"><span data-i18n="hideOverlay">Hide hover buttons (play, menu)</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtonsOnFolders"><span data-i18n="hideOverlayFolders">Hide hover buttons only on whole series, seasons and collections (movies and episodes keep them)</span></label></div>
+                                <h4 class="jc-sub" data-device="Mobile" data-i18n="playButtonHeading">Play button on posters</h4>
+                                <div class="jc-hint" data-device="Mobile" data-i18n="playButtonHint">The button that starts playback from a poster: on the web it appears on hover, phones and tablets keep one on every poster. The TV has none.</div>
+                                <div class="selectContainer" data-device="Mobile">
+                                    <label class="selectLabel" for="jcPlayStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcPlayStyle" data-path="Cards.PlayStyle" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="playDefault">Jellyfin's own (dark disc)</option>
+                                        <option value="Accent" data-i18n="ssBtnAccent">Accent color</option>
+                                        <option value="Dark" data-i18n="playDark">Dark</option>
+                                        <option value="Light" data-i18n="ssBtnLight">White</option>
+                                        <option value="Glass" data-i18n="ssBtnGlass">Glass</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-device="Mobile" data-color="Cards.PlayColor" data-optional="1" data-i18n-label="playColor">Color (empty = by the style)</div>
+                                <div class="selectContainer" data-device="Mobile">
+                                    <label class="selectLabel" for="jcPlayPosition" data-i18n="playPosition">Position</label>
+                                    <select is="emby-select" id="jcPlayPosition" data-path="Cards.PlayPosition" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="playPosDefault">Jellyfin's own (middle on the web, bottom right on phones)</option>
+                                        <option value="Center" data-i18n="playPosCenter">Middle</option>
+                                        <option value="TopLeft" data-i18n="cornerTl">Top left</option>
+                                        <option value="TopRight" data-i18n="cornerTr">Top right</option>
+                                        <option value="BottomLeft" data-i18n="cornerBl">Bottom left</option>
+                                        <option value="BottomRight" data-i18n="cornerBr">Bottom right</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Corner radius (-1 = same as icon buttons, 999 = round)</div>
+                                <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayScale" data-min="50" data-max="200" data-unit="%" data-i18n-label="ssButtonScale">Size</div>
+                                <div class="checkboxContainer" data-device="Mobile"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.PlayHideOnMobile"><span data-i18n="playHideMobile">No play button on phones</span></label></div>
                                 <h4 class="jc-sub" data-i18n="playedHeading">Watched &amp; progress</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPlayed" data-i18n="played">Watched items</label>
