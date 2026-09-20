@@ -572,24 +572,14 @@
         // media source top left) keep their corner; badges there start
         // under them.
         var hostTop = hostRect.top;
-        var landscape = hostRect.width > hostRect.height * 1.2;
-        var beside = { tr: 0, tl: 0 };
-        function under(selector, corner) {
+        function under(selector) {
             var ind = card.querySelector(selector);
             if (!ind || !ind.offsetHeight) {
                 return 0;
             }
-            var r = ind.getBoundingClientRect();
-            // A landscape card is short and wide: the badges step aside from
-            // the indicator (sit next to it) rather than under it, and keep
-            // the height for the column.
-            if (landscape) {
-                beside[corner] = Math.max(0, Math.round(r.width) - inset + 2);
-                return 0;
-            }
-            return Math.max(0, Math.round(r.bottom - hostTop) - inset + 2);
+            return Math.max(0, Math.round(ind.getBoundingClientRect().bottom - hostTop) - inset + 2);
         }
-        var below = { tr: under('.playedIndicator, .countIndicator, .indicator', 'tr'), tl: under('.mediaSourceIndicator', 'tl') };
+        var below = { tr: under('.playedIndicator, .countIndicator, .indicator'), tl: under('.mediaSourceIndicator') };
         // TV cards (and the "overlay" title style) print the title over the
         // bottom of the image; badges at the bottom move up above it.
         var textTop = hostRect.bottom;
@@ -646,15 +636,19 @@
                 if (!box) {
                     box = document.createElement('div');
                     box.className = 'jellycanvas-badges jellycanvas-badges-' + corner;
-                    box.style.padding = inset + 'px';
+                    // The inset clears the rounded corner: it is needed on the
+                    // box's outer sides only; the sides facing the middle of
+                    // the card keep a hair, which leaves narrow cards room.
+                    var gap = 2;
+                    box.style.padding = corner === 'tl' ? inset + 'px ' + gap + 'px ' + gap + 'px ' + inset + 'px'
+                        : corner === 'tr' ? inset + 'px ' + inset + 'px ' + gap + 'px ' + gap + 'px'
+                        : corner === 'bl' ? gap + 'px ' + gap + 'px ' + inset + 'px ' + inset + 'px'
+                        : gap + 'px ' + inset + 'px ' + inset + 'px ' + gap + 'px';
                     if (shrink < 1) {
                         box.style.fontSize = baseSize.toFixed(1) + 'px';
                     }
                     if (below[corner]) {
                         box.style.marginTop = below[corner] + 'px';
-                    }
-                    if (beside[corner]) {
-                        box.style[corner === 'tr' ? 'marginRight' : 'marginLeft'] = beside[corner] + 'px';
                     }
                     var lift = reserve[corner === 'bl' ? 'l' : 'r'];
                     if (lift && (corner === 'bl' || corner === 'br')) {
@@ -699,12 +693,12 @@
                 rr = right.getBoundingClientRect();
             }
             var tries = 0;
-            while (overlaps() && tries++ < 2) {
+            while (overlaps() && tries++ < 3) {
                 var need = (lr.width - inset) + (rr.width - inset) + 2;
                 var room = hostWidth - 2 * inset;
                 var factor = Math.min(0.97, (room / need) * 0.97);
                 var size = parseFloat(left.style.fontSize) || baseSize;
-                if (size * factor < baseSize * 0.66) {
+                if (size * factor < baseSize * 0.62) {
                     break;
                 }
                 [left, right].forEach(function (box) {
@@ -742,15 +736,16 @@
                 return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
             };
             // A column that runs too long first shrinks to fit (down to
-            // about three fifths) - a column stays a column where it can.
+            // half) - small flags under the tick beat a block of rows.
             var br0 = box.getBoundingClientRect();
             // For support: what the box measured against (top / bottom / the limit, card-relative).
             box.setAttribute('data-jc-fit', Math.round(br0.top - hostRect.top) + '/' + Math.round(br0.bottom - hostRect.top) + '/' + Math.round(limit - hostRect.top));
             if (br0.bottom > limit && br0.height > 0) {
-                // The box's inset (top and bottom) is fixed; only the content scales.
-                var factor = Math.min(0.98, ((limit - br0.top) - 2 * inset) / Math.max(1, br0.height - 2 * inset) * 0.98);
+                // The box's padding (the inset on top, a hair at the bottom) is fixed; only the content scales.
+                var fixedPart = inset + 2;
+                var factor = Math.min(0.98, ((limit - br0.top) - fixedPart) / Math.max(1, br0.height - fixedPart) * 0.98);
                 var size0 = parseFloat(box.style.fontSize) || baseSize;
-                if (size0 * factor >= baseSize * 0.62) {
+                if (size0 * factor >= baseSize * 0.45) {
                     box.style.fontSize = (size0 * factor).toFixed(1) + 'px';
                 }
             }
@@ -764,7 +759,12 @@
                 var flag = box.querySelector('.jellycanvas-flagonly');
                 if (flag) {
                     var fontPx = parseFloat(box.style.fontSize) || baseSize;
-                    box.style.maxWidth = Math.ceil(2 * flag.getBoundingClientRect().width + 0.27 * fontPx + 2 * inset + 1) + 'px';
+                    var widest = 0;
+                    for (var w = 0; w < box.children.length; w++) {
+                        widest = Math.max(widest, box.children[w].getBoundingClientRect().width);
+                    }
+                    var twoFlags = 2 * flag.getBoundingClientRect().width + 0.27 * fontPx;
+                    box.style.maxWidth = Math.ceil(Math.max(twoFlags, widest) + inset + 2 + 1) + 'px';
                 }
                 if (clash()) {
                     box.classList.remove('jellycanvas-badges-rows');
