@@ -158,7 +158,8 @@
             '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
             '.jellycanvas-badge .material-icons { font-size: 1.15em; }' +
             '.jellycanvas-badge .jellycanvas-flag { height: 1.15em; width: auto; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }' +
-            '.jellycanvas-badge > span:not(.material-icons) + span, .jellycanvas-badge .jellycanvas-flag + span { margin-left: 1px; }';
+            '.jellycanvas-badge > span:not(.material-icons) + span, .jellycanvas-badge .jellycanvas-flag + span { margin-left: 1px; }' +
+            '.jellycanvas-lang { display: inline-flex; align-items: center; gap: 0.27em; }';
     }
 
     function badgeLang(code) {
@@ -458,16 +459,24 @@
             el.appendChild(i);
             badgeColor(el, id, value[0]);
             value.forEach(function (code) {
+                // Each language in its own holder, so the pill can fold the
+                // ones past the second into "+N" when the corners collide.
+                var holder = document.createElement('span');
+                holder.className = 'jellycanvas-lang';
                 var flag = mode === 'Codes' ? null : flagSvg(code);
                 if (flag) {
-                    el.appendChild(flag);
+                    holder.appendChild(flag);
                 }
                 if (!flag || mode === 'FlagsAndCodes') {
                     var t = document.createElement('span');
                     t.textContent = code;
-                    el.appendChild(t);
+                    holder.appendChild(t);
                 }
+                el.appendChild(holder);
             });
+            if (value.length > 2) {
+                el.setAttribute('data-more', String(value.length - 2));
+            }
             return el;
         }
         el.appendChild(document.createTextNode(value));
@@ -484,7 +493,7 @@
         return el;
     }
 
-    /** Swaps the long badge texts of a box for their short forms; true when something changed. */
+    /** Swaps the long badge texts of a box for their short forms ("TrueHD 5.1" -> "TrueHD", "CS EN FR DE" -> "CS EN +2"); true when something changed. */
     function compactBadges(box) {
         var changed = false;
         box.querySelectorAll('[data-short]').forEach(function (el) {
@@ -493,6 +502,18 @@
                 el.textContent = short;
                 changed = true;
             }
+        });
+        box.querySelectorAll('[data-more]:not([data-folded])').forEach(function (el) {
+            el.setAttribute('data-folded', '1');
+            el.querySelectorAll('.jellycanvas-lang').forEach(function (holder, i) {
+                if (i >= 2) {
+                    holder.style.display = 'none';
+                }
+            });
+            var more = document.createElement('span');
+            more.textContent = '+' + el.getAttribute('data-more');
+            el.appendChild(more);
+            changed = true;
         });
         return changed;
     }
@@ -626,6 +647,14 @@
             // insets on the outer sides are fixed, the content scales. Up to
             // two rounds (the parts do not all scale alike), never below
             // two thirds of the size.
+            // First the long texts go short (a name without its layout, a
+            // pill with "+2") - that keeps the letters big; then the size.
+            var compactedLeft = compactBadges(left);
+            var compactedRight = compactBadges(right);
+            if (compactedLeft || compactedRight) {
+                lr = left.getBoundingClientRect();
+                rr = right.getBoundingClientRect();
+            }
             var tries = 0;
             while (overlaps() && tries++ < 2) {
                 var need = (lr.width - inset) + (rr.width - inset) + 2;
@@ -641,12 +670,6 @@
                 });
                 lr = left.getBoundingClientRect();
                 rr = right.getBoundingClientRect();
-                // After the first round: a long sound name goes short before
-                // the letters get any smaller.
-                if (overlaps() && tries === 1 && (compactBadges(left) || compactBadges(right))) {
-                    lr = left.getBoundingClientRect();
-                    rr = right.getBoundingClientRect();
-                }
             }
             if (!overlaps()) {
                 return;
