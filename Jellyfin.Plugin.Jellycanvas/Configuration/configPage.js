@@ -54,6 +54,7 @@
             chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             clickTip: '<kbd>Ctrl</kbd> + click an element to open its settings', clickTipOpens: '<kbd>Ctrl</kbd> + click opens: {0}',
+            buttonFallback: 'Button', actionOverlay: 'overlay', actionNavigate: 'in place',
             editTv: 'TV', editMobile: 'Mobile', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
@@ -124,6 +125,7 @@
             sidebarCollapsible: 'Vysouvací panel (jen ikony, rozbalí se při najetí)', sidebarCollapsed: 'Šířka sbaleného panelu', drawerHint: 'Hamburger menu, které se vysouvá zleva v mobilním rozložení (a v úzkém okně). Na desktopu jsou odkazy v horní liště.', lookHeading: 'Vzhled', navHeading: 'Odkazy a ikony', playedHeading: 'Zhlédnuto a rozkoukáno',
             infobarRadius: 'Zaoblení rohů', follow: 'Sledovat nastavení',
             badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeLookHeading: 'Velikost a zařízení',
+            seerrOpen: 'Otevírat stránku titulu v Seerru', seerrOpenTab: 'V nové záložce', seerrOpenHint: 'Vlastní tlačítko lišty, které míří na Seerr, otevře stránku po svém (v překryvném okně nebo přímo) místo druhé záložky se Seerrem. Tlačítka „nová záložka“ se nenabízejí.', buttonFallback: 'Tlačítko', actionOverlay: 'překryvné okno', actionNavigate: 'přímo v klientovi',
             seerr: 'Řádky ze Seerru', seerrHint: 'Řádky na domovské stránce ze Seerru (Jellyseerr / Overseerr): co je požadované a brzy vyjde, poslední požadavky, co je trendy. Se Seerrem mluví server s API klíčem; klíč se do prohlížeče nedostane a není součástí sdíleného tématu. Plakát otevře položku tady, když ji knihovna má, jinak její stránku v Seerru.', seerrUrl: 'Adresa Seerru (jak ji vidí server)', seerrKey: 'API klíč (Seerr → Nastavení → Obecné)', seerrTest: 'Otestovat spojení', seerrTestOk: 'Spojení funguje: {0}', seerrTestFail: 'Nepodařilo se: {0}',
             seerrRowsHeading: 'Řádky', seerrRowsHint: 'Každý řádek ukazuje jednu věc ze Seerru; zaškrtni, co mají plakáty nést. Prázdný nadpis dostane výchozí text v jazyce diváka. Řádky se na domovské stránce objeví až po Uložit nebo Použít (klientský skript se staví z uloženého nastavení); „Otestovat spojení“ zároveň řekne, kolik plakátů má teď každý řádek.', seerrAddRow: 'Přidat řádek', seerrKind: 'Co zobrazit', rowMedia: 'Filmy / seriály', rowMediaBoth: 'Obojí', rowMediaMovies: 'Jen filmy', rowMediaSeries: 'Jen seriály', kindUpcoming: 'Brzy vyjde – schválené požadavky, které ještě nejsou v knihovně, nejbližší vydání první', kindRecent: 'Naposledy požadované – poslední požadavky v jakémkoli stavu', kindPending: 'Čeká na schválení', kindAvailable: 'Požadavky, které už dorazily do knihovny', kindTrending: 'Trendy (Seerr discover)', kindPopularMovies: 'Populární filmy (Seerr discover)', kindPopularTv: 'Populární seriály (Seerr discover)', rowTitle: 'Nadpis (prázdné = výchozí v jazyce diváka)', rowPosition: 'Umístění', rowTop: 'Nad řádky Jellyfinu', rowBottom: 'Pod nimi', rowLimit: 'Plakátů nejvýš', rowShowHint: 'Na plakátech:', rowShowTitle: 'Název', rowShowSubtitle: 'Rok pod názvem', rowShowDate: 'Datum vydání v rohu', rowShowState: 'Stav požadavku (+ … ½ ✓)', rowShowType: 'Film / Seriál vlevo nahoře', rowShowRequester: 'Kdo to požadoval (pod názvem)',
             slideshow: 'Slideshow na Domů', slideshowHint: 'Velký karusel nahoře na domovské stránce: backdrop, logo nebo název, popis a tlačítko na položku. Vyžaduje zapnuté skriptové funkce (sekce Vlastní tlačítka v liště). V náhledu se objeví po Uložit nebo Použít.',
@@ -546,7 +548,7 @@
             var path = el.getAttribute('data-path');
             var event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, function () {
-                var val = el.type === 'checkbox' ? el.checked : el.type === 'number' ? (parseInt(el.value, 10) || 0) : el.value;
+                var val = el.type === 'checkbox' ? el.checked : el.type === 'number' || el.hasAttribute('data-int') ? (parseInt(el.value, 10) || 0) : el.value;
                 if (el.closest('.jc-btn')) {
                     setPath(state, path, val); // list editors (buttons, Seerr rows) are defaults only
                 } else {
@@ -869,10 +871,34 @@
             box.appendChild(node);
         });
         bindInputs(box);
+        // The Seerr "open with" choice lists these buttons.
+        if (state && state.Seerr) {
+            renderSeerrOpenOptions();
+        }
     }
 
     // Seerr rows: the same kind of list as the toolbar buttons.
+    /** The "open with" choice lists the custom buttons that can show a page (overlay or in place). */
+    function renderSeerrOpenOptions() {
+        var sel = page.querySelector('#jcSeerrOpen');
+        var current = String((state.Seerr && state.Seerr.OpenWithButton) || 0);
+        while (sel.options.length > 1) {
+            sel.remove(1);
+        }
+        ((state.Scripts && state.Scripts.ToolbarButtons) || []).forEach(function (b, i) {
+            if (!b.Enabled || b.Action === 'NewTab' || !(b.Url || '').trim()) {
+                return;
+            }
+            var o = document.createElement('option');
+            o.value = String(i + 1);
+            o.textContent = (b.Label || t('buttonFallback')) + ' - ' + (b.Action === 'Overlay' ? t('actionOverlay') : t('actionNavigate'));
+            sel.appendChild(o);
+        });
+        sel.value = [].some.call(sel.options, function (o) { return o.value === current; }) ? current : '0';
+    }
+
     function renderSeerrRows() {
+        renderSeerrOpenOptions();
         var box = page.querySelector('#jcSeerrRows');
         var tpl = page.querySelector('#jcSeerrRowTemplate');
         box.textContent = '';
@@ -1292,9 +1318,12 @@
     function resolveClick(target, x, y) {
         var section = 'colors';
         var anchor = null;
-        // The info strip is a pseudo-element - nothing to hit, only a place.
-        if (x !== undefined && infoBarRect(target.ownerDocument, x, y)) {
-            return { section: 'infobar', anchor: null, rect: infoBarRect(target.ownerDocument, x, y) };
+        // Things with no element under the pointer: the info strip (a
+        // pseudo-element) and the card badges (they let clicks through to
+        // the poster) are found by their place.
+        var spot = x !== undefined ? spotAt(target, x, y) : null;
+        if (spot) {
+            return spot;
         }
         // Plain text (a title, a card caption, a description) belongs
         // to typography even when it sits inside a card or the header;
@@ -1383,6 +1412,25 @@
         return null;
     }
 
+    /** A pseudo hit at the point: {section, anchor, rect}, or null. */
+    function spotAt(target, x, y) {
+        var strip = infoBarRect(target.ownerDocument, x, y);
+        if (strip) {
+            return { section: 'infobar', anchor: null, rect: strip };
+        }
+        var card = target.closest && target.closest('.card');
+        if (card) {
+            var boxes = card.querySelectorAll('.jellycanvas-badges');
+            for (var i = 0; i < boxes.length; i++) {
+                var r = boxes[i].getBoundingClientRect();
+                if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                    return { section: 'badges', anchor: 'badgesCornersHeading', rect: r };
+                }
+            }
+        }
+        return null;
+    }
+
     function showClickTip(target, x, y) {
         var hit = target && target.nodeType === 1 ? resolveClick(target, x, y) : null;
         var details = hit && page.querySelector('.jc-section[data-section="' + hit.section + '"]');
@@ -1448,9 +1496,10 @@
             disarm();
             return;
         }
-        // The info strip has no element of its own: the frame follows its box instead.
-        var strip = infoBarRect(el.ownerDocument, x, y);
-        var key = strip ? 'infobar' : el;
+        // The info strip and the badges have no element to hit: the frame follows their box instead.
+        var spot = x !== undefined ? spotAt(el, x, y) : null;
+        var strip = spot && spot.rect;
+        var key = spot ? spot.section : el;
         if (armed === key) {
             placeClickTip();
             return;

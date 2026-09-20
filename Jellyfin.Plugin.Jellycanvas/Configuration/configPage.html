@@ -961,6 +961,13 @@
                                     <label class="inputLabel inputLabelUnfocused" for="jcSeerrUrl" data-i18n="seerrUrl">Seerr address (as the server reaches it)</label>
                                     <input is="emby-input" type="text" id="jcSeerrUrl" data-path="Seerr.Url" placeholder="http://jellyseerr:5055">
                                 </div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSeerrOpen" data-i18n="seerrOpen">Open a poster's Seerr page</label>
+                                    <select is="emby-select" id="jcSeerrOpen" data-path="Seerr.OpenWithButton" data-int="1" class="emby-select-withcolor emby-select">
+                                        <option value="0" data-i18n="seerrOpenTab">In a new tab</option>
+                                    </select>
+                                    <div class="fieldDescription" data-i18n="seerrOpenHint">A custom toolbar button that points at Seerr opens the page its way (overlay or in place) instead of a second Seerr tab. New-tab buttons are not offered.</div>
+                                </div>
                                 <div class="inputContainer">
                                     <label class="inputLabel inputLabelUnfocused" for="jcSeerrKey" data-i18n="seerrKey">API key (Seerr → Settings → General)</label>
                                     <input is="emby-input" type="password" id="jcSeerrKey" data-path="Seerr.ApiKey" autocomplete="off">

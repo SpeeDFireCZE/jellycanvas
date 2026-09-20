@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [] };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [], "seerrOpen": 0 };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -991,6 +991,32 @@
         return row.kind === 'Upcoming' || row.kind === 'Recent' || row.kind === 'Pending' || row.kind === 'Available';
     }
 
+    /** The custom button Seerr links go through, if the settings name one that is on. */
+    function seerrButton() {
+        var id = CONFIG.seerrOpen || 0;
+        if (!id) {
+            return null;
+        }
+        for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i].id === id && buttons[i].action !== 'NewTab') {
+                return buttons[i];
+            }
+        }
+        return null;
+    }
+
+    /** Opens a Seerr page the way the button does: in its overlay (pointed at the page), or in place. */
+    function openSeerrVia(b, url, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (b.action !== 'Overlay') {
+            location.href = url;
+            return;
+        }
+        closeAll();
+        openFrame(b, url);
+    }
+
     function rowCard(item, row) {
         var api = window.ApiClient;
         var card = document.createElement('div');
@@ -1009,10 +1035,16 @@
         // is still to come.
         var inLibrary = !!(item.JellyfinId && api) && row.kind !== 'Upcoming';
         var href = inLibrary ? '#/details?id=' + item.JellyfinId + '&serverId=' + api.serverId() : item.SeerrUrl;
+        // A Seerr link opens in a new tab - or, when the admin picked a
+        // custom button that points at Seerr, the way that button opens
+        // (its overlay, or in place): no second Seerr tab then.
+        var via = inLibrary ? null : seerrButton();
         var link = document.createElement('a');
         link.className = 'cardImageContainer coveredImage cardContent';
         link.href = href;
-        if (!inLibrary) {
+        if (via) {
+            link.addEventListener('click', function (e) { openSeerrVia(via, href, e); });
+        } else if (!inLibrary) {
             link.target = '_blank';
             link.rel = 'noopener';
         }
@@ -1056,7 +1088,9 @@
         btn.className = 'cardOverlayButton';
         btn.href = href;
         btn.title = rowWord(inLibrary ? 'open' : 'seerr');
-        if (!inLibrary) {
+        if (via) {
+            btn.addEventListener('click', function (e) { openSeerrVia(via, href, e); });
+        } else if (!inLibrary) {
             btn.target = '_blank';
             btn.rel = 'noopener';
         }
@@ -1490,14 +1524,16 @@
         }
     }
 
-    function openFrame(b) {
+    function openFrame(b, url) {
         var f = document.getElementById(frameId(b));
         if (!f) {
             f = document.createElement('iframe');
             f.id = frameId(b);
-            f.src = b.url;
+            f.src = url || b.url;
             f.setAttribute('title', b.label);
             document.body.appendChild(f);
+        } else if (url && f.getAttribute('src') !== url) {
+            f.setAttribute('src', url); // a kept-alive frame shows its last page; point it at this one
         }
         applyFrameGeometry(f);
         updateScrollLock();

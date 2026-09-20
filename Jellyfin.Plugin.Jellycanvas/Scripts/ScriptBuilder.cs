@@ -16,7 +16,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [] }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [], \"seerrOpen\": 0 }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -140,7 +140,15 @@ public static class ScriptBuilder
 
         var backdrop = hasBackdrop ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail, tvStatic = c.Tv.StaticBackdrop } : null;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows }, JsonOptions);
+        // Seerr links through a custom button: only a button that exists,
+        // is on and opens in an overlay or in place (a new-tab button adds nothing).
+        var openWith = se.OpenWithButton;
+        var viaButton = hasRows && openWith > 0 && openWith <= s.ToolbarButtons.Count
+            && s.ToolbarButtons[openWith - 1].Enabled && s.ToolbarButtons[openWith - 1].Action != ButtonAction.NewTab
+            && CleanUrl(s.ToolbarButtons[openWith - 1].Url).Length > 0;
+        var seerrOpen = viaButton ? openWith : 0;
+
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows, seerrOpen }, JsonOptions);
 
         // "</script>" inside a string would end the <script> element early if
         // the script were ever inlined; harmless to neutralise it always.

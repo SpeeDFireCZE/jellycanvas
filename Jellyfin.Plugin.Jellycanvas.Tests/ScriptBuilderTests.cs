@@ -108,6 +108,33 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Seerr_links_open_through_a_button_only_when_it_can_show_a_page()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings
+            {
+                Enabled = true,
+                ToolbarButtons =
+                {
+                    new ToolbarButton { Label = "Tab", Url = "https://seerr.example/", Action = ButtonAction.NewTab },
+                    new ToolbarButton { Label = "Seerr", Url = "https://seerr.example/", Action = ButtonAction.Overlay },
+                },
+            },
+            Seerr = new SeerrSettings { Url = "https://seerr.example", ApiKey = "k", Rows = { new SeerrRow { Enabled = true } }, OpenWithButton = 2 },
+        };
+        Assert.Contains("\"seerrOpen\":2", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+
+        cfg.Seerr.OpenWithButton = 1; // a new-tab button adds nothing
+        Assert.Contains("\"seerrOpen\":0", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.Seerr.OpenWithButton = 9; // no such button
+        Assert.Contains("\"seerrOpen\":0", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.Seerr.OpenWithButton = 2;
+        cfg.Scripts.ToolbarButtons[1].Enabled = false;
+        Assert.Contains("\"seerrOpen\":0", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Invalid_icon_name_falls_back()
     {
         var js = ScriptBuilder.Build(WithButton("https://x/", "<img onerror=1>"));

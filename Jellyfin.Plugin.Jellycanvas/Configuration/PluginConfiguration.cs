@@ -889,6 +889,14 @@ public class SeerrSettings
 
     /// <summary>The rows, in order.</summary>
     public System.Collections.Generic.List<SeerrRow> Rows { get; set; } = new();
+
+    /// <summary>
+    /// Where a poster's Seerr link opens: 0 = a new tab; otherwise the
+    /// number (1-based position) of a custom toolbar button that points at
+    /// Seerr - the link then opens the way that button does (its overlay,
+    /// or in place).
+    /// </summary>
+    public int OpenWithButton { get; set; }
 }
 
 /// <summary>What a Seerr row lists.</summary>

@@ -7,6 +7,8 @@ All notable changes to Jellycanvas. The format follows
 
 - Card badges on small cards (a phone, a dense grid): the two top corners shrink a little to sit side by side before one is moved past the other, the badges shrink as a whole (their padding follows the font), the inset is smaller, and the language lists show two entries at most there. A column at the top - under a played tick, or moved past the other corner - now ends above the title strip and above the play button touch clients keep at the bottom right (it drops extra flags, then badges, rather than run over them); bottom badges stay above that button too.
 - Designer: the import box empties once its JSON has been taken over.
+- Seerr rows: a poster's Seerr page can open through a custom toolbar button that points at Seerr (its overlay, or in place) instead of a second Seerr tab - "Open a poster's Seerr page" in the Seerr section; new tab stays the default.
+- Designer: Ctrl+click on a card badge in the preview opens the badges section (the badges let clicks through to the poster, so they are found by their place, like the info strip).
 
 ## 1.2.0 - 2026-09-19
 
