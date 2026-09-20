@@ -107,12 +107,17 @@ public static class FileTransformation
             root = "/" + baseUrl.Trim().Trim('/');
         }
 
+        // The query carries the plugin version and a stamp of the current
+        // settings: a changed setting changes the address, so no client
+        // (a phone's web view, a PWA) keeps running a script it cached.
         var version = Plugin.Instance?.Version.ToString() ?? "0";
+        var stamp = Plugin.Instance is null ? "0" : ScriptBuilder.Stamp(Plugin.Instance.Configuration);
         var tag = string.Format(
             CultureInfo.InvariantCulture,
-            "<script data-jellycanvas-script=\"1\" src=\"{0}/Jellycanvas/Script.js?v={1}\" defer></script>",
+            "<script data-jellycanvas-script=\"1\" src=\"{0}/Jellycanvas/Script.js?v={1}-{2}\" defer></script>",
             root,
-            version);
+            version,
+            stamp);
 
         return Regex.Replace(contents, "(</body>)", tag + "$1", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
     }

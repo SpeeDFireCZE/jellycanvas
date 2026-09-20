@@ -135,6 +135,16 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Script_stamp_follows_the_settings()
+    {
+        var a = new PluginConfiguration();
+        var b = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true, Slideshow = new SlideshowSettings { Enabled = true } } };
+        Assert.Equal(ScriptBuilder.Stamp(a), ScriptBuilder.Stamp(new PluginConfiguration()));
+        Assert.NotEqual(ScriptBuilder.Stamp(a), ScriptBuilder.Stamp(b));
+        Assert.Equal(10, ScriptBuilder.Stamp(b).Length);
+    }
+
+    [Fact]
     public void Invalid_icon_name_falls_back()
     {
         var js = ScriptBuilder.Build(WithButton("https://x/", "<img onerror=1>"));

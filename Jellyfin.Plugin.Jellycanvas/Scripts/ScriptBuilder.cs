@@ -157,6 +157,13 @@ public static class ScriptBuilder
         return Template.Value.Replace(Placeholder, json, StringComparison.Ordinal);
     }
 
+    /// <summary>A short stamp of the script these settings produce - the same settings, the same stamp.</summary>
+    public static string Stamp(PluginConfiguration c)
+    {
+        var bytes = System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(Build(c)));
+        return Convert.ToHexString(bytes, 0, 5).ToLowerInvariant();
+    }
+
     private static string LoadTemplate()
     {
         var name = typeof(ScriptBuilder).Namespace + ".inject.js";

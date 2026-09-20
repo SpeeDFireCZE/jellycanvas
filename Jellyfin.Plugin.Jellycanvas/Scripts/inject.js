@@ -143,12 +143,15 @@
         var stacked = badges.stacked
             ? '.jellycanvas-badges { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; } .jellycanvas-badges-tr, .jellycanvas-badges-br { align-items: flex-end; }'
             : '';
+        // A column that would run into the title (a short landscape card, a
+        // phone) lies down into rows instead - the script switches it.
+        var rows = '.jellycanvas-badges.jellycanvas-badges-rows { flex-direction: row; flex-wrap: wrap; align-items: center; } .jellycanvas-badges-tr.jellycanvas-badges-rows, .jellycanvas-badges-br.jellycanvas-badges-rows { justify-content: flex-end; }';
         // Paddings and gaps in em: a badge shrunk for a small card shrinks
         // as a whole, not just its letters.
         return '.jellycanvas-badges { position: absolute; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
-            stacked +
+            stacked + rows +
             '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 0.27em; padding: 0.27em 0.55em; border-radius: 0.36em; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
             colorful +
             '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
@@ -409,19 +412,16 @@
         el.style.color = p.text;
     }
 
-    function badgeHtml(id, info, narrow) {
+    function badgeHtml(id, info) {
         var value = info[id];
         if (!value || !value.length) {
             return '';
         }
         var isLang = id === 'audio' || id === 'subtitles';
         if (isLang) {
-            // A narrow card has no room for a row of four codes: two at most
-            // there, the preferred ones first as always.
-            var max = narrow ? 2 : 4;
             value = id === 'audio'
-                ? pickLanguages(value, badges.audioPreferred, Math.min(badges.audioMax, max))
-                : pickLanguages(value, badges.subtitlePreferred, Math.min(badges.subtitleMax, max));
+                ? pickLanguages(value, badges.audioPreferred, badges.audioMax)
+                : pickLanguages(value, badges.subtitlePreferred, badges.subtitleMax);
         }
         var el = document.createElement('span');
         el.className = 'jellycanvas-badge jellycanvas-badge-' + id;
@@ -536,10 +536,14 @@
                 continue; // a hover overlay, not there until the pointer is
             }
             var fr = fb.getBoundingClientRect();
-            if (fr.top < hostRect.top + hostRect.height / 2) {
-                continue; // top buttons are not in the way of the bottom edge
-            }
             var side = fr.left + fr.width / 2 > hostRect.left + hostRect.width / 2 ? 'r' : 'l';
+            if (fr.top < hostRect.top + hostRect.height / 2) {
+                // A button placed at the top (the play button in a top corner):
+                // the badges of that corner start under it.
+                var corner = side === 'l' ? 'tl' : 'tr';
+                below[corner] = Math.max(below[corner], Math.round(fr.bottom - hostRect.top) - inset + 3);
+                continue;
+            }
             reserve[side] = Math.max(reserve[side], Math.round(hostRect.bottom - fr.top) - inset + 3);
         }
         // Smaller cards (a dense library grid) get smaller badges: the size
@@ -552,7 +556,7 @@
             var ids = badges.corners[corner];
             var box = null;
             ids.forEach(function (id) {
-                var els = badgeHtml(id, info, hostWidth < 140);
+                var els = badgeHtml(id, info);
                 if (!els) {
                     return;
                 }
@@ -597,22 +601,32 @@
                 return;
             }
             // The two boxes need this much of the card between them; the
-            // insets on the outer sides are fixed, the content scales.
-            var need = (lr.width - inset) + (rr.width - inset) + 2;
-            var room = hostWidth - 2 * inset;
-            var factor = room / need;
-            if (factor >= 0.66 && factor < 1) {
+            // insets on the outer sides are fixed, the content scales. Up to
+            // two rounds (the parts do not all scale alike), never below
+            // two thirds of the size.
+            var tries = 0;
+            while (overlaps() && tries++ < 2) {
+                var need = (lr.width - inset) + (rr.width - inset) + 2;
+                var room = hostWidth - 2 * inset;
+                var factor = Math.min(0.97, (room / need) * 0.97);
+                var size = parseFloat(left.style.fontSize) || baseSize;
+                if (size * factor < baseSize * 0.66) {
+                    break;
+                }
                 [left, right].forEach(function (box) {
-                    var size = parseFloat(box.style.fontSize) || baseSize;
-                    box.style.fontSize = (size * factor).toFixed(1) + 'px';
+                    var own = parseFloat(box.style.fontSize) || baseSize;
+                    box.style.fontSize = (own * factor).toFixed(1) + 'px';
                 });
                 lr = left.getBoundingClientRect();
                 rr = right.getBoundingClientRect();
-                if (!overlaps()) {
-                    return;
-                }
             }
-            right.style[pair[2]] = ((parseFloat(right.style[pair[2]]) || 0) + lr.height - inset) + 'px';
+            if (!overlaps()) {
+                return;
+            }
+            // Past the left box: measured from the edge, so a left box that
+            // itself starts lower (under a tick or a button) is cleared too.
+            var past = pair[2] === 'marginTop' ? lr.bottom - hostRect.top : hostRect.bottom - lr.top;
+            right.style[pair[2]] = Math.max(parseFloat(right.style[pair[2]]) || 0, Math.round(past) - inset + 2) + 'px';
         });
         // A column at the top (under a played tick, or moved past the other
         // corner) must end above the title strip and the fixed buttons: it
@@ -624,6 +638,24 @@
                 return;
             }
             var limit = hostRect.bottom - reserve[corner === 'tl' ? 'l' : 'r'] - inset;
+            var other = made[corner === 'tl' ? 'tr' : 'tl'];
+            var clash = function () {
+                if (!other) {
+                    return false;
+                }
+                var a = box.getBoundingClientRect();
+                var b = other.getBoundingClientRect();
+                return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+            };
+            // A stacked column that runs too long lies down into rows (a
+            // row of four flags is short); only if that clashes with the
+            // other corner does it stay a column and lose badges instead.
+            if (badges.stacked && box.getBoundingClientRect().bottom > limit) {
+                box.classList.add('jellycanvas-badges-rows');
+                if (clash()) {
+                    box.classList.remove('jellycanvas-badges-rows');
+                }
+            }
             var guard = 12;
             while (box.getBoundingClientRect().bottom > limit && guard-- > 0) {
                 if (box.children.length <= 1) {
