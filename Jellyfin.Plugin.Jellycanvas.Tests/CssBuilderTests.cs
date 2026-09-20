@@ -533,6 +533,15 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Detail_button_labels_stay_on_the_play_button_only_on_phones()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { DetailLabels = true } });
+        Assert.Contains("html .detailButton::after { content: attr(title);", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-mobile .detailButton:not(.btnPlay)::after { content: none; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-mobile .mainDetailButtons { flex-wrap: wrap; row-gap: 0.4em; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Poster_play_button_gets_its_look_place_and_size()
     {
         // Nothing set: nothing written.

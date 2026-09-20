@@ -1368,10 +1368,20 @@ public static class CssBuilder
         if (b.DetailLabels)
         {
             sb.AppendLine($"{detail}::after {{ content: attr(title); margin-left: 0.45em; font-weight: 600; white-space: nowrap; }}");
+            // A phone's row has room for one label (the play button); the
+            // rest stay icons, or the row runs off the screen.
+            sb.AppendLine($"{x.P}html.layout-mobile .detailButton:not(.btnPlay)::after {{ content: none; }}");
         }
         else if (b.PlayLabel)
         {
             sb.AppendLine($"{detail}.btnPlay::after {{ content: attr(title); margin-left: 0.45em; font-weight: 600; white-space: nowrap; }}");
+        }
+
+        if (b.DetailLabels || b.PlayLabel)
+        {
+            // And should it still be too much (a long localized name, a
+            // big scale), the row wraps rather than overflows.
+            sb.AppendLine($"{x.P}html.layout-mobile .mainDetailButtons {{ flex-wrap: wrap; row-gap: 0.4em; }}");
         }
 
         if (b.HoverLift)
