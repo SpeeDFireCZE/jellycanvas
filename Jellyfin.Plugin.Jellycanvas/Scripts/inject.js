@@ -157,6 +157,7 @@
             '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
             '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
             '.jellycanvas-badge .material-icons { font-size: 1.15em; }' +
+            '.jellycanvas-badge .jellycanvas-badge-icon { width: 1.15em; height: 1.15em; flex: 0 0 auto; }' +
             '.jellycanvas-badge .jellycanvas-flag { height: 1.15em; width: auto; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }' +
             '.jellycanvas-badge > span:not(.material-icons) + span, .jellycanvas-badge .jellycanvas-flag + span { margin-left: 1px; }' +
             '.jellycanvas-lang { display: inline-flex; align-items: center; gap: 0.27em; }';
@@ -279,6 +280,21 @@
         var el = document.createElementNS(NS, name);
         Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
         return el;
+    }
+
+    /** A small inline icon for the language pills (Material Design shapes, 24-unit grid). */
+    function badgeIcon(kind) {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('class', 'jellycanvas-badge-icon');
+        svg.setAttribute('aria-hidden', 'true');
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill', 'currentColor');
+        path.setAttribute('d', kind === 'volume'
+            ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
+            : 'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 12h4v2H4v-2zm10 6H4v-2h10v2zm6 0h-4v-2h4v2zm0-4H10v-2h10v2z');
+        svg.appendChild(path);
+        return svg;
     }
 
     function flagSvg(code) {
@@ -452,11 +468,11 @@
             return flags.length ? flags : '';
         }
         if (isLang) {
-            var i = document.createElement('span');
-            i.className = 'material-icons';
-            i.setAttribute('aria-hidden', 'true');
-            i.textContent = id === 'audio' ? 'volume_up' : 'subtitles';
-            el.appendChild(i);
+            // The icon is an inline SVG, not the icon font: before that font
+            // has loaded the ligature text ("subtitles") would be measured
+            // as the pill's width, and the corners would be placed for a
+            // pill three times as wide as it ends up (seen on phones).
+            el.appendChild(badgeIcon(id === 'audio' ? 'volume' : 'subtitles'));
             badgeColor(el, id, value[0]);
             value.forEach(function (code) {
                 // Each language in its own holder, so the pill can fold the
@@ -518,7 +534,14 @@
         return changed;
     }
 
+    var fontsGraceUntil = Date.now() + 4000;
+
     function renderBadges(card, info) {
+        // While the page's fonts are still coming in, every width would be
+        // measured in a fallback font; wait (a few seconds at most).
+        if (info && document.fonts && document.fonts.status === 'loading' && Date.now() < fontsGraceUntil) {
+            return;
+        }
         card.setAttribute('data-jc-badges', info ? 'done' : 'none');
         if (!info) {
             return;
@@ -549,14 +572,24 @@
         // media source top left) keep their corner; badges there start
         // under them.
         var hostTop = hostRect.top;
-        function under(selector) {
+        var landscape = hostRect.width > hostRect.height * 1.2;
+        var beside = { tr: 0, tl: 0 };
+        function under(selector, corner) {
             var ind = card.querySelector(selector);
             if (!ind || !ind.offsetHeight) {
                 return 0;
             }
-            return Math.max(0, Math.round(ind.getBoundingClientRect().bottom - hostTop) - inset + 2);
+            var r = ind.getBoundingClientRect();
+            // A landscape card is short and wide: the badges step aside from
+            // the indicator (sit next to it) rather than under it, and keep
+            // the height for the column.
+            if (landscape) {
+                beside[corner] = Math.max(0, Math.round(r.width) - inset + 2);
+                return 0;
+            }
+            return Math.max(0, Math.round(r.bottom - hostTop) - inset + 2);
         }
-        var below = { tr: under('.playedIndicator, .countIndicator, .indicator'), tl: under('.mediaSourceIndicator') };
+        var below = { tr: under('.playedIndicator, .countIndicator, .indicator', 'tr'), tl: under('.mediaSourceIndicator', 'tl') };
         // TV cards (and the "overlay" title style) print the title over the
         // bottom of the image; badges at the bottom move up above it.
         var textTop = hostRect.bottom;
@@ -619,6 +652,9 @@
                     }
                     if (below[corner]) {
                         box.style.marginTop = below[corner] + 'px';
+                    }
+                    if (beside[corner]) {
+                        box.style[corner === 'tr' ? 'marginRight' : 'marginLeft'] = beside[corner] + 'px';
                     }
                     var lift = reserve[corner === 'bl' ? 'l' : 'r'];
                     if (lift && (corner === 'bl' || corner === 'br')) {
@@ -2440,6 +2476,17 @@
         window.addEventListener('resize', onResize);
         // Safety net for navigations that bypass both the History API and mutations.
         timers.push(setInterval(function () { checkUrl(); sync(); }, 1000));
+        // A font that arrives after the badges were placed changes their
+        // widths: place them again (the pills' icons are SVG, but the text
+        // badges follow the page font).
+        if (document.fonts && document.fonts.addEventListener) {
+            document.fonts.addEventListener('loadingdone', function () {
+                if (badges && !disposed) {
+                    badgesRemoveAll();
+                    badgeSync();
+                }
+            });
+        }
         sync();
     }
 
