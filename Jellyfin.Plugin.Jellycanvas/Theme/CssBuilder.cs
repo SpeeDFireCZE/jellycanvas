@@ -988,10 +988,12 @@ public static class CssBuilder
             ink = c.ContrastText;
         }
 
-        var hovered = $"{web}:hover, {grouped}:hover, {legacy}:hover > .cardOverlayButtonIcon";
+        // ":hover" has to go on every selector of a list, not just the last.
+        static string Hover(string list, string tail = "") => string.Join(", ", list.Split(", ").Select(sel => sel + ":hover" + tail));
+        var hovered = $"{Hover(web)}, {Hover(grouped)}, {Hover(legacy, " > .cardOverlayButtonIcon")}";
         if (fill is not null)
         {
-            sb.AppendLine($"{disc} {{ background: {fill} !important; color: {ink} !important;{extra} transition: background 0.2s, color 0.2s, transform 0.2s; }}");
+            sb.AppendLine($"{disc} {{ background: {fill} !important; color: {ink} !important;{extra} }}");
             if (!hover)
             {
                 // Jellyfin's own hover turns the icon accent-colored; keep that idea, and lift the fill a little.
@@ -1083,7 +1085,7 @@ public static class CssBuilder
         {
             // Jellyfin grows the web button by 1.4 on hover; a sized button keeps that.
             sb.AppendLine($"{web} {{ transform: {webTransform}; transform-origin: center; }}");
-            sb.AppendLine($"{web}:hover {{ transform: scale({Dec(scale / 100.0 * 1.4)}); }}");
+            sb.AppendLine($"{Hover(web)} {{ transform: scale({Dec(scale / 100.0 * 1.4)}); }}");
         }
 
         if (cornerTransform.Length > 0)

@@ -539,8 +539,10 @@ public class CssBuilderTests
         Assert.DoesNotContain("the play button on posters", CssBuilder.Build(new PluginConfiguration()), StringComparison.Ordinal);
 
         var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { PlayStyle = PlayButtonStyle.Accent, PlayRadius = 999, PlayPosition = PlayButtonPosition.BottomLeft, PlayScale = 120, PlayHideOnMobile = true } });
-        Assert.Contains("> .cardOverlayButtonIcon { background: rgba(0, 164, 220, 1) !important; color: #ffffff !important; transition:", css, StringComparison.Ordinal);
-        Assert.Contains(":hover { transform: scale(1.68); }", css, StringComparison.Ordinal);
+        Assert.Contains("> .cardOverlayButtonIcon { background: rgba(0, 164, 220, 1) !important; color: #ffffff !important; }", css, StringComparison.Ordinal);
+        // every selector of the list gets :hover - a bare first selector would apply the hover look at rest
+        Assert.Contains("button[data-action=\"play\"]:hover, .card .cardOverlayContainer > button[data-action=\"resume\"]:hover { transform: scale(1.68); }", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("button[data-action=\"play\"], .card .cardOverlayContainer > button[data-action=\"resume\"]:hover", css, StringComparison.Ordinal);
         Assert.Contains("border-radius: 999px !important;", css, StringComparison.Ordinal);
         Assert.Contains("button[data-action=\"resume\"] { bottom: 10px; left: 10px; top: auto; right: auto; margin: 0; }", css, StringComparison.Ordinal);
         Assert.Contains(".MuiButtonGroup-root { bottom: 10px; left: 10px; top: auto; right: auto; }", css, StringComparison.Ordinal);
@@ -553,7 +555,7 @@ public class CssBuilderTests
 
         // A custom color wins over the style and brings its own icon color.
         var custom = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { PlayStyle = PlayButtonStyle.Dark, PlayColor = "#ffffff", PlayOpacity = 50, PlayHoverColor = "#ff0000" } });
-        Assert.Contains("{ background: rgba(255, 255, 255, 0.5) !important; color: rgba(0, 0, 0, 0.87) !important; transition:", custom, StringComparison.Ordinal);
+        Assert.Contains("{ background: rgba(255, 255, 255, 0.5) !important; color: rgba(0, 0, 0, 0.87) !important; }", custom, StringComparison.Ordinal);
         Assert.Contains(":hover > .cardOverlayButtonIcon { background: rgba(255, 0, 0, 0.5) !important; color: #ffffff !important; }", custom, StringComparison.Ordinal);
     }
 
