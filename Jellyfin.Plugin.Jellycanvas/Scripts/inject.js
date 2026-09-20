@@ -705,14 +705,16 @@
                 var b = other.getBoundingClientRect();
                 return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
             };
-            // A column that runs a little too long first shrinks to fit
-            // (down to about three quarters) - on the web there is usually
-            // room for that, and the column stays a column.
+            // A column that runs too long first shrinks to fit (down to
+            // about three fifths) - a column stays a column where it can.
             var br0 = box.getBoundingClientRect();
+            // For support: what the box measured against (top / bottom / the limit, card-relative).
+            box.setAttribute('data-jc-fit', Math.round(br0.top - hostRect.top) + '/' + Math.round(br0.bottom - hostRect.top) + '/' + Math.round(limit - hostRect.top));
             if (br0.bottom > limit && br0.height > 0) {
-                var factor = Math.min(0.98, (limit - br0.top) / br0.height * 0.98);
+                // The box's inset (top and bottom) is fixed; only the content scales.
+                var factor = Math.min(0.98, ((limit - br0.top) - 2 * inset) / Math.max(1, br0.height - 2 * inset) * 0.98);
                 var size0 = parseFloat(box.style.fontSize) || baseSize;
-                if (size0 * factor >= baseSize * 0.72) {
+                if (size0 * factor >= baseSize * 0.62) {
                     box.style.fontSize = (size0 * factor).toFixed(1) + 'px';
                 }
             }
@@ -721,8 +723,16 @@
             // other corner does it stay a column and lose badges instead.
             if (badges.stacked && box.getBoundingClientRect().bottom > limit) {
                 box.classList.add('jellycanvas-badges-rows');
+                // Not a long row across the poster: two flags a row, so the
+                // block stays narrow and reads as a (double) column.
+                var flag = box.querySelector('.jellycanvas-flagonly');
+                if (flag) {
+                    var fontPx = parseFloat(box.style.fontSize) || baseSize;
+                    box.style.maxWidth = Math.ceil(2 * flag.getBoundingClientRect().width + 0.27 * fontPx + 2 * inset + 1) + 'px';
+                }
                 if (clash()) {
                     box.classList.remove('jellycanvas-badges-rows');
+                    box.style.maxWidth = '';
                 }
             }
             var guard = 12;

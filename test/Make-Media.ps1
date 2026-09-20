@@ -46,7 +46,8 @@ $profiles = @{
 $episodeProfiles = @(
     @{ w = 1920; h = 1080; codec = 'hevc'; audio = @('eng:6', 'cze:2'); subs = @('cze', 'eng') },
     @{ w = 1280; h = 720;  codec = 'h264'; audio = @('eng:2'); subs = @('cze') },
-    @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:6', 'cze:6', 'slo:2'); subs = @('cze', 'slo', 'eng') }
+    @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:6', 'cze:6', 'slo:2'); subs = @('cze', 'slo', 'eng') },
+    @{ w = 1920; h = 1080; codec = 'hevc'; audio = @('eng:6:truehd', 'cze:6', 'ger:2', 'fre:2'); subs = @('cze', 'eng', 'ger', 'fre') }   # a landscape card with everything on: four flags, four codes, the long sound name
 )
 
 function New-Clip([string] $Path, [hashtable] $P) {
