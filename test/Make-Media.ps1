@@ -40,7 +40,7 @@ $profiles = @{
     'Whiplash (2014)'                            = @{ w = 720;  h = 576;  codec = 'h264'; audio = @('eng:2'); subs = @('cze') }
     'The Grand Budapest Hotel (2014)'            = @{ w = 1920; h = 1080; codec = 'h264'; audio = @('eng:6', 'ger:2', 'fre:2'); subs = @('cze', 'eng', 'ger', 'fre', 'ita', 'spa') }
     'Everything Everywhere All at Once (2022)'   = @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:6', 'chi:2'); subs = @('cze', 'eng', 'chi') }
-    'Oppenheimer (2023)'                         = @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:8', 'cze:6'); subs = @('cze', 'eng') }
+    'Oppenheimer (2023)'                         = @{ w = 3840; h = 2160; codec = 'hevc'; audio = @('eng:6:truehd', 'cze:6', 'ger:2', 'fre:2'); subs = @('cze', 'eng', 'ger', 'fre') }   # the long sound name (TrueHD 5.1 - ffmpeg's encoder stops at 5.1(side)) next to four flags and four codes
     'Alien (1979)'                               = @{ w = 720;  h = 480;  codec = 'h264'; audio = @('eng:2', 'cze:2', 'slo:2', 'hun:2', 'pol:2'); subs = @('cze', 'slo', 'hun', 'pol', 'eng') }
 }
 $episodeProfiles = @(
@@ -55,7 +55,8 @@ function New-Clip([string] $Path, [hashtable] $P) {
     $i = 0
     foreach ($a in $P.audio) {
         $parts = $a.Split(':')
-        $layout = switch ($parts[1]) { '8' { '7.1' } '6' { '5.1' } default { 'stereo' } }
+        # lang:channels[:codec]; truehd wants the "(side)" 5.1 layout and -strict -2 (experimental encoder)
+        $layout = switch ($parts[1]) { '8' { '7.1' } '6' { if ($parts.Count -gt 2 -and $parts[2] -eq 'truehd') { '5.1(side)' } else { '5.1' } } default { 'stereo' } }
         $args += @('-f', 'lavfi', '-i', "anullsrc=r=48000:cl=$layout")
         $i++
     }
@@ -77,8 +78,9 @@ function New-Clip([string] $Path, [hashtable] $P) {
     $n = 0
     foreach ($a in $P.audio) {
         $parts = $a.Split(':')
-        $codec = switch ($parts[1]) { '8' { 'eac3' } '6' { 'ac3' } default { 'aac' } }
+        $codec = if ($parts.Count -gt 2) { $parts[2] } else { switch ($parts[1]) { '8' { 'eac3' } '6' { 'ac3' } default { 'aac' } } }
         $args += @('-map', "$($n + 1):a", "-c:a:$n", $codec, "-metadata:s:a:$n", "language=$($parts[0])")
+        if ($codec -eq 'truehd') { $args += @('-strict', '-2') }
         $n++
     }
     $m = 0

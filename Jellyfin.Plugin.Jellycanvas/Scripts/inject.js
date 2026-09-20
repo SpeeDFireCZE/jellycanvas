@@ -472,7 +472,29 @@
         }
         el.appendChild(document.createTextNode(value));
         badgeColor(el, id, value);
+        if (id === 'sound') {
+            // A long sound name ("TrueHD Atmos 7.1") has a short form for a
+            // card where the two top corners would otherwise not fit side by
+            // side: Atmos says enough on its own, elsewhere the layout goes.
+            var short = /Atmos/.test(value) ? value.replace(/^\S+\s+/, '') : value.replace(/\s+\d\.\d$/, '');
+            if (short !== value) {
+                el.setAttribute('data-short', short);
+            }
+        }
         return el;
+    }
+
+    /** Swaps the long badge texts of a box for their short forms; true when something changed. */
+    function compactBadges(box) {
+        var changed = false;
+        box.querySelectorAll('[data-short]').forEach(function (el) {
+            var short = el.getAttribute('data-short');
+            if (el.textContent !== short) {
+                el.textContent = short;
+                changed = true;
+            }
+        });
+        return changed;
     }
 
     function renderBadges(card, info) {
@@ -619,6 +641,12 @@
                 });
                 lr = left.getBoundingClientRect();
                 rr = right.getBoundingClientRect();
+                // After the first round: a long sound name goes short before
+                // the letters get any smaller.
+                if (overlaps() && tries === 1 && (compactBadges(left) || compactBadges(right))) {
+                    lr = left.getBoundingClientRect();
+                    rr = right.getBoundingClientRect();
+                }
             }
             if (!overlaps()) {
                 return;
