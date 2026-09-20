@@ -647,8 +647,19 @@
                 var b = other.getBoundingClientRect();
                 return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
             };
-            // A stacked column that runs too long lies down into rows (a
-            // row of four flags is short); only if that clashes with the
+            // A column that runs a little too long first shrinks to fit
+            // (down to about three quarters) - on the web there is usually
+            // room for that, and the column stays a column.
+            var br0 = box.getBoundingClientRect();
+            if (br0.bottom > limit && br0.height > 0) {
+                var factor = Math.min(0.98, (limit - br0.top) / br0.height * 0.98);
+                var size0 = parseFloat(box.style.fontSize) || baseSize;
+                if (size0 * factor >= baseSize * 0.72) {
+                    box.style.fontSize = (size0 * factor).toFixed(1) + 'px';
+                }
+            }
+            // A stacked column that still runs too long lies down into rows
+            // (a row of four flags is short); only if that clashes with the
             // other corner does it stay a column and lose badges instead.
             if (badges.stacked && box.getBoundingClientRect().bottom > limit) {
                 box.classList.add('jellycanvas-badges-rows');
