@@ -990,6 +990,11 @@
                                     <label class="inputLabel inputLabelUnfocused" for="jcSeerrUrl" data-i18n="seerrUrl">Seerr address (as the server reaches it)</label>
                                     <input is="emby-input" type="text" id="jcSeerrUrl" data-path="Seerr.Url" placeholder="http://jellyseerr:5055">
                                 </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSeerrPublicUrl" data-i18n="seerrPublicUrl">Seerr address for links in the browser (empty = the same)</label>
+                                    <input is="emby-input" type="text" id="jcSeerrPublicUrl" data-path="Seerr.PublicUrl" placeholder="https://requests.example.com">
+                                    <div class="fieldDescription" data-i18n="seerrPublicUrlHint">The server often reaches Seerr by a name the browser cannot (a container name, a LAN address). Poster links use this address; a link opened through a custom button uses that button's address instead.</div>
+                                </div>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcSeerrOpen" data-i18n="seerrOpen">Open a poster's Seerr page</label>
                                     <select is="emby-select" id="jcSeerrOpen" data-path="Seerr.OpenWithButton" data-int="1" class="emby-select-withcolor emby-select">

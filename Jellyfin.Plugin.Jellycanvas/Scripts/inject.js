@@ -1166,6 +1166,20 @@
         return null;
     }
 
+    /**
+     * The title's Seerr page addressed like the button's target: its
+     * origin plus any base path the button has (a Seerr under /seerr/),
+     * without a page route the button may point at (/requests, /discover).
+     */
+    function seerrPageVia(b, item) {
+        var m = /^(https?:\/\/[^/?#]+)([^?#]*)/i.exec(b.url || '');
+        if (!m || !item.TmdbId) {
+            return null;
+        }
+        var path = m[2].replace(/\/+$/, '').replace(/\/(discover|requests|issues|users|settings|profile|login|movie|tv)(\/.*)?$/i, '');
+        return m[1] + path + '/' + (item.Type === 'tv' ? 'tv' : 'movie') + '/' + item.TmdbId;
+    }
+
     /** Opens a Seerr page the way the button does: in its overlay (pointed at the page), or in place. */
     function openSeerrVia(b, url, event) {
         event.preventDefault();
@@ -1198,8 +1212,13 @@
         var href = inLibrary ? '#/details?id=' + item.JellyfinId + '&serverId=' + api.serverId() : item.SeerrUrl;
         // A Seerr link opens in a new tab - or, when the admin picked a
         // custom button that points at Seerr, the way that button opens
-        // (its overlay, or in place): no second Seerr tab then.
+        // (its overlay, or in place): no second Seerr tab then. The page
+        // is then addressed the way the button addresses Seerr, so the
+        // session the user has in that overlay (its cookies) is the same.
         var via = inLibrary ? null : seerrButton();
+        if (via) {
+            href = seerrPageVia(via, item) || href;
+        }
         var link = document.createElement('a');
         link.className = 'cardImageContainer coveredImage cardContent';
         link.href = href;

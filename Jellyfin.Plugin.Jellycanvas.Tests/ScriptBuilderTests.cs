@@ -135,6 +135,15 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Seerr_links_use_the_public_address_when_there_is_one()
+    {
+        var s = new SeerrSettings { Url = "http://jellyseerr:5055/" };
+        Assert.Equal("http://jellyseerr:5055", Jellyfin.Plugin.Jellycanvas.Api.SeerrClient.LinkBase(s));
+        s.PublicUrl = " https://requests.example.com/ ";
+        Assert.Equal("https://requests.example.com", Jellyfin.Plugin.Jellycanvas.Api.SeerrClient.LinkBase(s));
+    }
+
+    [Fact]
     public void Script_stamp_follows_the_settings()
     {
         var a = new PluginConfiguration();

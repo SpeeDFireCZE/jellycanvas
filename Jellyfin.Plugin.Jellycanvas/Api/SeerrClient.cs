@@ -318,9 +318,16 @@ public sealed class SeerrClient
             date.Length >= 10 ? date[..10] : date,
             status,
             jellyfinId,
-            s.Url.Trim().TrimEnd('/') + "/" + type + "/" + id,
+            LinkBase(s) + "/" + type + "/" + id,
             string.Empty,
             null);
+    }
+
+    /// <summary>The address links for the browser start with: the public one when set, else the server's.</summary>
+    public static string LinkBase(SeerrSettings s)
+    {
+        var u = string.IsNullOrWhiteSpace(s.PublicUrl) ? s.Url : s.PublicUrl;
+        return (u ?? string.Empty).Trim().TrimEnd('/');
     }
 
     private static string? Str(JsonElement el, string name)

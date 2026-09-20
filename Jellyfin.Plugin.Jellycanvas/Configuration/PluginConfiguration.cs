@@ -945,6 +945,14 @@ public class SeerrSettings
     /// <summary>Seerr's address as the server reaches it (http://seerr:5055 or the public URL); empty = off.</summary>
     public string Url { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Seerr's address for links in the browser (https://requests.example.com);
+    /// empty = the same as <see cref="Url"/>. The server often reaches Seerr
+    /// by a name the browser cannot (a container name, a LAN address), and
+    /// the session a user has with Seerr belongs to the public address.
+    /// </summary>
+    public string PublicUrl { get; set; } = string.Empty;
+
     /// <summary>API key from Seerr → Settings → General.</summary>
     public string ApiKey { get; set; } = string.Empty;
 
