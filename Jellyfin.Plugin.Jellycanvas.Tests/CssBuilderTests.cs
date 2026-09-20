@@ -539,17 +539,22 @@ public class CssBuilderTests
         Assert.DoesNotContain("the play button on posters", CssBuilder.Build(new PluginConfiguration()), StringComparison.Ordinal);
 
         var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { PlayStyle = PlayButtonStyle.Accent, PlayRadius = 999, PlayPosition = PlayButtonPosition.BottomLeft, PlayScale = 120, PlayHideOnMobile = true } });
-        Assert.Contains(".card .cardOverlayContainer > button[data-action=\"play\"], html.layout-mobile .card .cardScalable > a > .MuiButtonGroup-root > button[data-action=\"play\"] { background: #00a4dc !important; color: #ffffff !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("> .cardOverlayButtonIcon { background: rgba(0, 164, 220, 1) !important; color: #ffffff !important; transition:", css, StringComparison.Ordinal);
+        Assert.Contains(":hover { transform: scale(1.68); }", css, StringComparison.Ordinal);
         Assert.Contains("border-radius: 999px !important;", css, StringComparison.Ordinal);
-        Assert.Contains("button[data-action=\"play\"] { bottom: 10px; left: 10px; top: auto; right: auto; margin: 0; }", css, StringComparison.Ordinal);
+        Assert.Contains("button[data-action=\"resume\"] { bottom: 10px; left: 10px; top: auto; right: auto; margin: 0; }", css, StringComparison.Ordinal);
         Assert.Contains(".MuiButtonGroup-root { bottom: 10px; left: 10px; top: auto; right: auto; }", css, StringComparison.Ordinal);
         Assert.Contains("transform: scale(1.2); transform-origin: center;", css, StringComparison.Ordinal);
         Assert.Contains("transform: scale(1.2); transform-origin: bottom left;", css, StringComparison.Ordinal);
-        Assert.Contains(".MuiButtonGroup-root { display: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-mobile .card .cardScalable > button.cardOverlayButton-br { display: none !important; }", css, StringComparison.Ordinal);
+        // the legacy (home page) button carries the disc on its icon span
+        Assert.Contains("button.cardOverlayButton-br[data-action=\"resume\"] > .cardOverlayButtonIcon { background: rgba(0, 164, 220, 1) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("button.cardOverlayButton-br[data-action=\"resume\"] { bottom: 0px; left: 0px; top: auto; right: auto; }", css, StringComparison.Ordinal);
 
         // A custom color wins over the style and brings its own icon color.
-        var custom = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { PlayStyle = PlayButtonStyle.Dark, PlayColor = "#ffffff" } });
-        Assert.Contains("{ background: #ffffff !important; color: rgba(0, 0, 0, 0.87) !important; }", custom, StringComparison.Ordinal);
+        var custom = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { PlayStyle = PlayButtonStyle.Dark, PlayColor = "#ffffff", PlayOpacity = 50, PlayHoverColor = "#ff0000" } });
+        Assert.Contains("{ background: rgba(255, 255, 255, 0.5) !important; color: rgba(0, 0, 0, 0.87) !important; transition:", custom, StringComparison.Ordinal);
+        Assert.Contains(":hover > .cardOverlayButtonIcon { background: rgba(255, 0, 0, 0.5) !important; color: #ffffff !important; }", custom, StringComparison.Ordinal);
     }
 
     [Fact]

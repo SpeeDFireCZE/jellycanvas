@@ -767,6 +767,12 @@ public class CardSettings
     /// <summary>Its background; empty = what the style says.</summary>
     public string PlayColor { get; set; } = string.Empty;
 
+    /// <summary>Opacity of the fill in percent (glass has its own, thinner fill).</summary>
+    public int PlayOpacity { get; set; } = 100;
+
+    /// <summary>Its background while hovered; empty = a little brighter, the icon in the accent color.</summary>
+    public string PlayHoverColor { get; set; } = string.Empty;
+
     /// <summary>Its corner radius in px; -1 = the icon-button radius, 999 = round.</summary>
     public int PlayRadius { get; set; } = -1;
 
