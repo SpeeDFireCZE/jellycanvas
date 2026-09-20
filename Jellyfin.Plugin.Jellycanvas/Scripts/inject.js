@@ -143,11 +143,13 @@
         var stacked = badges.stacked
             ? '.jellycanvas-badges { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; } .jellycanvas-badges-tr, .jellycanvas-badges-br { align-items: flex-end; }'
             : '';
-        return '.jellycanvas-badges { position: absolute; z-index: 3; display: flex; flex-wrap: wrap; gap: 3px; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
+        // Paddings and gaps in em: a badge shrunk for a small card shrinks
+        // as a whole, not just its letters.
+        return '.jellycanvas-badges { position: absolute; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
             stacked +
-            '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px; border-radius: 4px; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
+            '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 0.27em; padding: 0.27em 0.55em; border-radius: 0.36em; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
             colorful +
             '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
             '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
@@ -407,16 +409,19 @@
         el.style.color = p.text;
     }
 
-    function badgeHtml(id, info) {
+    function badgeHtml(id, info, narrow) {
         var value = info[id];
         if (!value || !value.length) {
             return '';
         }
         var isLang = id === 'audio' || id === 'subtitles';
         if (isLang) {
+            // A narrow card has no room for a row of four codes: two at most
+            // there, the preferred ones first as always.
+            var max = narrow ? 2 : 4;
             value = id === 'audio'
-                ? pickLanguages(value, badges.audioPreferred, badges.audioMax)
-                : pickLanguages(value, badges.subtitlePreferred, badges.subtitleMax);
+                ? pickLanguages(value, badges.audioPreferred, Math.min(badges.audioMax, max))
+                : pickLanguages(value, badges.subtitlePreferred, Math.min(badges.subtitleMax, max));
         }
         var el = document.createElement('span');
         el.className = 'jellycanvas-badge jellycanvas-badge-' + id;
@@ -484,11 +489,16 @@
         // up about 0.3 r at 45 degrees).
         var image = card.querySelector('.cardImageContainer') || host;
         var radius = parseFloat(getComputedStyle(image).borderTopLeftRadius) || 0;
-        var inset = Math.round(5 + radius * 0.3);
+        // On a narrow card (a dense grid, a phone) every pixel of inset is
+        // taken from the badges themselves: the margin beyond the curve
+        // shrinks there.
+        var hostRect = host.getBoundingClientRect();
+        var hostWidth = hostRect.width || host.clientWidth || 200;
+        var inset = Math.round((hostWidth < 140 ? 3 : 5) + radius * 0.3);
         // Jellyfin's own indicators (played tick, unplayed count top right,
         // media source top left) keep their corner; badges there start
         // under them.
-        var hostTop = host.getBoundingClientRect().top;
+        var hostTop = hostRect.top;
         function under(selector) {
             var ind = card.querySelector(selector);
             if (!ind || !ind.offsetHeight) {
@@ -499,7 +509,6 @@
         var below = { tr: under('.playedIndicator, .countIndicator, .indicator'), tl: under('.mediaSourceIndicator') };
         // TV cards (and the "overlay" title style) print the title over the
         // bottom of the image; badges at the bottom move up above it.
-        var hostRect = host.getBoundingClientRect();
         var textTop = hostRect.bottom;
         var texts = card.querySelectorAll('.cardText');
         for (var t = 0; t < texts.length; t++) {
@@ -509,16 +518,41 @@
             }
         }
         var above = Math.max(0, Math.round(hostRect.bottom - textTop) - inset + 2);
+        // Buttons that sit on the image for good (the play button touch
+        // clients draw at the bottom right) keep their side of the bottom
+        // edge: badges there stay above them.
+        var reserve = { l: above, r: above };
+        var fixed = card.querySelectorAll('.MuiButtonGroup-root, .cardOverlayButton-br, .cardOverlayFab-primary');
+        for (var f = 0; f < fixed.length; f++) {
+            var fb = fixed[f];
+            if (!fb.offsetHeight) {
+                continue;
+            }
+            var opacity = 1;
+            for (var anc = fb; anc && anc !== host; anc = anc.parentElement) {
+                opacity *= parseFloat(getComputedStyle(anc).opacity);
+            }
+            if (opacity < 0.5) {
+                continue; // a hover overlay, not there until the pointer is
+            }
+            var fr = fb.getBoundingClientRect();
+            if (fr.top < hostRect.top + hostRect.height / 2) {
+                continue; // top buttons are not in the way of the bottom edge
+            }
+            var side = fr.left + fr.width / 2 > hostRect.left + hostRect.width / 2 ? 'r' : 'l';
+            reserve[side] = Math.max(reserve[side], Math.round(hostRect.bottom - fr.top) - inset + 3);
+        }
         // Smaller cards (a dense library grid) get smaller badges: the size
-        // follows the card's width down to about three quarters.
-        var hostWidth = hostRect.width || host.clientWidth || 200;
-        var shrink = Math.max(0.72, Math.min(1, hostWidth / 220));
+        // follows the card's width, down to about three fifths on the
+        // narrowest.
+        var shrink = Math.max(0.6, Math.min(1, hostWidth / 220));
+        var baseSize = 11 * badges.scale / 100 * shrink;
         var made = {};
         Object.keys(badges.corners).forEach(function (corner) {
             var ids = badges.corners[corner];
             var box = null;
             ids.forEach(function (id) {
-                var els = badgeHtml(id, info);
+                var els = badgeHtml(id, info, hostWidth < 140);
                 if (!els) {
                     return;
                 }
@@ -527,13 +561,14 @@
                     box.className = 'jellycanvas-badges jellycanvas-badges-' + corner;
                     box.style.padding = inset + 'px';
                     if (shrink < 1) {
-                        box.style.fontSize = (11 * badges.scale / 100 * shrink).toFixed(1) + 'px';
+                        box.style.fontSize = baseSize.toFixed(1) + 'px';
                     }
                     if (below[corner]) {
                         box.style.marginTop = below[corner] + 'px';
                     }
-                    if (above && (corner === 'bl' || corner === 'br')) {
-                        box.style.marginBottom = above + 'px';
+                    var lift = reserve[corner === 'bl' ? 'l' : 'r'];
+                    if (lift && (corner === 'bl' || corner === 'br')) {
+                        box.style.marginBottom = lift + 'px';
                     }
                 }
                 (els.length === undefined ? [els] : els).forEach(function (el) { box.appendChild(el); });
@@ -543,8 +578,10 @@
                 made[corner] = box;
             }
         });
-        // Two corners of one edge that would run into each other: the right
-        // one moves past the left one (down at the top, up at the bottom).
+        // Two corners of one edge that would run into each other: first
+        // both shrink a little (down to two thirds of their size) to sit
+        // side by side; only when that is not enough does the right one
+        // move past the left one (down at the top, up at the bottom).
         [['tl', 'tr', 'marginTop'], ['bl', 'br', 'marginBottom']].forEach(function (pair) {
             var left = made[pair[0]];
             var right = made[pair[1]];
@@ -553,8 +590,57 @@
             }
             var lr = left.getBoundingClientRect();
             var rr = right.getBoundingClientRect();
-            if (lr.right > rr.left && lr.bottom > rr.top && lr.top < rr.bottom) {
-                right.style[pair[2]] = ((parseFloat(right.style[pair[2]]) || 0) + lr.height - inset) + 'px';
+            var overlaps = function () {
+                return lr.right > rr.left && lr.bottom > rr.top && lr.top < rr.bottom;
+            };
+            if (!overlaps()) {
+                return;
+            }
+            // The two boxes need this much of the card between them; the
+            // insets on the outer sides are fixed, the content scales.
+            var need = (lr.width - inset) + (rr.width - inset) + 2;
+            var room = hostWidth - 2 * inset;
+            var factor = room / need;
+            if (factor >= 0.66 && factor < 1) {
+                [left, right].forEach(function (box) {
+                    var size = parseFloat(box.style.fontSize) || baseSize;
+                    box.style.fontSize = (size * factor).toFixed(1) + 'px';
+                });
+                lr = left.getBoundingClientRect();
+                rr = right.getBoundingClientRect();
+                if (!overlaps()) {
+                    return;
+                }
+            }
+            right.style[pair[2]] = ((parseFloat(right.style[pair[2]]) || 0) + lr.height - inset) + 'px';
+        });
+        // A column at the top (under a played tick, or moved past the other
+        // corner) must end above the title strip and the fixed buttons: it
+        // loses badges from its end until it does - extra flags of a run
+        // first, then whole badges; a box that cannot fit at all goes.
+        ['tl', 'tr'].forEach(function (corner) {
+            var box = made[corner];
+            if (!box) {
+                return;
+            }
+            var limit = hostRect.bottom - reserve[corner === 'tl' ? 'l' : 'r'] - inset;
+            var guard = 12;
+            while (box.getBoundingClientRect().bottom > limit && guard-- > 0) {
+                if (box.children.length <= 1) {
+                    box.remove();
+                    delete made[corner];
+                    return;
+                }
+                var victim = null;
+                for (var c = box.children.length - 1; c > 0; c--) {
+                    var el = box.children[c];
+                    var prev = box.children[c - 1];
+                    if (el.classList.contains('jellycanvas-flagonly') && prev.classList.contains('jellycanvas-flagonly') && prev.className === el.className) {
+                        victim = el;
+                        break;
+                    }
+                }
+                (victim || box.lastElementChild).remove();
             }
         });
     }

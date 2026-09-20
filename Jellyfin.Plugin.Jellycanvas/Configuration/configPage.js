@@ -2167,7 +2167,7 @@
                 }
                 return r.text();
             }).then(importJson).catch(function () { toast(t('importFetchFail')); });
-            return;
+            return false;
         }
         var data;
         try {
@@ -2177,7 +2177,7 @@
         }
         if (!data || typeof data !== 'object' || Array.isArray(data) || !(data.Colors || data.Header || data.Cards)) {
             toast(t('importBad'));
-            return;
+            return false;
         }
         var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl };
         mergeKnown(state, data);
@@ -2190,6 +2190,9 @@
         schedulePreview();
         scheduleScriptPreview();
         toast(t('importDone'));
+        // The text has become the settings; the box is empty for the next one.
+        page.querySelectorAll('[id^="jcImportText"]').forEach(function (box) { box.value = ''; });
+        return true;
     }
 
     function downloadJson() {
