@@ -536,7 +536,14 @@
         // taken from the badges themselves: the margin beyond the curve
         // shrinks there.
         var hostRect = host.getBoundingClientRect();
-        var hostWidth = hostRect.width || host.clientWidth || 200;
+        if (!hostRect.width || !hostRect.height) {
+            // Not laid out yet (a hidden tab, a row still being built): the
+            // next sync tries again.
+            card.removeAttribute('data-jc-badges');
+            return;
+        }
+        card.setAttribute('data-jc-badges-w', String(Math.round(hostRect.width)));
+        var hostWidth = hostRect.width;
         var inset = Math.round((hostWidth < 140 ? 3 : 5) + radius * 0.3);
         // Jellyfin's own indicators (played tick, unplayed count top right,
         // media source top left) keep their corner; badges there start
@@ -747,6 +754,7 @@
         var cards = document.querySelectorAll('[data-jc-badges]');
         for (var j = 0; j < cards.length; j++) {
             cards[j].removeAttribute('data-jc-badges');
+            cards[j].removeAttribute('data-jc-badges-w');
         }
     }
 
@@ -784,6 +792,19 @@
         }
         if ((badges.hideOnMobile && isMobile()) || (badges.hideOnTv && isTv())) {
             return;
+        }
+        // A card laid out since its badges were placed (the grid settled,
+        // the phone turned, a font arrived) gets them placed again: the
+        // placement was measured against the old size.
+        var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
+        for (var d = 0; d < done.length; d++) {
+            var hostNow = done[d].querySelector('.cardScalable');
+            var wNow = hostNow ? Math.round(hostNow.getBoundingClientRect().width) : 0;
+            if (wNow && Math.abs(wNow - parseInt(done[d].getAttribute('data-jc-badges-w'), 10)) > 2) {
+                done[d].querySelectorAll('.jellycanvas-badges').forEach(function (b) { b.remove(); });
+                done[d].removeAttribute('data-jc-badges');
+                done[d].removeAttribute('data-jc-badges-w');
+            }
         }
         var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges])');
         var queued = false;
