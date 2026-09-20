@@ -5,6 +5,8 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.2.2 - 2026-09-20
+
 - Seerr rows: a poster opened through a custom button is addressed the way that button addresses Seerr (its host and base path), so the session the user has in that overlay applies - before, the link used the server-side Seerr address (a container name or a LAN address): a different origin with no session, often not reachable from the browser at all. New setting "Seerr address for links in the browser" for the plain new-tab links; empty = the same as the server address.
 
 ## 1.2.1 - 2026-09-20
