@@ -614,8 +614,10 @@
         // measured against a smaller reference than a landscape card - the
         // same poster in a library grid and the same episode on the home
         // page should not end up with different-sized badges.
+        // The fitting below shrinks whatever does not fit, so the base can be
+        // generous: a phone's 104px poster starts at about nine tenths.
         var portrait = hostRect.height > hostRect.width;
-        var shrink = Math.max(0.6, Math.min(1, hostWidth / (portrait ? 160 : 260)));
+        var shrink = Math.max(0.7, Math.min(1, hostWidth / (portrait ? 120 : 260)));
         var baseSize = 11 * badges.scale / 100 * shrink;
         var made = {};
         Object.keys(badges.corners).forEach(function (corner) {
