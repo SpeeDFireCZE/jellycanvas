@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Fixed: the TV still background stayed over a playing video (its rule outranked the one that clears backdrops during playback). Apply the theme once after updating.
+- Card badges: the corners of a card now share one size and are fitted together - nothing lies over another corner, the title strip or a fixed button. Long texts go short first, then all corners shrink together, then a column lies down into rows of two flags, then a corner moves past its neighbour, then badges come off the end; afterwards the size grows back as far as it fits, so badges are never smaller than they must be. A bottom corner no longer sits over the flags of a top one.
+- Card badges: commas between the codes of a language pill ("CS, EN" - a small "CSEN" read as one odd word).
+
 ## 1.2.2 - 2026-09-20
 
 - Seerr rows: a poster opened through a custom button is addressed the way that button addresses Seerr (its host and base path), so the session the user has in that overlay applies - before, the link used the server-side Seerr address (a container name or a LAN address): a different origin with no session, often not reachable from the browser at all. New setting "Seerr address for links in the browser" for the plain new-tab links; empty = the same as the server address.
