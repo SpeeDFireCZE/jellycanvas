@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+## 1.2.3 - 2026-09-21
+
+A bug-fix release. Several fixes and the new flat backgrounds live in the generated CSS: open the designer and press Apply once after updating; the client script reloads by itself.
+
 - Fixed: a TV or phone background of its own (per-device settings) changed only the CSS part - the client script kept rotating the defaults' random backdrops there, so on the TV nothing seemed to change. The script now carries each device's own backdrop settings and follows the layout; the backdrop layer rules are scoped to the device too.
 - Background: two flat sources - one color, or a gradient between two colors like the login page's (from / to / angle). Jellyfin's own backdrop goes; an item page can still show its own backdrop over it (the "item page" switch), dimmed as set.
 - Login page: one flat color as the background (over the gradient; an image URL wins over both).
