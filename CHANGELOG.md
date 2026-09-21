@@ -11,6 +11,8 @@ All notable changes to Jellycanvas. The format follows
 - Designer: a device tag on a slider row (a value the TV or the phone overrides) sat over the number box; it sits after the label now.
 - Fixed: "hide scrollbars" (Misc) left the page's own scrollbar - the rule reached everything under the root but not the root itself. Apply once after updating.
 - Designer: Ctrl+click on a scrollbar (the page's or a panel's) opens Misc at "hide scrollbars".
+- Designer: the reset arrow on an overridden checkbox row toggled the checkbox instead (the label lay over the arrow).
+- Card badges: a portrait poster is measured against a smaller reference width than a landscape card, so its badges are not smaller than the same card's on the home page (a 195px poster: full size; a phone's 104px poster: about two thirds).
 - Designer: the TV and phone views no longer show rows that only make sense in the defaults - "Still background on TV" and "no play button on phones" (in a device view the setting itself is that device's).
 - Fixed: the TV still background stayed over a playing video (its rule outranked the one that clears backdrops during playback). Apply the theme once after updating.
 - Card badges: the corners of a card now share one size and are fitted together - nothing lies over another corner, the title strip or a fixed button. Long texts go short first, then all corners shrink together, then a column lies down into rows of two flags, then a corner moves past its neighbour, then badges come off the end; afterwards the size grows back as far as it fits, so badges are never smaller than they must be. A bottom corner no longer sits over the flags of a top one.

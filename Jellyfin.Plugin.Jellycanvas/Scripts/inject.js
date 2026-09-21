@@ -630,8 +630,12 @@
         }
         // Smaller cards (a dense library grid) get smaller badges: the size
         // follows the card's width, down to about three fifths on the
-        // narrowest.
-        var shrink = Math.max(0.6, Math.min(1, hostWidth / 220));
+        // narrowest. A portrait poster is narrow by nature, so it is
+        // measured against a smaller reference than a landscape card - the
+        // same poster in a library grid and the same episode on the home
+        // page should not end up with different-sized badges.
+        var portrait = hostRect.height > hostRect.width;
+        var shrink = Math.max(0.6, Math.min(1, hostWidth / (portrait ? 160 : 260)));
         var baseSize = 11 * badges.scale / 100 * shrink;
         var made = {};
         Object.keys(badges.corners).forEach(function (corner) {
