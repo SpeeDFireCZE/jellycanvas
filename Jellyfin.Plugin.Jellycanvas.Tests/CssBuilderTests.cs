@@ -533,6 +533,14 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Tv_still_backdrop_goes_while_a_video_plays()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 30 }, Tv = new TvSettings { StaticBackdrop = true } });
+        Assert.Contains("html.layout-tv .backgroundContainer { background-image: linear-gradient(", css, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv.transparentDocument .backgroundContainer, html.layout-tv .backgroundContainer.backgroundContainer-transparent { background-image: none !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Detail_button_labels_stay_on_the_play_button_only_on_phones()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { DetailLabels = true } });

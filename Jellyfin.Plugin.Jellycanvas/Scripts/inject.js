@@ -474,7 +474,7 @@
             // pill three times as wide as it ends up (seen on phones).
             el.appendChild(badgeIcon(id === 'audio' ? 'volume' : 'subtitles'));
             badgeColor(el, id, value[0]);
-            value.forEach(function (code) {
+            value.forEach(function (code, idx) {
                 // Each language in its own holder, so the pill can fold the
                 // ones past the second into "+N" when the corners collide.
                 var holder = document.createElement('span');
@@ -485,7 +485,8 @@
                 }
                 if (!flag || mode === 'FlagsAndCodes') {
                     var t = document.createElement('span');
-                    t.textContent = code;
+                    // A comma between the codes: a small "CSEN" reads as one odd word.
+                    t.textContent = code + (idx < value.length - 1 ? ',' : '');
                     holder.appendChild(t);
                 }
                 el.appendChild(holder);
@@ -662,134 +663,146 @@
                 made[corner] = box;
             }
         });
-        // Two corners of one edge that would run into each other: first
-        // both shrink a little (down to two thirds of their size) to sit
-        // side by side; only when that is not enough does the right one
-        // move past the left one (down at the top, up at the bottom).
-        [['tl', 'tr', 'marginTop'], ['bl', 'br', 'marginBottom']].forEach(function (pair) {
-            var left = made[pair[0]];
-            var right = made[pair[1]];
-            if (!left || !right) {
-                return;
-            }
-            var lr = left.getBoundingClientRect();
-            var rr = right.getBoundingClientRect();
-            var overlaps = function () {
-                return lr.right > rr.left && lr.bottom > rr.top && lr.top < rr.bottom;
-            };
-            if (!overlaps()) {
-                return;
-            }
-            // The two boxes need this much of the card between them; the
-            // insets on the outer sides are fixed, the content scales. Up to
-            // two rounds (the parts do not all scale alike), never below
-            // two thirds of the size.
-            // First the long texts go short (a name without its layout, a
-            // pill with "+2") - that keeps the letters big; then the size.
-            var compactedLeft = compactBadges(left);
-            var compactedRight = compactBadges(right);
-            if (compactedLeft || compactedRight) {
-                lr = left.getBoundingClientRect();
-                rr = right.getBoundingClientRect();
-            }
-            var tries = 0;
-            while (overlaps() && tries++ < 3) {
-                var need = (lr.width - inset) + (rr.width - inset) + 2;
-                var room = hostWidth - 2 * inset;
-                var factor = Math.min(0.97, (room / need) * 0.97);
-                var size = parseFloat(left.style.fontSize) || baseSize;
-                if (size * factor < baseSize * 0.62) {
-                    break;
-                }
-                [left, right].forEach(function (box) {
-                    var own = parseFloat(box.style.fontSize) || baseSize;
-                    box.style.fontSize = (own * factor).toFixed(1) + 'px';
-                });
-                lr = left.getBoundingClientRect();
-                rr = right.getBoundingClientRect();
-            }
-            if (!overlaps()) {
-                return;
-            }
-            // Past the left box: measured from the edge, so a left box that
-            // itself starts lower (under a tick or a button) is cleared too.
-            var past = pair[2] === 'marginTop' ? lr.bottom - hostRect.top : hostRect.bottom - lr.top;
-            right.style[pair[2]] = Math.max(parseFloat(right.style[pair[2]]) || 0, Math.round(past) - inset + 2) + 'px';
-        });
-        // A column at the top (under a played tick, or moved past the other
-        // corner) must end above the title strip and the fixed buttons: it
-        // loses badges from its end until it does - extra flags of a run
-        // first, then whole badges; a box that cannot fit at all goes.
-        ['tl', 'tr'].forEach(function (corner) {
-            var box = made[corner];
-            if (!box) {
-                return;
-            }
-            var limit = hostRect.bottom - reserve[corner === 'tl' ? 'l' : 'r'] - inset;
-            var other = made[corner === 'tl' ? 'tr' : 'tl'];
-            var clash = function () {
-                if (!other) {
-                    return false;
-                }
-                var a = box.getBoundingClientRect();
-                var b = other.getBoundingClientRect();
-                return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
-            };
-            // A column that runs too long first shrinks to fit (down to
-            // half) - small flags under the tick beat a block of rows.
-            var br0 = box.getBoundingClientRect();
-            // For support: what the box measured against (top / bottom / the limit, card-relative).
-            box.setAttribute('data-jc-fit', Math.round(br0.top - hostRect.top) + '/' + Math.round(br0.bottom - hostRect.top) + '/' + Math.round(limit - hostRect.top));
-            if (br0.bottom > limit && br0.height > 0) {
-                // The box's padding (the inset on top, a hair at the bottom) is fixed; only the content scales.
-                var fixedPart = inset + 2;
-                var factor = Math.min(0.98, ((limit - br0.top) - fixedPart) / Math.max(1, br0.height - fixedPart) * 0.98);
-                var size0 = parseFloat(box.style.fontSize) || baseSize;
-                if (size0 * factor >= baseSize * 0.45) {
-                    box.style.fontSize = (size0 * factor).toFixed(1) + 'px';
-                }
-            }
-            // A stacked column that still runs too long lies down into rows
-            // (a row of four flags is short); only if that clashes with the
-            // other corner does it stay a column and lose badges instead.
-            if (badges.stacked && box.getBoundingClientRect().bottom > limit) {
-                box.classList.add('jellycanvas-badges-rows');
-                // Not a long row across the poster: two flags a row, so the
-                // block stays narrow and reads as a (double) column.
-                var flag = box.querySelector('.jellycanvas-flagonly');
-                if (flag) {
-                    var fontPx = parseFloat(box.style.fontSize) || baseSize;
-                    var widest = 0;
-                    for (var w = 0; w < box.children.length; w++) {
-                        widest = Math.max(widest, box.children[w].getBoundingClientRect().width);
+        // Fitting. The corners of one card share one size, and nothing may
+        // lie over anything else: not over another corner, not over the
+        // title strip or a fixed button (those limits are margins on the
+        // boxes already). The size is the largest that manages it:
+        //   1. the long texts go short (a sound name without its layout, a
+        //      pill folded to "CS, EN +2"),
+        //   2. all boxes shrink together, down to about half,
+        //   3. a stacked column that still runs too long lies down into
+        //      rows of two flags,
+        //   4. the right box of an edge moves past the left one,
+        //   5. a box loses badges from its end - extra flags first,
+        // and after the structure is settled the size grows back as far
+        // as it fits, so the badges are never smaller than they must be.
+        var boxes = Object.keys(made).map(function (k) { return made[k]; });
+        var limitTop = { tl: hostRect.bottom - reserve.l - inset, tr: hostRect.bottom - reserve.r - inset };
+        var overlap = function (a, b) {
+            return a.right > b.left + 1 && a.left < b.right - 1 && a.bottom > b.top + 1 && a.top < b.bottom - 1;
+        };
+        var problems = function () {
+            var n = 0;
+            var keys = Object.keys(made);
+            var rects = {};
+            keys.forEach(function (k) { rects[k] = made[k].getBoundingClientRect(); });
+            for (var i = 0; i < keys.length; i++) {
+                for (var j = i + 1; j < keys.length; j++) {
+                    if (overlap(rects[keys[i]], rects[keys[j]])) {
+                        n++;
                     }
-                    var twoFlags = 2 * flag.getBoundingClientRect().width + 0.27 * fontPx;
-                    box.style.maxWidth = Math.ceil(Math.max(twoFlags, widest) + inset + 2 + 1) + 'px';
                 }
-                if (clash()) {
-                    box.classList.remove('jellycanvas-badges-rows');
-                    box.style.maxWidth = '';
+                if (limitTop[keys[i]] && rects[keys[i]].bottom > limitTop[keys[i]]) {
+                    n++;
                 }
             }
-            var guard = 12;
-            while (box.getBoundingClientRect().bottom > limit && guard-- > 0) {
-                if (box.children.length <= 1) {
-                    box.remove();
-                    delete made[corner];
+            return n;
+        };
+        var size = baseSize;
+        var setSize = function (px) {
+            size = px;
+            boxes.forEach(function (b) { b.style.fontSize = px.toFixed(1) + 'px'; });
+        };
+        var steps = '';
+        if (problems()) {
+            boxes.forEach(compactBadges);
+            steps += 'c';
+        }
+        while (problems() && size * 0.92 >= baseSize * 0.45) {
+            setSize(size * 0.92);
+        }
+        if (problems()) {
+            // 3. columns into rows of two flags (the widest badge still fits)
+            if (badges.stacked) {
+                ['tl', 'tr'].forEach(function (corner) {
+                    var box = made[corner];
+                    if (!box || box.getBoundingClientRect().bottom <= limitTop[corner]) {
+                        return;
+                    }
+                    box.classList.add('jellycanvas-badges-rows');
+                    var flag = box.querySelector('.jellycanvas-flagonly');
+                    if (flag) {
+                        var widest = 0;
+                        for (var w = 0; w < box.children.length; w++) {
+                            widest = Math.max(widest, box.children[w].getBoundingClientRect().width);
+                        }
+                        box.style.maxWidth = Math.ceil(Math.max(2 * flag.getBoundingClientRect().width + 0.27 * size, widest) + inset + 3) + 'px';
+                    }
+                    steps += 'r';
+                });
+            }
+            // 4. the right box past the left one (down at the top, up at the bottom)
+            [['tl', 'tr', 'marginTop'], ['bl', 'br', 'marginBottom']].forEach(function (pair) {
+                var left = made[pair[0]];
+                var right = made[pair[1]];
+                if (!left || !right || !overlap(left.getBoundingClientRect(), right.getBoundingClientRect())) {
                     return;
                 }
-                var victim = null;
-                for (var c = box.children.length - 1; c > 0; c--) {
-                    var el = box.children[c];
-                    var prev = box.children[c - 1];
-                    if (el.classList.contains('jellycanvas-flagonly') && prev.classList.contains('jellycanvas-flagonly') && prev.className === el.className) {
-                        victim = el;
-                        break;
+                var lr = left.getBoundingClientRect();
+                var past = pair[2] === 'marginTop' ? lr.bottom - hostRect.top : hostRect.bottom - lr.top;
+                right.style[pair[2]] = Math.max(parseFloat(right.style[pair[2]]) || 0, Math.round(past) - inset + 2) + 'px';
+                steps += 'p';
+            });
+            // 5. badges off the end until nothing overlaps: the top boxes
+            // against their limit, then every box against the others
+            var trim = function (box, bad) {
+                var guard = 12;
+                while (bad() && guard-- > 0) {
+                    if (box.children.length <= 1) {
+                        box.remove();
+                        Object.keys(made).forEach(function (k) {
+                            if (made[k] === box) {
+                                delete made[k];
+                            }
+                        });
+                        boxes = boxes.filter(function (b) { return b !== box; });
+                        return;
                     }
+                    var victim = null;
+                    for (var c = box.children.length - 1; c > 0; c--) {
+                        var el = box.children[c];
+                        var prev = box.children[c - 1];
+                        if (el.classList.contains('jellycanvas-flagonly') && prev.classList.contains('jellycanvas-flagonly') && prev.className === el.className) {
+                            victim = el;
+                            break;
+                        }
+                    }
+                    (victim || box.lastElementChild).remove();
+                    steps += 't';
                 }
-                (victim || box.lastElementChild).remove();
+            };
+            ['tl', 'tr'].forEach(function (corner) {
+                if (made[corner]) {
+                    trim(made[corner], function () { return made[corner] && made[corner].getBoundingClientRect().bottom > limitTop[corner]; });
+                }
+            });
+            ['bl', 'br', 'tr', 'tl'].forEach(function (corner) {
+                if (made[corner]) {
+                    trim(made[corner], function () {
+                        if (!made[corner]) {
+                            return false;
+                        }
+                        var r = made[corner].getBoundingClientRect();
+                        return Object.keys(made).some(function (k) { return k !== corner && overlap(r, made[k].getBoundingClientRect()); });
+                    });
+                }
+            });
+        }
+        // Grow back: the structure is settled, the size climbs while it still fits.
+        while (size < baseSize && !problems()) {
+            var bigger = Math.min(baseSize, size * 1.06);
+            var before = size;
+            setSize(bigger);
+            if (problems()) {
+                setSize(before);
+                break;
             }
-        });
+            if (bigger >= baseSize) {
+                break;
+            }
+        }
+        // For support: the size the card ended at and the steps it took.
+        boxes.forEach(function (b) { b.setAttribute('data-jc-fit', size.toFixed(1) + '/' + baseSize.toFixed(1) + (steps ? '/' + steps : '')); });
     }
 
     function badgesRemoveAll() {

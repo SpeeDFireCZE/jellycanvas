@@ -1565,6 +1565,10 @@ public static class CssBuilder
         sb.AppendLine($"{tv} .backgroundContainer::before, {tv} .backgroundContainer::after {{ display: none !important; animation: none !important; }}");
         sb.AppendLine($"{tv} .backgroundContainer {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; animation: none !important; }}");
         sb.AppendLine($"{tv} .backgroundContainer > .jellycanvas-backdrop > div, {tv} .backdropImage {{ animation: none !important; background-size: cover !important; }}");
+        // While a video plays the still must go like every other backdrop
+        // (the general rule loses to this one's specificity, so it is said
+        // again with the TV scope).
+        sb.AppendLine($"{tv}.transparentDocument .backgroundContainer, {tv} .backgroundContainer.backgroundContainer-transparent {{ background-image: none !important; }}");
     }
 
     /// <summary>
