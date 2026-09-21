@@ -2079,8 +2079,10 @@ public static class CssBuilder
         }
 
         sb.AppendLine("/* --- misc --- */");
-        sb.AppendLine($"{x.P}* {{ scrollbar-width: none !important; }}");
-        sb.AppendLine($"{x.P}*::-webkit-scrollbar {{ display: none !important; }}");
+        // The page's own scrollbar belongs to <html>: "*" under the prefix
+        // would reach every descendant but not the root itself.
+        sb.AppendLine($"{x.P}html, {x.P}html * {{ scrollbar-width: none !important; }}");
+        sb.AppendLine($"{x.P}html::-webkit-scrollbar, {x.P}html *::-webkit-scrollbar {{ display: none !important; width: 0 !important; height: 0 !important; }}");
     }
 
     /// <summary>

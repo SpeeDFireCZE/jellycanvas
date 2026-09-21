@@ -551,6 +551,18 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Hidden_scrollbars_include_the_page_itself()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Misc = new MiscSettings { HideScrollbars = true } });
+        Assert.Contains("html, html * { scrollbar-width: none !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html::-webkit-scrollbar, html *::-webkit-scrollbar { display: none !important;", css, StringComparison.Ordinal);
+        // and with a device scope the root keeps its class, "html:not(...) *" alone would miss it
+        var cfg = new PluginConfiguration { Misc = new MiscSettings { HideScrollbars = true } };
+        cfg.Overrides.Tv = "{\"Cards\":{\"Radius\":9}}";
+        Assert.Contains("html:not(.layout-tv), html:not(.layout-tv) * { scrollbar-width: none !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Tv_still_backdrop_goes_while_a_video_plays()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 30 }, Tv = new TvSettings { StaticBackdrop = true } });

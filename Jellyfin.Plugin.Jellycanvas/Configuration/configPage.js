@@ -1421,6 +1421,12 @@
         if (strip) {
             return { section: 'infobar', anchor: null, rect: strip };
         }
+        // A scrollbar: the click lands on the element that scrolls (the page
+        // itself for the main one); the bar is the strip past its client box.
+        var bar = scrollbarRect(target, x, y);
+        if (bar) {
+            return { section: 'misc', anchor: '[data-path="Misc.HideScrollbars"]', rect: bar };
+        }
         var card = target.closest && target.closest('.card');
         if (card) {
             var boxes = card.querySelectorAll('.jellycanvas-badges');
@@ -1428,6 +1434,28 @@
                 var r = boxes[i].getBoundingClientRect();
                 if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
                     return { section: 'badges', anchor: 'badgesCornersHeading', rect: r };
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The vertical scrollbar of the element under the pointer (or of the page), when the point lies on it. */
+    function scrollbarRect(target, x, y) {
+        var doc = target.ownerDocument;
+        var win = doc.defaultView;
+        var root = doc.documentElement;
+        // The page's scrollbar: between the root's client width and the window's.
+        var pageBar = win.innerWidth - root.clientWidth;
+        if (pageBar > 4 && x >= root.clientWidth && root.scrollHeight > root.clientHeight) {
+            return { left: root.clientWidth, right: win.innerWidth, top: 0, bottom: win.innerHeight };
+        }
+        for (var el = target; el && el !== doc.body && el !== root; el = el.parentElement) {
+            var bar = el.offsetWidth - el.clientWidth - (parseFloat(win.getComputedStyle(el).borderLeftWidth) || 0) - (parseFloat(win.getComputedStyle(el).borderRightWidth) || 0);
+            if (bar > 4 && el.scrollHeight > el.clientHeight) {
+                var r = el.getBoundingClientRect();
+                if (x >= r.right - bar && x <= r.right && y >= r.top && y <= r.bottom) {
+                    return { left: r.right - bar, right: r.right, top: r.top, bottom: r.bottom };
                 }
             }
         }
@@ -1495,12 +1523,12 @@
     }
 
     function arm(el, x, y) {
-        if (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body || el.id === 'jellycanvasPick') {
+        // The info strip, the badges and a scrollbar have no element to hit: the frame follows their box instead.
+        var spot = el && el.nodeType === 1 && x !== undefined ? spotAt(el, x, y) : null;
+        if (!spot && (!el || el.nodeType !== 1 || el === el.ownerDocument.documentElement || el === el.ownerDocument.body || el.id === 'jellycanvasPick')) {
             disarm();
             return;
         }
-        // The info strip and the badges have no element to hit: the frame follows their box instead.
-        var spot = x !== undefined ? spotAt(el, x, y) : null;
         var strip = spot && spot.rect;
         var key = spot ? spot.section : el;
         if (armed === key) {
