@@ -218,6 +218,12 @@ public enum BackdropMode
 
     /// <summary>A custom image from a URL.</summary>
     Custom,
+
+    /// <summary>One flat color (<see cref="BackdropSettings.Color"/>; empty = the theme's background color).</summary>
+    Solid,
+
+    /// <summary>A gradient between two colors, like the login page's.</summary>
+    Gradient,
 }
 
 /// <summary>Look of the text fields (and, separately, the buttons) on the login page.</summary>
@@ -1360,6 +1366,18 @@ public class BackdropSettings
     /// <summary>URL of the custom image (for <see cref="BackdropMode.Custom"/>).</summary>
     public string Url { get; set; } = string.Empty;
 
+    /// <summary>The flat color (for <see cref="BackdropMode.Solid"/>); empty = the theme's background color.</summary>
+    public string Color { get; set; } = string.Empty;
+
+    /// <summary>Gradient start (for <see cref="BackdropMode.Gradient"/>); empty = the theme's background color.</summary>
+    public string GradientFrom { get; set; } = string.Empty;
+
+    /// <summary>Gradient end; empty = a dark accent.</summary>
+    public string GradientTo { get; set; } = string.Empty;
+
+    /// <summary>Gradient direction in degrees (0 = bottom to top, 90 = left to right).</summary>
+    public int GradientAngle { get; set; } = 160;
+
     /// <summary>Image blur in pixels.</summary>
     public int Blur { get; set; } = 0;
 
@@ -1382,6 +1400,12 @@ public class BackdropSettings
 /// <summary>The login page.</summary>
 public class LoginSettings
 {
+    /// <summary>One flat color behind the login page. A background image URL, when set, takes precedence; this over the gradient.</summary>
+    public bool SolidBackground { get; set; } = false;
+
+    /// <summary>The flat color; empty = the theme's background color.</summary>
+    public string SolidColor { get; set; } = string.Empty;
+
     /// <summary>Gradient background. A background image URL, when set, takes precedence.</summary>
     public bool GradientBackground { get; set; } = false;
 

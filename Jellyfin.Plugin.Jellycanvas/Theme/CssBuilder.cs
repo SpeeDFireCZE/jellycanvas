@@ -1484,6 +1484,27 @@ public static class CssBuilder
             _ => null,
         };
 
+        if (bd.Mode is BackdropMode.Solid or BackdropMode.Gradient)
+        {
+            // A flat background: one color, or a gradient like the login
+            // page's. Jellyfin's own backdrop goes (it would sit on top);
+            // an item page's backdrop can still come in on the script's
+            // layer (it lies over the container's paint) with the dim over it.
+            var flat = bd.Mode == BackdropMode.Solid
+                ? Color.Parse(bd.Color, x.Background).Hex
+                : $"linear-gradient({bd.GradientAngle}deg, {Color.Parse(bd.GradientFrom, x.Background).Hex} 0%, {Color.Parse(bd.GradientTo, x.Accent.Darken(0.55)).Hex} 100%)";
+            sb.AppendLine($"{x.P}html .backdropContainer {{ display: none !important; }}");
+            sb.AppendLine($"{x.P}html {{ background-image: none !important; }}");
+            sb.AppendLine($"{x.P}html .backgroundContainer, {x.P}html .backgroundContainer.withBackdrop {{ opacity: 1 !important; background: {flat} !important; }}");
+            sb.AppendLine($"{x.P}html .backgroundContainer::before, {x.P}html .backgroundContainer::after {{ display: none !important; }}");
+            if (bd.ItemDetail)
+            {
+                AppendBackdropLayers(sb, x, x.Background.Rgba(bd.Dim / 100.0), false);
+            }
+
+            return;
+        }
+
         if (url is null)
         {
             var filter = bd.Blur > 0 ? $"filter: blur({Px(bd.Blur)});" : string.Empty;
@@ -1876,6 +1897,13 @@ public static class CssBuilder
             var blur = l.BackgroundBlur > 0 ? $"filter: blur({Px(l.BackgroundBlur)}); transform: scale(1.06);" : string.Empty;
             sb.AppendLine($"{x.P}html #loginPage {{ position: relative; z-index: 0; }}");
             sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: url({CssUrl(l.BackgroundUrl)}) center / cover no-repeat; {blur} }}");
+        }
+        else if (l.SolidBackground)
+        {
+            // One flat color, over whatever background there is (same
+            // fixed ::before as the image and the gradient).
+            sb.AppendLine($"{x.P}html #loginPage {{ position: relative; z-index: 0; background: transparent !important; }}");
+            sb.AppendLine($"{x.P}html #loginPage::before {{ content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: {Color.Parse(l.SolidColor, x.Background).Hex}; }}");
         }
         else if (l.GradientBackground)
         {

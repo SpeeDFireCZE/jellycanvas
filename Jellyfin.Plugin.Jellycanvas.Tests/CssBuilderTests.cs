@@ -533,6 +533,24 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Flat_backdrops_paint_the_container_and_keep_the_item_layer()
+    {
+        var solid = CssBuilder.Build(new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.Solid, Color = "#112233", ItemDetail = true } });
+        Assert.Contains("html .backgroundContainer, html .backgroundContainer.withBackdrop { opacity: 1 !important; background: #112233 !important; }", solid, StringComparison.Ordinal);
+        Assert.Contains("html .backgroundContainer > .jellycanvas-backdrop {", solid, StringComparison.Ordinal);
+        Assert.DoesNotContain("jellycanvas-images-a", solid, StringComparison.Ordinal);
+
+        var gradient = CssBuilder.Build(new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.Gradient, GradientFrom = "#000000", GradientTo = "#ff0000", GradientAngle = 90, ItemDetail = false } });
+        Assert.Contains("background: linear-gradient(90deg, #000000 0%, #ff0000 100%) !important; }", gradient, StringComparison.Ordinal);
+        Assert.DoesNotContain(".jellycanvas-backdrop {", gradient, StringComparison.Ordinal);
+
+        // the login page: a flat color between the image and the gradient
+        var login = CssBuilder.Build(new PluginConfiguration { Login = new LoginSettings { SolidBackground = true, SolidColor = "#223344", GradientBackground = true } });
+        Assert.Contains("html #loginPage::before { content: ''; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; background: #223344; }", login, StringComparison.Ordinal);
+        Assert.DoesNotContain("linear-gradient(160deg", login, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Tv_still_backdrop_goes_while_a_video_plays()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 30 }, Tv = new TvSettings { StaticBackdrop = true } });

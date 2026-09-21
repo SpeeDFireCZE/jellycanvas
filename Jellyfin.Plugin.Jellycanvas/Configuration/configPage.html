@@ -70,6 +70,8 @@
                 /* In the default view: the devices that override this row. */
                 .jc-row, .jc-color, .jc-section-body .selectContainer, .jc-section-body .inputContainer, .jc-section-body .checkboxContainer { position: relative; }
                 .jc-dev-tags { position: absolute; right: 0; top: -.15em; display: flex; gap: .25em; }
+                /* A slider row has its number box at the right: the tags go after the label instead. */
+                .jc-row > .jc-dev-tags { position: static; grid-area: label; justify-self: end; margin-right: .3em; }
                 .jc-dev-tag { border: 1px solid var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-main, #00a4dc); background: transparent; border-radius: 999px; font-size: .66em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: .05em .5em; cursor: pointer; line-height: 1.5; }
                 .jc-dev-tag:hover { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
                 .jc-group { margin: 0 0 1.6em; }
@@ -896,19 +898,25 @@
                                         <option value="Default" data-i18n="backdropDefault">Jellyfin default (per-user "show backdrops" setting)</option>
                                         <option value="RandomLibrary" data-i18n="backdropRandom">Random backdrop from the library, on every page</option>
                                         <option value="Custom" data-i18n="backdropCustom">Custom image URL</option>
+                                        <option value="Solid" data-i18n="backdropSolid">One flat color (backdrops on item pages only, if turned on below)</option>
+                                        <option value="Gradient" data-i18n="backdropGradient">Gradient between two colors (like the login page)</option>
                                     </select>
                                 </div>
-                                <div class="inputContainer">
+                                <div class="inputContainer" data-when="Backdrop.Mode=Custom">
                                     <label class="inputLabel inputLabelUnfocused" for="jcBackdropUrl" data-i18n="backdropUrl">Custom image URL</label>
                                     <input is="emby-input" type="text" id="jcBackdropUrl" data-path="Backdrop.Url" placeholder="https://...">
                                 </div>
+                                <div class="jc-color" data-when="Backdrop.Mode=Solid" data-color="Backdrop.Color" data-optional="1" data-i18n-label="backdropColor">Color (empty = background color)</div>
+                                <div class="jc-color" data-when="Backdrop.Mode=Gradient" data-color="Backdrop.GradientFrom" data-optional="1" data-i18n-label="gradientFrom">Gradient from (empty = background color)</div>
+                                <div class="jc-color" data-when="Backdrop.Mode=Gradient" data-color="Backdrop.GradientTo" data-optional="1" data-i18n-label="gradientTo">Gradient to (empty = dark accent)</div>
+                                <div class="jc-row" data-when="Backdrop.Mode=Gradient" data-slider="Backdrop.GradientAngle" data-min="0" data-max="360" data-step="5" data-unit="°" data-i18n-label="gradientAngle">Gradient angle</div>
                                 <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
                                 <div class="jc-row" data-slider="Backdrop.Dim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dim">Dimming</div>
-                                <div class="jc-row" data-slider="Backdrop.Blur" data-min="0" data-max="60" data-unit="px" data-i18n-label="blur">Blur</div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
-                                <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
+                                <div class="jc-row" data-when="Backdrop.Mode=Default|RandomLibrary|Custom" data-slider="Backdrop.Blur" data-min="0" data-max="60" data-unit="px" data-i18n-label="blur">Blur</div>
+                                <div class="checkboxContainer" data-when="Backdrop.Mode=Default|RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
+                                <h4 class="jc-sub" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" data-i18n="backdropRotationHeading">Rotation</h4>
                                 <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
-                                <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
                                 <h4 class="jc-sub" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom" data-i18n="tvBackdropHeading">On TV</h4>
                                 <div class="checkboxContainer" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background on TV (no rotation, no panning; an item's page keeps its own backdrop)</span></label></div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
@@ -1137,6 +1145,8 @@
                                     <input is="emby-input" type="text" id="jcLoginBg" data-path="Login.BackgroundUrl" placeholder="https://...">
                                 </div>
                                 <div class="jc-row" data-slider="Login.BackgroundBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.SolidBackground"><span data-i18n="loginSolid">One flat color (over the gradient; an image URL wins over both)</span></label></div>
+                                <div class="jc-color" data-when="Login.SolidBackground=true" data-color="Login.SolidColor" data-optional="1" data-i18n-label="backdropColor">Color (empty = background color)</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Login.GradientBackground"><span data-i18n="loginGradient">Gradient background</span></label></div>
                                 <div class="jc-color" data-when="Login.GradientBackground=true" data-color="Login.GradientFrom" data-optional="1" data-i18n-label="gradientFrom">Gradient from (empty = background color)</div>
                                 <div class="jc-color" data-when="Login.GradientBackground=true" data-color="Login.GradientTo" data-optional="1" data-i18n-label="gradientTo">Gradient to (empty = dark accent)</div>
