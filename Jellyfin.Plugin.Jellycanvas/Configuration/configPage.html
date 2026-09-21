@@ -54,6 +54,8 @@
                 .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
                 .jc-edit-hint { margin: 0 0 1em; }
                 .jc-device-mode .jc-section[data-nodevice] { display: none; }
+                /* Rows that say "on TV" / "on phones": they belong to the defaults - in a device view the setting itself is the device's. */
+                .jc-device-mode [data-nodevice]:not(.jc-section) { display: none !important; }
                 /* Things that exist on one device only: the phone's side menu, "hide on TV"... - in device mode shown to that device alone. */
                 .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
                 .jc-device-mode option[data-nodevice] { display: none; }
@@ -568,7 +570,7 @@
                                 </div>
                                 <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Corner radius (-1 = same as icon buttons, 999 = round)</div>
                                 <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayScale" data-min="50" data-max="200" data-unit="%" data-i18n-label="ssButtonScale">Size</div>
-                                <div class="checkboxContainer" data-device="Mobile"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.PlayHideOnMobile"><span data-i18n="playHideMobile">No play button on phones</span></label></div>
+                                <div class="checkboxContainer" data-nodevice="1"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.PlayHideOnMobile"><span data-i18n="playHideMobile">No play button on phones</span></label></div>
                                 <h4 class="jc-sub" data-i18n="playedHeading">Watched &amp; progress</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPlayed" data-i18n="played">Watched items</label>
@@ -907,8 +909,8 @@
                                 <h4 class="jc-sub" data-i18n="backdropRotationHeading">Rotation</h4>
                                 <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
                                 <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
-                                <h4 class="jc-sub" data-when="Backdrop.Mode=RandomLibrary|Custom" data-i18n="tvBackdropHeading">On TV</h4>
-                                <div class="checkboxContainer" data-when="Backdrop.Mode=RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background on TV (no rotation, no panning; an item's page keeps its own backdrop)</span></label></div>
+                                <h4 class="jc-sub" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom" data-i18n="tvBackdropHeading">On TV</h4>
+                                <div class="checkboxContainer" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background on TV (no rotation, no panning; an item's page keeps its own backdrop)</span></label></div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
                             </div>
                         </details>
