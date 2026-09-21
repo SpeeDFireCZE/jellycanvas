@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [], "seerrOpen": 0 };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [], "seerrOpen": 0, "devices": {} };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -33,6 +33,13 @@
     var infoBar = CONFIG.infoBar || null;
     var badges = CONFIG.badges || null;
     var backdrop = CONFIG.backdrop || null;
+    // The background is a per-device setting: a TV or a phone with changes
+    // of its own carries its own copy (null there = nothing for the script).
+    function activeBackdrop() {
+        var devices = CONFIG.devices || {};
+        var own = isTv() ? devices.tv : isMobile() ? devices.mobile : null;
+        return own ? own.backdrop || null : backdrop;
+    }
     var rows = CONFIG.rows || [];
     var disposed = false;
     var observers = [];
@@ -68,7 +75,8 @@
         delete window.__jellycanvasScript;
     }
 
-    if (!buttons.length && !slideshow && !infoBar && !badges && !backdrop && !rows.length) {
+    var anyBackdrop = !!backdrop || Object.keys(CONFIG.devices || {}).some(function (k) { return CONFIG.devices[k] && CONFIG.devices[k].backdrop; });
+    if (!buttons.length && !slideshow && !infoBar && !badges && !anyBackdrop && !rows.length) {
         return;
     }
 
@@ -981,7 +989,8 @@
 
     // Rotation is off on a TV that asked for a still background.
     function backdropRotates() {
-        return backdrop.seconds > 0 && !(backdrop.tvStatic && isTv());
+        var bd = bdConfig || activeBackdrop();
+        return !!bd && bd.seconds > 0 && !(bd.tvStatic && isTv());
     }
 
     function backdropNext() {
@@ -1012,21 +1021,32 @@
         if (bdHost) {
             bdHost.remove();
             bdHost = null;
+            bdConfig = null;
             bdLayers = [];
         }
         document.documentElement.classList.remove('jellycanvas-js-backdrop');
     }
 
+    var bdConfig = null; // the backdrop settings the layers were built for
+
     function backdropSync() {
-        if (!backdrop || disposed) {
+        if (disposed) {
+            return;
+        }
+        var bd = activeBackdrop();
+        if (!bd) {
+            if (bdHost) {
+                backdropStop(); // the layout changed to a device without one
+            }
             return;
         }
         var container = document.querySelector('.backgroundContainer');
         if (!container) {
             return;
         }
-        if (!bdHost || bdHost.parentElement !== container) {
+        if (!bdHost || bdHost.parentElement !== container || bdConfig !== bd) {
             backdropStop();
+            bdConfig = bd;
             bdHost = document.createElement('div');
             bdHost.className = 'jellycanvas-backdrop';
             bdLayers = [document.createElement('div'), document.createElement('div')];
@@ -1038,10 +1058,10 @@
             if (backdropRotates()) {
                 document.documentElement.classList.add('jellycanvas-js-backdrop');
                 backdropNext();
-                bdTimer = setInterval(backdropNext, backdrop.seconds * 1000);
+                bdTimer = setInterval(backdropNext, bd.seconds * 1000);
             }
         }
-        if (!backdrop.detail) {
+        if (!bd.detail) {
             return;
         }
         // An item's page shows that item's backdrop; leaving it goes back

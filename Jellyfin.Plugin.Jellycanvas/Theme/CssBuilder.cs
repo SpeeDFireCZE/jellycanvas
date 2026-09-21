@@ -1534,7 +1534,7 @@ public static class CssBuilder
 
         if (bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0)
         {
-            AppendBackdropRotation(sb, container, dim, bd.RotateSeconds, bd.Animate);
+            AppendBackdropRotation(sb, x, container, dim, bd.RotateSeconds, bd.Animate);
             AppendTvStaticBackdrop(sb, x, dim, url);
             return;
         }
@@ -1543,7 +1543,7 @@ public static class CssBuilder
         if (bd.ItemDetail)
         {
             // The item's backdrop goes on the script's layer over the image.
-            AppendBackdropLayers(sb, dim, bd.Animate);
+            AppendBackdropLayers(sb, x, dim, bd.Animate);
         }
 
         AppendTvStaticBackdrop(sb, x, dim, url);
@@ -1577,14 +1577,14 @@ public static class CssBuilder
     /// and the dim over them - the dim only while a layer shows, so a
     /// still background underneath is not dimmed twice.
     /// </summary>
-    private static void AppendBackdropLayers(StringBuilder sb, string dim, bool animate)
+    private static void AppendBackdropLayers(StringBuilder sb, Context x, string dim, bool animate)
     {
         var size = animate ? "background-size: 115% auto;" : "background-size: cover;";
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {dim}; opacity: 0; transition: opacity 1.6s ease-in-out; }}");
-        sb.AppendLine($"html .backgroundContainer > .jellycanvas-backdrop.is-active::after {{ opacity: 1; }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {dim}; opacity: 0; transition: opacity 1.6s ease-in-out; }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop.is-active::after {{ opacity: 1; }}");
     }
 
     /// <summary>
@@ -1604,7 +1604,7 @@ public static class CssBuilder
     /// so one cycle shows RotationImages different pictures and then
     /// repeats them (the browser has them cached by then).
     /// </summary>
-    private static void AppendBackdropRotation(StringBuilder sb, string container, string dim, int seconds, bool animate)
+    private static void AppendBackdropRotation(StringBuilder sb, Context x, string container, string dim, int seconds, bool animate)
     {
         var n = RotationImages;
         var total = n * seconds;
@@ -1619,7 +1619,7 @@ public static class CssBuilder
         sb.AppendLine($"{container}::before {{ {layer} animation: jellycanvas-fade-a {2 * seconds}s linear infinite, jellycanvas-images-a {total}s step-end infinite{pan}; }}");
         sb.AppendLine($"{container}::after {{ {layer} animation: jellycanvas-fade-b {2 * seconds}s linear infinite, jellycanvas-images-b {total}s step-end infinite{pan}; }}");
         sb.AppendLine($"html.jellycanvas-js-backdrop .backgroundContainer::before, html.jellycanvas-js-backdrop .backgroundContainer::after {{ display: none !important; }}");
-        AppendBackdropLayers(sb, dim, animate);
+        AppendBackdropLayers(sb, x, dim, animate);
 
         // Visibility over one two-slot period: A visible in the first half,
         // B in the second, with a cross-fade around the hand-over.

@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Fixed: a TV or phone background of its own (per-device settings) changed only the CSS part - the client script kept rotating the defaults' random backdrops there, so on the TV nothing seemed to change. The script now carries each device's own backdrop settings and follows the layout; the backdrop layer rules are scoped to the device too.
 - Fixed: the TV still background stayed over a playing video (its rule outranked the one that clears backdrops during playback). Apply the theme once after updating.
 - Card badges: the corners of a card now share one size and are fitted together - nothing lies over another corner, the title strip or a fixed button. Long texts go short first, then all corners shrink together, then a column lies down into rows of two flags, then a corner moves past its neighbour, then badges come off the end; afterwards the size grows back as far as it fits, so badges are never smaller than they must be. A bottom corner no longer sits over the flags of a top one.
 - Card badges: commas between the codes of a language pill ("CS, EN" - a small "CSEN" read as one odd word).

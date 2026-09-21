@@ -144,6 +144,24 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void Backdrop_follows_the_device_overrides()
+    {
+        var cfg = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true }, Backdrop = new BackdropSettings { Mode = BackdropMode.RandomLibrary, RotateSeconds = 30 } };
+        cfg.Overrides.Tv = "{\"Backdrop\":{\"Mode\":\"Default\"}}";
+        cfg.Overrides.Mobile = "{\"Backdrop\":{\"RotateSeconds\":5}}";
+        var js = ScriptBuilder.Build(cfg);
+        Assert.Contains("\"backdrop\":{\"seconds\":30,", js, StringComparison.Ordinal);
+        // the TV has its own copy: nothing for the script; the phone rotates faster
+        Assert.Contains("\"devices\":{\"tv\":{\"backdrop\":null},\"mobile\":{\"backdrop\":{\"seconds\":5,", js, StringComparison.Ordinal);
+
+        // a TV with its own rotation is reason enough for the script even when the defaults have none
+        var only = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } };
+        only.Overrides.Tv = "{\"Backdrop\":{\"Mode\":\"RandomLibrary\",\"RotateSeconds\":20}}";
+        Assert.Contains("\"devices\":{\"tv\":{\"backdrop\":{\"seconds\":20,", ScriptBuilder.Build(only), StringComparison.Ordinal);
+        Assert.Contains("\"backdrop\":null,\"rows\":[]", ScriptBuilder.Build(only), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Script_stamp_follows_the_settings()
     {
         var a = new PluginConfiguration();

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
+using Jellyfin.Plugin.Jellycanvas.Theme;
 
 namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 
@@ -16,7 +17,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [], \"seerrOpen\": 0 }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [], \"seerrOpen\": 0, \"devices\": {} }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -44,11 +45,23 @@ public static class ScriptBuilder
             ["br"] = BadgeList(cb.BottomRight),
         };
         var hasBadges = cb.Enabled && corners.Values.Any(v => v.Length > 0);
-        var bd = c.Backdrop;
         // Rotating random backdrops: the script does it with preloaded images
-        // and a real cross-fade; the CSS version stays as the fallback.
-        var rotation = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
-        var hasBackdrop = rotation || (bd.ItemDetail && bd.Mode != BackdropMode.Default);
+        // and a real cross-fade; the CSS version stays as the fallback. The
+        // background is a per-device setting, so the TV and the phone get
+        // their own copy when they have changes of their own.
+        var backdrop = BackdropFor(c);
+        var devices = new Dictionary<string, object?>();
+        var hasBackdrop = backdrop is not null;
+        foreach (var (name, _) in DeviceOverrides.Devices)
+        {
+            var overrides = DeviceOverrides.For(c, name);
+            if (name != "Web" && DeviceOverrides.HasContent(overrides))
+            {
+                var own = BackdropFor(DeviceOverrides.Merge(c, overrides));
+                devices[name.ToLowerInvariant()] = new { backdrop = own };
+                hasBackdrop |= own is not null;
+            }
+        }
         // Seerr rows: only with an address and a key, one entry per row turned on.
         var se = c.Seerr;
         var rows = string.IsNullOrWhiteSpace(se.Url) || string.IsNullOrWhiteSpace(se.ApiKey)
@@ -138,8 +151,6 @@ public static class ScriptBuilder
             }
             : null;
 
-        var backdrop = hasBackdrop ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail, tvStatic = c.Tv.StaticBackdrop } : null;
-
         // Seerr links through a custom button: only a button that exists,
         // is on and opens in an overlay or in place (a new-tab button adds nothing).
         var openWith = se.OpenWithButton;
@@ -148,13 +159,22 @@ public static class ScriptBuilder
             && CleanUrl(s.ToolbarButtons[openWith - 1].Url).Length > 0;
         var seerrOpen = viaButton ? openWith : 0;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows, seerrOpen }, JsonOptions);
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows, seerrOpen, devices }, JsonOptions);
 
         // "</script>" inside a string would end the <script> element early if
         // the script were ever inlined; harmless to neutralise it always.
         json = json.Replace("</", "<\\/", StringComparison.Ordinal);
 
         return Template.Value.Replace(Placeholder, json, StringComparison.Ordinal);
+    }
+
+    /// <summary>The script's backdrop part for one configuration: rotation and / or the item page's own backdrop; null when the script has nothing to do.</summary>
+    private static object? BackdropFor(PluginConfiguration c)
+    {
+        var bd = c.Backdrop;
+        var rotation = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
+        var has = rotation || (bd.ItemDetail && bd.Mode != BackdropMode.Default);
+        return has ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail, tvStatic = c.Tv.StaticBackdrop } : null;
     }
 
     /// <summary>A short stamp of the script these settings produce - the same settings, the same stamp.</summary>
