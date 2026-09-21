@@ -9,6 +9,8 @@ All notable changes to Jellycanvas. The format follows
 - Background: two flat sources - one color, or a gradient between two colors like the login page's (from / to / angle). Jellyfin's own backdrop goes; an item page can still show its own backdrop over it (the "item page" switch), dimmed as set.
 - Login page: one flat color as the background (over the gradient; an image URL wins over both).
 - Designer: a device tag on a slider row (a value the TV or the phone overrides) sat over the number box; it sits after the label now.
+- Fixed: "hide scrollbars" (Misc) left the page's own scrollbar - the rule reached everything under the root but not the root itself. Apply once after updating.
+- Designer: Ctrl+click on a scrollbar (the page's or a panel's) opens Misc at "hide scrollbars".
 - Designer: the TV and phone views no longer show rows that only make sense in the defaults - "Still background on TV" and "no play button on phones" (in a device view the setting itself is that device's).
 - Fixed: the TV still background stayed over a playing video (its rule outranked the one that clears backdrops during playback). Apply the theme once after updating.
 - Card badges: the corners of a card now share one size and are fitted together - nothing lies over another corner, the title strip or a fixed button. Long texts go short first, then all corners shrink together, then a column lies down into rows of two flags, then a corner moves past its neighbour, then badges come off the end; afterwards the size grows back as far as it fits, so badges are never smaller than they must be. A bottom corner no longer sits over the flags of a top one.
