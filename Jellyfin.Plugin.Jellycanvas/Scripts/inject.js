@@ -156,7 +156,8 @@
         var rows = '.jellycanvas-badges.jellycanvas-badges-rows { flex-direction: row; flex-wrap: wrap; align-items: center; } .jellycanvas-badges-tr.jellycanvas-badges-rows, .jellycanvas-badges-br.jellycanvas-badges-rows { justify-content: flex-end; }';
         // Paddings and gaps in em: a badge shrunk for a small card shrinks
         // as a whole, not just its letters.
-        return '.jellycanvas-badges { position: absolute; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
+        return '.card .cardOverlayContainer > button[data-action="play"], .card .cardOverlayContainer > button[data-action="resume"], .card .cardScalable > a > .MuiButtonGroup-root, .card .cardScalable > button.cardOverlayButton-br { z-index: 4; }' +
+            '.jellycanvas-badges { position: absolute; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
             stacked + rows +
@@ -574,8 +575,8 @@
             card.removeAttribute('data-jc-badges');
             return;
         }
-        card.setAttribute('data-jc-badges-w', String(Math.round(hostRect.width)));
-        var hostWidth = hostRect.width;
+        card.setAttribute('data-jc-badges-w', String(Math.round(host.offsetWidth || hostRect.width)));
+        var hostWidth = host.offsetWidth || hostRect.width; // the layout width - a hover zoom must not size the badges
         var inset = Math.round((hostWidth < 140 ? 3 : 5) + radius * 0.3);
         // Jellyfin's own indicators (played tick, unplayed count top right,
         // media source top left) keep their corner; badges there start
@@ -603,31 +604,10 @@
         // Buttons that sit on the image for good (the play button touch
         // clients draw at the bottom right) keep their side of the bottom
         // edge: badges there stay above them.
+        // The play button (the web's hover button, the fixed one on touch
+        // clients) is not in the badges' way: it lies above them, and an
+        // admin who puts it in a badge corner moves one of the two.
         var reserve = { l: above, r: above };
-        var fixed = card.querySelectorAll('.MuiButtonGroup-root, .cardOverlayButton-br, .cardOverlayFab-primary');
-        for (var f = 0; f < fixed.length; f++) {
-            var fb = fixed[f];
-            if (!fb.offsetHeight) {
-                continue;
-            }
-            var opacity = 1;
-            for (var anc = fb; anc && anc !== host; anc = anc.parentElement) {
-                opacity *= parseFloat(getComputedStyle(anc).opacity);
-            }
-            if (opacity < 0.5) {
-                continue; // a hover overlay, not there until the pointer is
-            }
-            var fr = fb.getBoundingClientRect();
-            var side = fr.left + fr.width / 2 > hostRect.left + hostRect.width / 2 ? 'r' : 'l';
-            if (fr.top < hostRect.top + hostRect.height / 2) {
-                // A button placed at the top (the play button in a top corner):
-                // the badges of that corner start under it.
-                var corner = side === 'l' ? 'tl' : 'tr';
-                below[corner] = Math.max(below[corner], Math.round(fr.bottom - hostRect.top) - inset + 3);
-                continue;
-            }
-            reserve[side] = Math.max(reserve[side], Math.round(hostRect.bottom - fr.top) - inset + 3);
-        }
         // Smaller cards (a dense library grid) get smaller badges: the size
         // follows the card's width, down to about three fifths on the
         // narrowest. A portrait poster is narrow by nature, so it is
@@ -870,7 +850,7 @@
         var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
         for (var d = 0; d < done.length; d++) {
             var hostNow = done[d].querySelector('.cardScalable');
-            var wNow = hostNow ? Math.round(hostNow.getBoundingClientRect().width) : 0;
+            var wNow = hostNow ? Math.round(hostNow.offsetWidth) : 0; // layout width: a hover zoom (a transform) is no reason to place again
             if (wNow && Math.abs(wNow - parseInt(done[d].getAttribute('data-jc-badges-w'), 10)) > 2) {
                 done[d].querySelectorAll('.jellycanvas-badges').forEach(function (b) { b.remove(); });
                 done[d].removeAttribute('data-jc-badges');
