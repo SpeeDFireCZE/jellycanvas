@@ -1,5 +1,9 @@
 <p align="center"><img src="images/logo.png" alt="Jellycanvas" width="160"></p>
 
+<p align="center">
+  <a href="https://jellycanvas.jellyscope.cz"><img src="https://img.shields.io/badge/Themes-browse%20%26%20download-00a4dc?style=for-the-badge" alt="Browse and download themes"></a>
+</p>
+
 # Jellycanvas
 
 A theme designer for **Jellyfin 12**, delivered as a server plugin. Pick
@@ -119,7 +123,9 @@ client with your theme injected.
   in - pasted, opened from a file or fetched from a link (a raw GitHub
   file, for example). The export holds only the look: custom buttons and
   their addresses, the info bar text, the login title, the uploaded logo
-  and image links on private addresses never leave your server.
+  and image links on private addresses never leave your server. Ready-made
+  themes are at **[jellycanvas.jellyscope.cz](https://jellycanvas.jellyscope.cz)**
+  (see below) - the file you download there is imported the same way.
 
 A server upgraded from Jellyfin 10.x can be left with old theme files
 (`web/themes/*/theme.css`) that ignore the theme's variables. Jellycanvas
@@ -133,6 +139,21 @@ outside them.
 
 The web client caches the branding for up to a minute, so after *Apply*
 other browsers may need a reload a little later.
+
+## Themes to share
+
+Themes made with the designer can be shared at
+**[jellycanvas.jellyscope.cz](https://jellycanvas.jellyscope.cz)**.
+
+- **Browsing, previewing and downloading is open to everyone** - no
+  account needed. Each theme has screenshots of the real client, so you
+  can see what it does before you take it.
+- **Uploading needs an account** on the site (that is all an account is
+  for).
+
+A theme is the same JSON the plugin's *Share / import* section produces,
+so the way there and back is: export in the designer, upload on the site
+- and download a theme, then import it in *Share / import* and apply.
 
 ## What can be customized
 
