@@ -117,6 +117,7 @@ public static class CssBuilder
         AppendDrawer(sb, ctx);
         AppendCards(sb, ctx);
         AppendPlayButton(sb, ctx);
+        AppendDetailBanner(sb, ctx);
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
         AppendPlayer(sb, ctx);
@@ -935,6 +936,31 @@ public static class CssBuilder
     /// disc on the old (home page) cards. The TV has none of them, so
     /// nothing here is scoped to it.
     /// </summary>
+    /// <summary>
+    /// The banner across the top of an item page: Jellyfin keeps an empty
+    /// .itemBackdrop there unless the user turned its own "details banner"
+    /// on, and the script fills ours with the item's picture.
+    /// </summary>
+    private static void AppendDetailBanner(StringBuilder sb, Context x)
+    {
+        var d = x.Config.Detail;
+        if (!d.Banner)
+        {
+            return;
+        }
+
+        var height = Math.Clamp(d.BannerHeight, 15, 80);
+        var dim = x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0);
+        sb.AppendLine("/* --- the item page's banner --- */");
+        sb.AppendLine($"{x.P}html .itemBackdrop {{ display: block !important; height: {height}vh !important; min-height: 180px; background-position: center 30% !important; background-size: cover !important; background-repeat: no-repeat !important; }}");
+        sb.AppendLine($"{x.P}html .itemBackdrop.jellycanvas-banner {{ position: relative; }}");
+        // The dim (and the fade into the page) as a layer over the picture.
+        var fade = d.BannerFade
+            ? $"linear-gradient(to bottom, {x.Background.Rgba(0)} 55%, {x.Background.Hex} 100%), "
+            : string.Empty;
+        sb.AppendLine($"{x.P}html .itemBackdrop.jellycanvas-banner::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {fade}linear-gradient({dim}, {dim}); pointer-events: none; }}");
+    }
+
     private static void AppendPlayButton(StringBuilder sb, Context x)
     {
         var k = x.Config.Cards;

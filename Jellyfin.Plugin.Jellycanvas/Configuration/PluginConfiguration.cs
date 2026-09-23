@@ -846,6 +846,19 @@ public class DeviceOverrideSettings
     public string Mobile { get; set; } = string.Empty;
 }
 
+/// <summary>The picture the item page's banner uses.</summary>
+public enum BannerImage
+{
+    /// <summary>The item's backdrop (a series' own when an episode has none).</summary>
+    Backdrop,
+
+    /// <summary>The item's banner image, and its backdrop when it has none.</summary>
+    Banner,
+
+    /// <summary>The item's thumb image, and its backdrop when it has none.</summary>
+    Thumb,
+}
+
 /// <summary>The video player's on-screen controls (bottom bar, progress, buttons) and the "Skip intro / credits" button.</summary>
 public class PlayerSettings
 {
@@ -1086,6 +1099,21 @@ public enum RibbonStyle
 /// <summary>The movie / series detail page.</summary>
 public class DetailSettings
 {
+    /// <summary>The item's own picture as a banner across the top of its page (Jellyfin shows one only if the user turned "details banner" on).</summary>
+    public bool Banner { get; set; } = false;
+
+    /// <summary>Which picture the banner uses.</summary>
+    public BannerImage BannerImage { get; set; } = BannerImage.Backdrop;
+
+    /// <summary>Banner height as a percentage of the window height.</summary>
+    public int BannerHeight { get; set; } = 38;
+
+    /// <summary>Banner dimming in percent.</summary>
+    public int BannerDim { get; set; } = 25;
+
+    /// <summary>Fade the banner into the page at its bottom edge.</summary>
+    public bool BannerFade { get; set; } = true;
+
     /// <summary>Transparent "ribbon" with the title and buttons under the backdrop.</summary>
     /// <summary>Kept for themes saved before the ribbon got a style of its own; true means "Transparent".</summary>
     public bool TransparentRibbon { get; set; } = false;
@@ -1307,6 +1335,13 @@ public class MiscSettings
 {
     /// <summary>Hide scrollbars (content still scrolls with the wheel and touch).</summary>
     public bool HideScrollbars { get; set; } = false;
+
+    /// <summary>
+    /// Theme the Dashboard as well. Jellyfin 12 renders the branding CSS on
+    /// the user-facing pages only, so the admin pages keep the stock look;
+    /// the client script carries the theme there (it needs the script).
+    /// </summary>
+    public bool ThemeDashboard { get; set; } = true;
 }
 
 /// <summary>Buttons (<c>.emby-button</c>, <c>.raised</c>, <c>.button-submit</c>, MUI buttons, item-page buttons).</summary>

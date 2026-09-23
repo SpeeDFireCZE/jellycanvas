@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "rows": [], "seerrOpen": 0, "devices": {} };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "banner": null, "dashboard": false, "rows": [], "seerrOpen": 0, "devices": {} };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -33,6 +33,8 @@
     var infoBar = CONFIG.infoBar || null;
     var badges = CONFIG.badges || null;
     var backdrop = CONFIG.backdrop || null;
+    var banner = CONFIG.banner || null;
+    var themeDashboard = !!CONFIG.dashboard;
     // The background is a per-device setting: a TV or a phone with changes
     // of its own carries its own copy (null there = nothing for the script).
     function activeBackdrop() {
@@ -55,6 +57,9 @@
         window.removeEventListener('popstate', checkUrl);
         window.removeEventListener('hashchange', checkUrl);
         window.removeEventListener('resize', onResize);
+        if (jcOnScroll) {
+            window.removeEventListener('scroll', jcOnScroll, true);
+        }
         document.removeEventListener('keydown', onKeyDown);
         buttons.forEach(function (b) {
             removeButton(b);
@@ -66,7 +71,7 @@
         badgesRemoveAll();
         backdropStop();
         rowsRemoveAll();
-        ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style'].forEach(function (id) {
+        ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style', DASH_ID].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.remove();
@@ -75,7 +80,7 @@
         delete window.__jellycanvasScript;
     }
 
-    var anyBackdrop = !!backdrop || Object.keys(CONFIG.devices || {}).some(function (k) { return CONFIG.devices[k] && CONFIG.devices[k].backdrop; });
+    var anyBackdrop = !!backdrop || !!banner || themeDashboard || Object.keys(CONFIG.devices || {}).some(function (k) { return CONFIG.devices[k] && CONFIG.devices[k].backdrop; });
     if (!buttons.length && !slideshow && !infoBar && !badges && !anyBackdrop && !rows.length) {
         return;
     }
@@ -124,6 +129,8 @@
     var badgePending = {};
     var badgeQueue = [];
     var badgeTimer = null;
+    var badgeMoreTimer = null;
+    var jcOnScroll = null;
 
     function badgeCss() {
         if (!badges) {
@@ -839,6 +846,16 @@
             });
     }
 
+    /** Is the card close enough to the screen to be worth measuring? */
+    function nearViewport(el) {
+        var r = el.getBoundingClientRect();
+        if (!r.width && !r.height) {
+            return false; // not laid out yet
+        }
+        var margin = window.innerHeight;
+        return r.bottom > -margin && r.top < window.innerHeight + margin;
+    }
+
     function badgeSync() {
         if (!badges || disposed) {
             return;
@@ -848,9 +865,13 @@
         }
         // A card laid out since its badges were placed (the grid settled,
         // the phone turned, a font arrived) gets them placed again: the
-        // placement was measured against the old size.
+        // placement was measured against the old size. Only the cards on
+        // screen are checked - measuring the rest costs more than it saves.
         var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
         for (var d = 0; d < done.length; d++) {
+            if (!nearViewport(done[d])) {
+                continue;
+            }
             var hostNow = done[d].querySelector('.cardScalable');
             var wNow = hostNow ? Math.round(hostNow.offsetWidth) : 0; // layout width: a hover zoom (a transform) is no reason to place again
             if (wNow && Math.abs(wNow - parseInt(done[d].getAttribute('data-jc-badges-w'), 10)) > 2) {
@@ -859,8 +880,14 @@
                 done[d].removeAttribute('data-jc-badges-w');
             }
         }
+        // Placing badges means measuring, and measuring a whole library
+        // grid at once is what a weak TV feels. Only cards near the screen
+        // are done, and at most a handful per pass; the rest wait for the
+        // next sync (scrolling brings one along).
         var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges])');
         var queued = false;
+        var budget = 14;
+        var more = false;
         for (var i = 0; i < cards.length; i++) {
             var card = cards[i];
             var type = card.getAttribute('data-type');
@@ -868,8 +895,16 @@
                 card.setAttribute('data-jc-badges', 'skip');
                 continue;
             }
+            if (!nearViewport(card)) {
+                more = true;
+                continue;
+            }
             var id = card.getAttribute('data-id');
             if (badgeCache.hasOwnProperty(id)) {
+                if (budget-- <= 0) {
+                    more = true;
+                    continue;
+                }
                 renderBadges(card, badgeCache[id]);
             } else if (!badgePending[id]) {
                 badgePending[id] = true;
@@ -879,6 +914,9 @@
         }
         if (queued && !badgeTimer) {
             badgeTimer = setTimeout(badgeFetch, 120);
+        }
+        if (more && !badgeMoreTimer) {
+            badgeMoreTimer = setTimeout(function () { badgeMoreTimer = null; badgeSync(); }, 150);
         }
     }
 
@@ -965,6 +1003,129 @@
             }
             return backdropShow(api.getScaledImageUrl(owner, { type: 'Backdrop', maxWidth: 1920, tag: tag }));
         }).catch(function () { /* no backdrop for this item - keep what is there */ });
+    }
+
+    // ------------------------------------------------------------------
+    // The Dashboard. Jellyfin 12 renders the branding CSS for the
+    // user-facing pages only, so the admin pages come up in the stock
+    // colors; the theme is fetched once and put on them here.
+    // ------------------------------------------------------------------
+    var dashCss = null; // the fetched CSS, '' while it is on its way
+    var DASH_ID = 'jellycanvasDashboard';
+
+    function onDashboard() {
+        return !!(document.body && document.body.classList.contains('dashboardDocument'));
+    }
+
+    function dashboardSync() {
+        if (!themeDashboard || disposed) {
+            return;
+        }
+        var style = document.getElementById(DASH_ID);
+        // Jellyfin's own copy is there on the user-facing pages; ours is
+        // for the admin pages, and goes as soon as one is left.
+        if (!onDashboard() || themeAlreadyThere()) {
+            if (style) {
+                style.remove();
+            }
+
+            return;
+        }
+        if (dashCss === null) {
+            dashCss = '';
+            var base = location.pathname.replace(/[^/]*$/, '');
+            fetch(base + '../Branding/Css', { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.text() : ''; })
+                .then(function (css) { dashCss = css || ''; dashboardSync(); })
+                .catch(function () { dashCss = ''; });
+            return;
+        }
+        if (!dashCss) {
+            return;
+        }
+        if (!style) {
+            style = document.createElement('style');
+            style.id = DASH_ID;
+            style.textContent = dashCss;
+        }
+        // Last in <body>, like the client's own: the stock styles come first.
+        if (style.parentElement !== document.body || style !== document.body.lastElementChild) {
+            document.body.appendChild(style);
+        }
+    }
+
+    /** Is the theme already on this page (the client rendered the branding CSS)? */
+    function themeAlreadyThere() {
+        var styles = document.querySelectorAll('style');
+        for (var i = 0; i < styles.length; i++) {
+            if (styles[i].id !== DASH_ID && styles[i].textContent.indexOf('JELLYCANVAS START') >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------------
+    // The item page's banner: the strip Jellyfin leaves empty at the top
+    // (.itemBackdrop) gets the item's own picture.
+    // ------------------------------------------------------------------
+    var bannerId = null;
+
+    function bannerSync() {
+        if (!banner || disposed) {
+            return;
+        }
+        var strip = document.querySelector('.itemBackdrop');
+        var id = detailItemId();
+        if (!strip || !id) {
+            bannerId = null;
+            return;
+        }
+        if (id === bannerId && strip.classList.contains('jellycanvas-banner')) {
+            return;
+        }
+        bannerId = id;
+        var api = window.ApiClient;
+        if (!api || !api.getCurrentUserId()) {
+            bannerId = null; // not signed in yet; the next sync tries again
+            return;
+        }
+        api.getItem(api.getCurrentUserId(), id).then(function (item) {
+            if (bannerId !== id || !item) {
+                return;
+            }
+            var url = bannerUrl(api, item);
+            if (!url) {
+                strip.classList.remove('jellycanvas-banner');
+                return;
+            }
+            strip.style.backgroundImage = 'url("' + url + '")';
+            strip.classList.add('jellycanvas-banner');
+        }).catch(function () { bannerId = null; });
+    }
+
+    /** The picture for the banner: the chosen kind, its backdrop as the fallback (a series' own for an episode). */
+    function bannerUrl(api, item) {
+        var opts = { maxWidth: 1920 };
+        var tags = item.ImageTags || {};
+        if (banner.image === 'Banner' && tags.Banner) {
+            return api.getScaledImageUrl(item.Id, { type: 'Banner', maxWidth: 1920, tag: tags.Banner });
+        }
+        if (banner.image === 'Thumb' && tags.Thumb) {
+            return api.getScaledImageUrl(item.Id, { type: 'Thumb', maxWidth: 1920, tag: tags.Thumb });
+        }
+        if (banner.image === 'Thumb' && item.ParentThumbItemId) {
+            return api.getScaledImageUrl(item.ParentThumbItemId, { type: 'Thumb', maxWidth: 1920, tag: item.ParentThumbImageTag });
+        }
+        var own = item.BackdropImageTags && item.BackdropImageTags.length;
+        var owner = own ? item.Id : item.ParentBackdropItemId;
+        var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
+        if (!owner) {
+            return null;
+        }
+        opts.type = 'Backdrop';
+        opts.tag = tag;
+        return api.getScaledImageUrl(owner, opts);
     }
 
     function backdropUrl() {
@@ -2026,6 +2187,8 @@
             return;
         }
         ssSync();
+        dashboardSync();
+        bannerSync();
         syncInfoBar();
         badgeSync();
         backdropSync();
@@ -2472,13 +2635,27 @@
     // ------------------------------------------------------------------
 
     var queued = false;
+    var syncTimer = null;
+    var lastSync = 0;
+
+    /**
+     * A sync per animation frame is too much while the client is building a
+     * page (every lazy image is a mutation): they are collected and run at
+     * most every 120 ms, and scrolling only wakes the badge pass.
+     */
     function schedule() {
-        if (queued) {
+        if (queued || syncTimer) {
+            return;
+        }
+        var since = Date.now() - lastSync;
+        if (since < 120) {
+            syncTimer = setTimeout(function () { syncTimer = null; schedule(); }, 120 - since);
             return;
         }
         queued = true;
         requestAnimationFrame(function () {
             queued = false;
+            lastSync = Date.now();
             sync();
         });
     }
@@ -2512,6 +2689,16 @@
         rootObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         observers.push(bodyObserver, rootObserver);
         window.addEventListener('resize', onResize);
+        // Scrolling brings new cards into view: the badge pass alone, throttled.
+        var scrollTimer = null;
+        var onScroll = function () {
+            if (scrollTimer || disposed || !badges) {
+                return;
+            }
+            scrollTimer = setTimeout(function () { scrollTimer = null; badgeSync(); }, 150);
+        };
+        window.addEventListener('scroll', onScroll, true);
+        jcOnScroll = onScroll;
         // Safety net for navigations that bypass both the History API and mutations.
         timers.push(setInterval(function () { checkUrl(); sync(); }, 1000));
         // A font that arrives after the badges were placed changes their

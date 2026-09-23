@@ -746,6 +746,20 @@
                                 <div class="jc-row" data-slider="Detail.PosterRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="posterRadius">Poster radius (-1 = same as cards)</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PosterShadow"><span data-i18n="posterShadow">Poster shadow</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideTitleLogo"><span data-i18n="hideTitleLogo">Hide the title logo image</span></label></div>
+                                <h4 class="jc-sub jc-needs-script" data-i18n="bannerHeading" hidden>Banner at the top</h4>
+                                <div class="jc-hint jc-needs-script" data-i18n="bannerHint" hidden>The item's own picture across the top of its page. Jellyfin shows one only when the user turned its "details banner" on; this one is part of the theme and shows for everyone.</div>
+                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.Banner"><span data-i18n="bannerOn">Show a banner on the item page</span></label></div>
+                                <div class="selectContainer jc-needs-script" data-when="Detail.Banner=true" hidden>
+                                    <label class="selectLabel" for="jcBannerImage" data-i18n="bannerImage">Picture</label>
+                                    <select is="emby-select" id="jcBannerImage" data-path="Detail.BannerImage" class="emby-select-withcolor emby-select">
+                                        <option value="Backdrop" data-i18n="bannerBackdrop">Backdrop</option>
+                                        <option value="Banner" data-i18n="bannerBanner">Banner image (backdrop when there is none)</option>
+                                        <option value="Thumb" data-i18n="bannerThumb">Thumb (backdrop when there is none)</option>
+                                    </select>
+                                </div>
+                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerHeight" data-min="15" data-max="80" data-unit="%" data-i18n-label="bannerHeightLabel" hidden>Height (% of the window)</div>
+                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerDim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dim" hidden>Dimming</div>
+                                <div class="checkboxContainer jc-needs-script" data-when="Detail.Banner=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.BannerFade"><span data-i18n="bannerFade">Fade into the page at the bottom</span></label></div>
                                 <h4 class="jc-sub" data-i18n="peopleHeading">Cast &amp; crew</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPeople" data-i18n="peopleShape">Photo shape</label>
@@ -1280,6 +1294,7 @@
                         <details class="jc-section" data-nodevice="1" data-section="misc">
                             <summary><span class="material-icons" aria-hidden="true">tune</span><span data-i18n="misc">Misc</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
+                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard"><span data-i18n="themeDashboard">Theme the Dashboard too (Jellyfin styles the admin pages on its own; needs the script)</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.HideScrollbars"><span data-i18n="hideScrollbars">Hide scrollbars</span></label></div>
                                 <h4 class="jc-sub" data-i18n="themeFilesHeading">Theme files on the server</h4>
                                 <div class="jc-hint" data-i18n="themeFilesHint">Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.</div>

@@ -17,7 +17,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"rows\": [], \"seerrOpen\": 0, \"devices\": {} }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"banner\": null, \"dashboard\": false, \"rows\": [], \"seerrOpen\": 0, \"devices\": {} }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -49,9 +49,15 @@ public static class ScriptBuilder
         // and a real cross-fade; the CSS version stays as the fallback. The
         // background is a per-device setting, so the TV and the phone get
         // their own copy when they have changes of their own.
+        // The item page's banner is filled by the script (the picture
+        // belongs to the item, so CSS alone cannot reach it).
+        var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
+        // The Dashboard: Jellyfin renders the branding CSS on the
+        // user-facing pages only, so the script puts it on the admin pages.
+        var dashboard = c.Misc.ThemeDashboard && c.Enabled;
         var backdrop = BackdropFor(c);
         var devices = new Dictionary<string, object?>();
-        var hasBackdrop = backdrop is not null;
+        var hasBackdrop = backdrop is not null || banner is not null || dashboard;
         foreach (var (name, _) in DeviceOverrides.Devices)
         {
             var overrides = DeviceOverrides.For(c, name);
@@ -159,7 +165,7 @@ public static class ScriptBuilder
             && CleanUrl(s.ToolbarButtons[openWith - 1].Url).Length > 0;
         var seerrOpen = viaButton ? openWith : 0;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, rows, seerrOpen, devices }, JsonOptions);
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, seerrOpen, devices }, JsonOptions);
 
         // "</script>" inside a string would end the <script> element early if
         // the script were ever inlined; harmless to neutralise it always.

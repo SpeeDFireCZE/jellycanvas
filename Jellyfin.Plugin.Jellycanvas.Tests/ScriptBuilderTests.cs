@@ -158,7 +158,18 @@ public class ScriptBuilderTests
         var only = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } };
         only.Overrides.Tv = "{\"Backdrop\":{\"Mode\":\"RandomLibrary\",\"RotateSeconds\":20}}";
         Assert.Contains("\"devices\":{\"tv\":{\"backdrop\":{\"seconds\":20,", ScriptBuilder.Build(only), StringComparison.Ordinal);
-        Assert.Contains("\"backdrop\":null,\"rows\":[]", ScriptBuilder.Build(only), StringComparison.Ordinal);
+        Assert.Contains("\"backdrop\":null,\"banner\":null,\"dashboard\":false,\"rows\":[]", ScriptBuilder.Build(only), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Detail_banner_reaches_the_script()
+    {
+        var cfg = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true }, Detail = new DetailSettings { Banner = true, BannerImage = BannerImage.Thumb } };
+        var js = ScriptBuilder.Build(cfg);
+        Assert.Contains("\"banner\":{\"image\":\"Thumb\"}", js, StringComparison.Ordinal);
+        // the banner alone is reason enough for the script
+        Assert.Contains("jellycanvas-banner", js, StringComparison.Ordinal);
+        Assert.Equal(string.Empty, ScriptBuilder.Build(new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } }));
     }
 
     [Fact]
