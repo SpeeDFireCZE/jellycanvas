@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
 using MediaBrowser.Common.Configuration;
+using Jellyfin.Plugin.Jellycanvas.Theme;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.Jellycanvas;
 
@@ -27,11 +29,30 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// services can simply be asked for here; the base class only needs the
     /// first two.
     /// </summary>
-    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IServerConfigurationManager configurationManager)
+    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IServerConfigurationManager configurationManager, ILogger<Plugin> logger)
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
         ConfigurationManager = configurationManager;
+
+        // The generated CSS sits in Branding and is written when the settings
+        // are applied. A new version of the plugin generates different CSS,
+        // so without this the server would keep serving what the previous
+        // version made until someone opened the designer and pressed Apply -
+        // an update would look like it had done nothing.
+        try
+        {
+            if (BrandingWriter.Refresh(configurationManager, Configuration))
+            {
+                logger.LogInformation("Jellycanvas: the CSS in Branding was rebuilt for this version");
+            }
+        }
+        catch (Exception ex)
+        {
+            // A theme that cannot be rewritten is no reason to fail startup;
+            // the old block stays and Apply still works.
+            logger.LogWarning(ex, "Jellycanvas: could not rebuild the CSS in Branding at startup");
+        }
     }
 
     /// <summary>Server configuration - used for the network base URL when the client script tag is built.</summary>

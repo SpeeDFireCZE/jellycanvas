@@ -10,6 +10,8 @@ namespace Jellyfin.Plugin.Jellycanvas.Tests;
 /// </summary>
 public class BrandingWriterTests
 {
+    private const string NL = "\n";
+
     private static string Block(string body) => CssBuilder.StartMarker + "\n" + body + "\n" + CssBuilder.EndMarker;
 
     [Fact]
@@ -40,6 +42,19 @@ public class BrandingWriterTests
         var css = ".before { }\n" + CssBuilder.StartMarker + "\n.broken {";
 
         Assert.Equal(".before { }", BrandingWriter.StripBlock(css));
+    }
+
+    [Fact]
+    public void The_block_is_read_back_whole_and_compares_with_a_fresh_build()
+    {
+        var generated = CssBuilder.Build(new Configuration.PluginConfiguration()).TrimEnd();
+        var css = ".before { }" + NL + generated + NL + NL + ".theirs { }";
+
+        // What comes back is what a rebuild produces, so an unchanged theme
+        // is not rewritten on every start.
+        Assert.Equal(generated, BrandingWriter.BlockIn(css));
+        Assert.Equal(string.Empty, BrandingWriter.BlockIn(".theirs { }"));
+        Assert.Equal(Block(".ours { }"), BrandingWriter.BlockIn(Block(".ours { }") + NL + ".after { }"));
     }
 
     [Fact]

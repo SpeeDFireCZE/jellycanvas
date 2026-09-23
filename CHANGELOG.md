@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- An update takes effect on its own: the generated CSS lives in Branding and was only written when someone pressed Apply, so after updating the plugin the server kept serving the CSS the previous version had made - fixes in it waited for a visit to the designer. The plugin now rebuilds that block at startup when this version would generate something different (the theme has to be on and the block present; an unchanged theme is not rewritten).
 - Buttons: the whole family of looks the bars and the player's control bar have - glass, glow, gradient, neo-brutalism, glowmorphism, claymorphism, neumorphism - on every kind of button the client has, and the same looks on the item page's Play button, the play button on posters, the "skip intro" button and the slideshow button.
 - Buttons: a switch to leave the top bar out of it (*Buttons and inputs → Leave the buttons in the top bar out of it*). A frame or a fill around every library link turns the bar into a row of boxes; the links and the row under them keep Jellyfin's plain look while Play all and everything else follow the style.
 - Fixed: the rows of the user settings menu (Profile, Display, Home screen...) are buttons, but only their corners followed the Buttons section; they wear the chosen look now.

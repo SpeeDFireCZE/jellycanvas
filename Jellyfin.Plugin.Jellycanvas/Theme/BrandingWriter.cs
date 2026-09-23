@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Plugin.Jellycanvas.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Branding;
@@ -55,6 +56,50 @@ public static class BrandingWriter
     /// <summary>Is our block in Branding right now?</summary>
     public static bool IsPresent(IServerConfigurationManager config)
         => Read(config).Contains(CssBuilder.StartMarker, StringComparison.Ordinal);
+
+    /// <summary>Our block as it stands in Branding (empty when there is none).</summary>
+    public static string CurrentBlock(IServerConfigurationManager config) => BlockIn(Read(config));
+
+    /// <summary>Our block inside the given CSS, markers included (empty when there is none).</summary>
+    public static string BlockIn(string css)
+    {
+        ArgumentNullException.ThrowIfNull(css);
+        var start = css.IndexOf(CssBuilder.StartMarker, StringComparison.Ordinal);
+        if (start < 0)
+        {
+            return string.Empty;
+        }
+
+        var end = css.IndexOf(CssBuilder.EndMarker, start, StringComparison.Ordinal);
+        return end < 0 ? css[start..].TrimEnd() : css[start..(end + CssBuilder.EndMarker.Length)].TrimEnd();
+    }
+
+    /// <summary>
+    /// Brings the block up to date with what this build makes of the saved
+    /// settings, and says whether it had to write. The block is only written
+    /// when the settings are applied, so after a plugin update it still holds
+    /// the CSS the previous version generated - every fix in it would wait
+    /// for someone to open the designer and press Apply. Nothing is touched
+    /// when the theme is off or when the block is not in Branding at all.
+    /// </summary>
+    public static bool Refresh(IServerConfigurationManager config, PluginConfiguration settings)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(settings);
+        if (!settings.Enabled || !IsPresent(config))
+        {
+            return false;
+        }
+
+        var css = CssBuilder.Build(settings).TrimEnd();
+        if (string.Equals(CurrentBlock(config), css, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        Write(config, css);
+        return true;
+    }
 
     /// <summary>
     /// Returns the text without our block (from the START marker through the
