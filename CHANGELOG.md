@@ -3,28 +3,53 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.2.4 - 2026-09-23
 
-- Fixed: a background set on the Dashboard tab flashed and was then painted over by the defaults' rotating backdrop - the client script knew the TV and the phone as scopes of their own, but not the admin pages, so it kept rotating there with the defaults' settings. The admin pages now follow the Dashboard's own background, rotation and panning included.
-- The TV view drops the rotation and the panning rows while "Still background on TV" is on in Defaults - they do nothing there - and says where they went instead.
-- Fixed: a background set on the Dashboard tab did nothing - the admin pages' own normalisation painted the same element with a more specific rule, so a solid color or a gradient never showed. It now stands aside whenever the background settings have something of their own to paint.
-- Badges are lighter on a big library: the cards are watched (IntersectionObserver) instead of the grid being walked and measured on a 150 ms timer, which on a library of several hundred cards meant hundreds of layout reads a second and a visibly stuttering page. Nothing is measured while scrolling now, placement takes six cards at a time in the browser's idle moments, and the re-measure after a resize or a new font only looks at cards near the screen.
-- An update takes effect on its own: the generated CSS lives in Branding and was only written when someone pressed Apply, so after updating the plugin the server kept serving the CSS the previous version had made - fixes in it waited for a visit to the designer. The plugin now rebuilds that block at startup when this version would generate something different (the theme has to be on and the block present; an unchanged theme is not rewritten).
-- Buttons: the whole family of looks the bars and the player's control bar have - glass, glow, gradient, neo-brutalism, glowmorphism, claymorphism, neumorphism - on every kind of button the client has, and the same looks on the item page's Play button, the play button on posters, the "skip intro" button and the slideshow button.
-- Buttons: a switch to leave the top bar out of it (*Buttons and inputs → Leave the buttons in the top bar out of it*). A frame or a fill around every library link turns the bar into a row of boxes; the links and the row under them keep Jellyfin's plain look while Play all and everything else follow the style.
+**The admin pages get the theme, and a designer tab of their own.** Jellyfin 12
+renders the branding CSS on the user-facing pages only, so the Dashboard came
+up in the stock greys and blues however the palette was set - the designer's
+preview showed it themed, the real thing was not. The theme reaches the admin
+pages now, and they are a scope of their own next to TV and Mobile: an admin
+can give the Dashboard a look that has nothing to do with what the users see.
+
+Updating is enough - the plugin brings the CSS in Branding up to date at
+startup, and the client script reloads by itself.
+
+### The admin pages
+
+- The Dashboard carries the theme (the switch is on the Dashboard tab; it needs the client script).
+- A tab of its own next to TV and Mobile: the admin pages can be set apart from the rest, and what is left alone follows the defaults. Ctrl+click on the Dashboard preview lands there, the tab shows only what the admin pages can use (no posters, player, item page or login form), and it drops rows that belong to the client (an item page's buttons, the library row, the rotating backdrop).
+- A section of its own for the panels the admin pages are built from: opacity, color, corners, border, shadow, glass blur, and hiding the help links under the settings headings. Buttons and inputs there (a plugin page has the same ones) follow the Buttons section of that tab.
+- The admin pages come with a MUI theme of their own: tables, grid toolbars, chips, selected rows and the alerts above a form kept Jellyfin's stock colors whatever the palette said. They follow the theme now, lists and cards count as panels too (the activity feed, the device cards, the admin menu take the panel corners), and a panel's rounded corners are no longer squared off by the toolbar above its table.
+- The preview has a second admin page - a settings form - and Ctrl+click there maps to what the admin pages are made of: a panel opens the panel settings, a form row the buttons and inputs, bare page the background color.
+- "Theme the Dashboard" is the way back to the defaults: ticking it puts the admin pages on the theme as it is set in Defaults and drops what the tab has of its own; the first change made there unticks it again, the Dashboard keeps that change, and the theme still reaches the admin pages.
+- Fixed: the top bar ignored its own settings - the island layout has nothing to make there and the panel rules were painting over it. The admin bar is a plain bar now (color, radius, shadow apply) and a floating bar stays docked next to the menu.
+- Fixed: the left menu could not be scrolled (the rounded drawer edge was clipping it).
+- Fixed: a background set on the Dashboard tab did nothing - the admin pages' own normalisation painted the same element through a more specific rule, so a solid color or a gradient never showed.
+- Fixed: and where it did show, the defaults' rotating backdrop painted over it a moment later - the client script knew the TV and the phone as scopes of their own, but an admin page counted as an ordinary desktop page. The admin pages follow the Dashboard's own background now, rotation and panning included.
+
+### Buttons
+
+- The whole family of looks the bars and the player's control bar have - glass, glow, gradient, neo-brutalism, glowmorphism, claymorphism, neumorphism - on every kind of button the client has, and the same looks on the item page's Play button, the play button on posters, the "skip intro" button and the slideshow button.
+- A switch to leave the top bar out of it (*Buttons and inputs -> Leave the buttons in the top bar out of it*). A frame or a fill around every library link turns the bar into a row of boxes; the links and the row under them keep Jellyfin's plain look while Play all and everything else follow the style.
 - Fixed: the rows of the user settings menu (Profile, Display, Home screen...) are buttons, but only their corners followed the Buttons section; they wear the chosen look now.
-- The radius sliders that went to 999 now end at 40 with one notch past it for a fully rounded button (the slider was unusable: everything above about 25 px looks the same).
-- "Theme the Dashboard" (the Dashboard tab) is the way back to the defaults: ticking it puts the admin pages on the theme as it is set in Defaults and drops what the tab has of its own, and the first change made there unticks it again - the Dashboard keeps that change, and the theme still reaches the admin pages.
-- Fixed: on the Dashboard the top bar ignored its own settings - the island layout has nothing to make there and the panel rules were painting over it. The admin bar is a plain bar now (color, radius, shadow apply) and a floating bar stays docked next to the menu.
+- The radius sliders that went to 999 now end at 40 px with one notch past it for a fully rounded button (everything above about 25 px looks the same, which made the slider unusable).
 
-- The Dashboard carries the theme too (the switch is on the Dashboard tab and needs the client script): Jellyfin 12 renders the branding CSS on the user-facing pages only, so the admin pages came up in the stock colors even though the designer's preview showed them themed.
-- Item page: a banner of the item's own picture behind its page (*Item page → Banner*): backdrop, banner or thumb, with dimming and the top of the picture kept in view. It is the look Jellyfin gives users who turned its own "details banner" on - this one comes from the theme, so everyone sees it whatever the background is set to.
-- The Dashboard has a tab of its own next to TV and Mobile: the admin pages can be set apart from the rest (the same sections, and what is left alone follows the defaults). Ctrl+click on the Dashboard preview lands there, the tab shows only what the admin pages can use (no posters, player, item page or login form), and panels, tables and bare page there open the colors rather than the background image. The tab also drops rows that belong to the client (an item page's buttons, the library row, the rotating backdrop) and adds a section of its own for the panels the admin pages are built from: opacity, color, corners, border, shadow, glass blur, and hiding the help links under the settings headings. Buttons and inputs on the admin pages (a plugin page has the same ones) follow the Buttons section of that tab. The admin pages come with a MUI theme of their own - tables, grid toolbars, chips, selected rows and the alerts above a form kept Jellyfin's stock greys and blues whatever the palette said; they follow the theme now (lists and cards count as panels too, so the activity feed, the device cards and the admin menu take the panel corners), which also means a panel's rounded corners are no longer squared off by the toolbar above its table. The preview has a second admin page - a settings form - and Ctrl+click there maps to what the admin pages are made of: a panel opens the panel settings, a form row the buttons and inputs, bare page the background color.
-- Fixed: the Dashboard's left menu could not be scrolled (the rounded drawer edge was clipping it).
-- Lighter on weak clients: badges are placed only for cards near the screen and a few at a time (the rest follow as you scroll), a burst of page changes wakes the script at most every 120 ms instead of every frame, and scrolling wakes the badge pass alone.
+### Item page
 
+- A banner of the item's own picture behind its page (*Item page -> Banner*): backdrop, banner or thumb, with dimming and the top of the picture kept in view. It is the look Jellyfin gives users who turn its own "details banner" on - this one comes from the theme, so everyone sees it whatever the background is set to.
+
+### Lighter on weak clients
+
+- Card badges are placed only for cards near the screen, and the cards are watched (IntersectionObserver) instead of the grid being walked and measured on a timer. On a library of several hundred cards that was hundreds of layout reads a second and a visibly stuttering page; nothing is measured while scrolling now, placement takes six cards at a time in the browser's idle moments, and the re-measure after a resize or a new font only looks at cards near the screen.
+- A burst of page changes wakes the script at most every 120 ms instead of every frame.
+
+### And the rest
+
+- An update takes effect on its own: the generated CSS lives in Branding and was only written when someone pressed Apply, so after updating the plugin the server kept serving the CSS the previous version had made - fixes in it waited for a visit to the designer. The plugin now rebuilds that block at startup when this version would generate something different (the theme has to be on and the block present; an unchanged theme is not rewritten).
+- The TV view drops the rotation and the panning rows while "Still background on TV" is on in Defaults - they do nothing there - and says where they went instead.
 - Share / import points at the theme site (jellycanvas.jellyscope.cz): browsing, previewing and downloading are open to everyone, uploading needs an account there.
-- The JSON export leaves out the whole Seerr section (address, key and the rows) and empties the preferred audio and subtitle languages - a theme from abroad should not arrive filtering for someone else\'s languages. Nothing in the running theme changes; only what leaves the server.
+- The JSON export leaves out the whole Seerr section (address, key and the rows) and empties the preferred audio and subtitle languages - a theme from abroad should not arrive filtering for someone else's languages. Nothing in the running theme changes; only what leaves the server.
 
 ## 1.2.3 - 2026-09-21
 
