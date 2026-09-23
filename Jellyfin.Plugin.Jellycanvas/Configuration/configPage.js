@@ -1307,14 +1307,17 @@
         ['#loginPage', 'login', 'backgroundHeading'],
         ['.mainDetailButtons .btnPlay, .mainDetailButtons .btnPlaySimple, .btnPlay', 'buttons', 'playHeading'],
         ['.detailButton', 'buttons', 'buttonsDetailHeading'],
-        ['.emby-button, .MuiButton-root, .emby-input, .emby-select', 'buttons', 'buttonsAllHeading'],
+        ['.emby-button, .MuiButton-root, .emby-input, .emby-select, .MuiInputBase-root, .MuiSwitch-root, .MuiCheckbox-root, .MuiSelect-select', 'buttons', 'buttonsAllHeading'],
+        // The admin pages are panels, tables and lists on the surface color;
+        // without these almost everything there fell through to the backdrop.
+        ['.MuiPaper-root, .MuiTableContainer-root, .MuiAccordion-root, .paperList, .listItem, .adminSection, .dashboardSection', 'colors', '[data-color="Colors.Surface"]'],
         ['.personCard', 'detail', 'peopleHeading'],
         ['.playedIndicator, .cardIndicators, .indicators, .itemProgressBar, .itemLinearProgress', 'cards', 'playedHeading'],
         ['.card, .cardBox, .listItem', 'cards', 'lookHeading'],
         ['.detailRibbon', 'detail', 'ribbonHeading'],
         ['.detailImageContainer, .itemDetailImage, .detailLogo', 'detail', 'posterHeading'],
         ['.detailPageWrapperContainer, .itemBackdrop', 'detail'],
-        ['h1, h2, h3, .sectionTitle, p', 'typography'],
+        ['h1, h2, h3, h4, .sectionTitle, .MuiTypography-root, p, label, td, th', 'typography'],
         ['.backgroundContainer, .backdropContainer, .mainAnimatedPage', 'backdrop']
     ];
 
@@ -1366,6 +1369,12 @@
         // Under a top bar the library row has no settings of its own.
         if (anchor === 'libraryRowHeading' && state.Header.Layout !== 'Sidebar') {
             anchor = 'topBarHeading';
+        }
+        // The admin pages have no backdrop of their own: bare page there is
+        // the background color.
+        if (section === 'backdrop' && page.querySelector('#jcPage').value === 'dashboard') {
+            section = 'colors';
+            anchor = '[data-color="Colors.Background"]';
         }
         return { section: section, anchor: anchor };
     }
@@ -1622,14 +1631,26 @@
         if (!details || details.hidden) {
             return;
         }
+        // On the Dashboard the sections about posters, the player, an item
+        // page or the login form are out of the way: those clicks stay in
+        // the defaults, where the setting really is.
+        var dashPage = page.querySelector('#jcPage').value === 'dashboard';
+        if (dashPage && details.hasAttribute('data-nodash') && editDevice === 'Dashboard') {
+            setEditDevice('All', true);
+        }
         // Where is this thing set? In a TV or phone preview: on that device
         // when the device overrides the clicked control (or, failing that,
         // anything in the section); otherwise on the defaults, which is
         // what the device shows then. The preview stays where it is.
-        var previewDev = page.querySelector('#jcPage').value === 'dashboard' ? 'Dashboard'
-            : device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
+        var dash = page.querySelector('#jcPage').value === 'dashboard' && !details.hasAttribute('data-nodash');
+        var previewDev = dash ? 'Dashboard' : device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
         var wantEdit = 'All';
-        if (details.hasAttribute('data-device-only')) {
+        // On the Dashboard every setting belongs to the Dashboard tab: the
+        // admin went there to set the admin pages apart.
+        var dashScope = dash && !details.hasAttribute('data-nodevice');
+        if (dashScope) {
+            wantEdit = 'Dashboard';
+        } else if (details.hasAttribute('data-device-only')) {
             // A section one device alone has (the phone's side menu): only its view shows it.
             wantEdit = details.getAttribute('data-device');
         } else if (previewDev && !details.hasAttribute('data-nodevice')) {

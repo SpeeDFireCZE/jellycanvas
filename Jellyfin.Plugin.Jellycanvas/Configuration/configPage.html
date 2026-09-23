@@ -57,12 +57,16 @@
                 /* Rows that say "on TV" / "on phones": they belong to the defaults - in a device view the setting itself is the device's. */
                 .jc-device-mode [data-nodevice]:not(.jc-section) { display: none !important; }
                 /* Things that exist on one device only: the phone's side menu, "hide on TV"... - in device mode shown to that device alone. */
-                .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
+                .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-tv [data-device="MobileDash"],
+                .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
                 .jc-device-mode.jc-edit-dashboard [data-device="Tv"], .jc-device-mode.jc-edit-dashboard [data-device="Mobile"] { display: none !important; }
+                /* The admin pages have no posters, no player, no item page and no login form. */
+                .jc-device-mode.jc-edit-dashboard .jc-section[data-nodash] { display: none; }
                 .jc-device-mode option[data-nodevice] { display: none; }
                 /* The TV / phone sections live in that device's view only (the default view has nothing of theirs to show). */
                 .jc-section.jc-off-device { display: none; }
                 .jc-group:not(:has(.jc-section:not([hidden]):not(.jc-off-device))) { display: none; }
+                .jc-device-mode.jc-edit-dashboard .jc-group:not(:has(.jc-section:not([hidden]):not(.jc-off-device):not([data-nodash]):not([data-nodevice]))) { display: none; }
                 .jc-device-mode .jc-group:not(:has(.jc-section:not([data-nodevice]))) { display: none; }
                 /* A row whose value is overridden for the device being edited. */
                 .jc-overridden { position: relative; box-shadow: -3px 0 0 var(--jf-palette-primary-main, #00a4dc); padding-left: .5em !important; }
@@ -527,7 +531,7 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupContent">Content</h3>
-                        <details class="jc-section" data-section="cards">
+                        <details class="jc-section" data-nodash="1" data-section="cards">
                             <summary><span class="material-icons" aria-hidden="true">grid_view</span><span data-i18n="cards">Cards (posters)</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
@@ -648,7 +652,7 @@
                             </div>
                         </details>
 
-                        <details class="jc-section" data-section="player">
+                        <details class="jc-section" data-nodash="1" data-section="player">
                             <summary><span class="material-icons" aria-hidden="true">play_circle</span><span data-i18n="player">Player</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="playerHint">The controls while a video plays. The preview shows them mocked over the home page (page "Player: controls & skip button").</div>
@@ -727,7 +731,7 @@
                             </div>
                         </details>
 
-                        <details class="jc-section" data-section="detail">
+                        <details class="jc-section" data-nodash="1" data-section="detail">
                             <summary><span class="material-icons" aria-hidden="true">movie</span><span data-i18n="detail">Item detail page</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="ribbonHeading">Title ribbon under the backdrop</h4>
@@ -1160,7 +1164,7 @@
                             </div>
                         </details>
 
-                        <details class="jc-section" data-section="login">
+                        <details class="jc-section" data-nodash="1" data-section="login">
                             <summary><span class="material-icons" aria-hidden="true">login</span><span data-i18n="login">Login page</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="backgroundHeading">Background</h4>
@@ -1265,7 +1269,7 @@
                                 <div class="jc-row" data-slider="Mobile.FontScale" data-min="0" data-max="125" data-unit="%" data-i18n-label="fontScaleMobile">Font size (0 = same as web)</div>
                             </div>
                         </details>
-                        <details class="jc-section" data-section="drawer" data-device="Mobile">
+                        <details class="jc-section" data-section="drawer" data-device="MobileDash">
                             <summary><span class="material-icons" aria-hidden="true">menu_open</span><span data-i18n="drawer">Side menu (phone / narrow window)</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="drawerHint">The hamburger menu that opens from the left in the mobile layout (and in narrow windows). On the desktop the links live in the top bar.</div>
