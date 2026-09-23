@@ -39,7 +39,13 @@
     // of its own carries its own copy (null there = nothing for the script).
     function activeBackdrop() {
         var devices = CONFIG.devices || {};
-        var own = isTv() ? devices.tv : isMobile() ? devices.mobile : null;
+        // The admin pages are a scope of their own: their settings decide
+        // there, even though the layout is the ordinary desktop one. Without
+        // this the defaults' rotation kept painting over a background set on
+        // the Dashboard tab.
+        var own = document.body && document.body.classList.contains('dashboardDocument')
+            ? devices.dashboard
+            : isTv() ? devices.tv : isMobile() ? devices.mobile : null;
         return own ? own.backdrop || null : backdrop;
     }
     var rows = CONFIG.rows || [];

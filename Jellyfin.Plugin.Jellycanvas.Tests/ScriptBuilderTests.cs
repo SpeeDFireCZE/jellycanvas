@@ -162,6 +162,14 @@ public class ScriptBuilderTests
 
         // The switch is off, but the admin pages have settings of their own:
         // the theme still has to be carried there, or they would not show.
+        // The Dashboard is a scope of its own for the script too: a flat
+        // background there leaves it with nothing to rotate on admin pages.
+        var dash = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } };
+        dash.Backdrop.Mode = BackdropMode.RandomLibrary;
+        dash.Backdrop.RotateSeconds = 20;
+        dash.Overrides.Dashboard = "{\"Backdrop\":{\"Mode\":\"Gradient\"}}";
+        Assert.Contains("\"dashboard\":{\"backdrop\":null}", ScriptBuilder.Build(dash), StringComparison.Ordinal);
+
         only.Enabled = true;
         only.Overrides.Dashboard = "{\"Dashboard\":{\"PanelRadius\":12}}";
         Assert.Contains("\"dashboard\":true", ScriptBuilder.Build(only), StringComparison.Ordinal);
