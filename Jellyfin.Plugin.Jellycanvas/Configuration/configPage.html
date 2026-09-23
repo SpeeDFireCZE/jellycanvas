@@ -58,6 +58,7 @@
                 .jc-device-mode [data-nodevice]:not(.jc-section) { display: none !important; }
                 /* Things that exist on one device only: the phone's side menu, "hide on TV"... - in device mode shown to that device alone. */
                 .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
+                .jc-device-mode.jc-edit-dashboard [data-device="Tv"], .jc-device-mode.jc-edit-dashboard [data-device="Mobile"] { display: none !important; }
                 .jc-device-mode option[data-nodevice] { display: none; }
                 /* The TV / phone sections live in that device's view only (the default view has nothing of theirs to show). */
                 .jc-section.jc-off-device { display: none; }
@@ -219,6 +220,7 @@
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn jc-active" data-edit="All"><span data-i18n="editAll">Default (web and everything else)</span></button>
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Tv"><span data-i18n="editTv">TV</span></button>
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Mobile"><span data-i18n="editMobile">Mobile</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Dashboard"><span data-i18n="editDashboard">Dashboard</span></button>
                     </div>
                     <div class="jc-hint jc-edit-hint" id="jcEditHint" hidden data-i18n="editHint">The same sections as the default, but a value changed here applies to this device only and overrides the default; what is left alone keeps following the default. A changed row is marked, ↺ puts the default back. Script features, Seerr and sharing are set once for all devices.</div>
 
@@ -746,9 +748,9 @@
                                 <div class="jc-row" data-slider="Detail.PosterRadius" data-min="-1" data-max="32" data-unit="px" data-i18n-label="posterRadius">Poster radius (-1 = same as cards)</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.PosterShadow"><span data-i18n="posterShadow">Poster shadow</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.HideTitleLogo"><span data-i18n="hideTitleLogo">Hide the title logo image</span></label></div>
-                                <h4 class="jc-sub jc-needs-script" data-i18n="bannerHeading" hidden>Banner at the top</h4>
-                                <div class="jc-hint jc-needs-script" data-i18n="bannerHint" hidden>The item's own picture across the top of its page. Jellyfin shows one only when the user turned its "details banner" on; this one is part of the theme and shows for everyone.</div>
-                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.Banner"><span data-i18n="bannerOn">Show a banner on the item page</span></label></div>
+                                <h4 class="jc-sub jc-needs-script" data-i18n="bannerHeading" hidden>Banner</h4>
+                                <div class="jc-hint jc-needs-script" data-i18n="bannerHint" hidden>The item's own picture behind its page, the way Jellyfin's "details banner" does it - but from the theme, so everyone sees it whatever the background is set to.</div>
+                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.Banner"><span data-i18n="bannerOn">The item's picture behind its page</span></label></div>
                                 <div class="selectContainer jc-needs-script" data-when="Detail.Banner=true" hidden>
                                     <label class="selectLabel" for="jcBannerImage" data-i18n="bannerImage">Picture</label>
                                     <select is="emby-select" id="jcBannerImage" data-path="Detail.BannerImage" class="emby-select-withcolor emby-select">
@@ -757,9 +759,8 @@
                                         <option value="Thumb" data-i18n="bannerThumb">Thumb (backdrop when there is none)</option>
                                     </select>
                                 </div>
-                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerHeight" data-min="15" data-max="80" data-unit="%" data-i18n-label="bannerHeightLabel" hidden>Height (% of the window)</div>
-                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerDim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dim" hidden>Dimming</div>
-                                <div class="checkboxContainer jc-needs-script" data-when="Detail.Banner=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.BannerFade"><span data-i18n="bannerFade">Fade into the page at the bottom</span></label></div>
+                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerDim" data-min="0" data-max="100" data-unit="%" data-i18n-label="bannerDimLabel" hidden>Dimming (with a background of its own the background's dimming applies)</div>
+                                <div class="checkboxContainer jc-needs-script" data-when="Detail.Banner=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.BannerTop"><span data-i18n="bannerTop">Keep the top of the picture in view</span></label></div>
                                 <h4 class="jc-sub" data-i18n="peopleHeading">Cast &amp; crew</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPeople" data-i18n="peopleShape">Photo shape</label>
@@ -1330,6 +1331,7 @@
                             <option value="library" data-i18n="pageLibrary">Library</option>
                             <option value="detail" data-i18n="pageDetail">Item detail</option>
                             <option value="login" data-i18n="pageLogin">Login</option>
+                            <option value="dashboard" data-i18n="pageDashboard">Dashboard (admin)</option>
                             <option value="player" data-i18n="pagePlayer">Player: controls &amp; skip button</option>
                             <option value="upnext" data-i18n="pageUpNext">Player: next episode prompt</option>
                             <option value="stillwatching" data-i18n="pageStillWatching">Player: "Still watching?"</option>

@@ -49,13 +49,11 @@ public static class ScriptBuilder
         // and a real cross-fade; the CSS version stays as the fallback. The
         // background is a per-device setting, so the TV and the phone get
         // their own copy when they have changes of their own.
-        // The item page's banner is filled by the script (the picture
-        // belongs to the item, so CSS alone cannot reach it).
-        var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
         // The Dashboard: Jellyfin renders the branding CSS on the
         // user-facing pages only, so the script puts it on the admin pages.
         var dashboard = c.Misc.ThemeDashboard && c.Enabled;
         var backdrop = BackdropFor(c);
+        var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
         var devices = new Dictionary<string, object?>();
         var hasBackdrop = backdrop is not null || banner is not null || dashboard;
         foreach (var (name, _) in DeviceOverrides.Devices)
@@ -179,8 +177,11 @@ public static class ScriptBuilder
     {
         var bd = c.Backdrop;
         var rotation = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
-        var has = rotation || (bd.ItemDetail && bd.Mode != BackdropMode.Default);
-        return has ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail = bd.ItemDetail, tvStatic = c.Tv.StaticBackdrop } : null;
+        // The item page's banner is the same layer with the item's picture,
+        // so it carries the script even where the background itself is Jellyfin's.
+        var detail = bd.ItemDetail || c.Detail.Banner;
+        var has = rotation || (detail && (bd.Mode != BackdropMode.Default || c.Detail.Banner));
+        return has ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail, tvStatic = c.Tv.StaticBackdrop } : null;
     }
 
     /// <summary>A short stamp of the script these settings produce - the same settings, the same stamp.</summary>

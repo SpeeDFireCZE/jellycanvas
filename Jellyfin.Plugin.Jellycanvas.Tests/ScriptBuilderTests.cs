@@ -167,8 +167,9 @@ public class ScriptBuilderTests
         var cfg = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true }, Detail = new DetailSettings { Banner = true, BannerImage = BannerImage.Thumb } };
         var js = ScriptBuilder.Build(cfg);
         Assert.Contains("\"banner\":{\"image\":\"Thumb\"}", js, StringComparison.Ordinal);
-        // the banner alone is reason enough for the script
-        Assert.Contains("jellycanvas-banner", js, StringComparison.Ordinal);
+        // the banner alone is reason enough for the script, and it asks the
+        // backdrop layer for the item's own picture
+        Assert.Contains("\"backdrop\":{\"seconds\":0,\"detail\":true", js, StringComparison.Ordinal);
         Assert.Equal(string.Empty, ScriptBuilder.Build(new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } }));
     }
 

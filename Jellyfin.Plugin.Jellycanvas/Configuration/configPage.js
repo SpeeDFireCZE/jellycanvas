@@ -55,7 +55,7 @@
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             clickTip: '<kbd>Ctrl</kbd> + click an element to open its settings', clickTipOpens: '<kbd>Ctrl</kbd> + click opens: {0}',
             buttonFallback: 'Button', actionOverlay: 'overlay', actionNavigate: 'in place',
-            editTv: 'TV', editMobile: 'Mobile', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            editTv: 'TV', editMobile: 'Mobile', editDashboard: 'Dashboard', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
@@ -106,7 +106,7 @@
             accentPlay: 'Tlačítko Přehrát na detailu vyplnit barvou zvýraznění', buttonsHint: 'Ovlivní plochá tlačítka na detailu, dialogy a nastavení a tlačítka Přehrát vše / filtry v knihovnách.',
             player: 'Přehrávač', playerHint: 'Ovládání při přehrávání videa. Náhled to ukazuje jako maketu přes domovskou stránku (stránka „Přehrávač: ovládání a tlačítko přeskočit“).', osdHeading: 'Ovládací lišta', osdDefault: 'Jellyfin – ztmavení dolů', osdColor: 'Barva lišty (prázdné = barva ploch; akcent u neo-brutalismu)', osdFloating: 'Plovoucí (odsazená od okrajů)', progressHeading: 'Posuvník a tlačítka', playerProgressColor: 'Přehraná část a knoflík (prázdné = akcent)', playerProgressHeight: 'Výška dráhy (0 = výchozí Jellyfin)', playerButtonScale: 'Velikost tlačítek', skipHeading: 'Tlačítko „Přeskočit úvod / titulky“', skipHint: 'Vlastní tlačítko Jellyfinu pro segmenty médií (Nastavení → Přehrávání → akce pro segmenty: „Zeptat se“); pluginy, které označují úvody a titulky, ho plní.', skipDefault: 'Jellyfin – tmavý box', skipAccent: 'Výplň akcentem', skipSurface: 'Barva ploch', skipOutline: 'Jen obrys', skipColor: 'Barva tlačítka (prázdné = akcent nebo barva ploch podle stylu)', skipPosition: 'Umístění', skipBottomRight: 'Vpravo dole (výchozí Jellyfin)', skipBottomCenter: 'Dole uprostřed', skipBottomLeft: 'Vlevo dole', skipTopRight: 'Vpravo nahoře', skipOffset: 'Vzdálenost od okraje', skipScale: 'Velikost', pagePlayer: 'Přehrávač: ovládání a tlačítko přeskočit',
             dialogs: 'Dialogy a nabídky', dialogsUpNext: 'Také hláška přehrávače „Další díl“ (odpočet do další epizody)', dialogsHint: 'V náhledu otevři nabídku (tři tečky na kartě nebo uživatelské menu), ať to vidíš; v seznamu stránek náhledu jsou i hlášky přehrávače „Další díl“ a „Stále se díváte?“.', ribbonHeading: 'Titulní pás pod backdropem', ribbonSame: 'Stejný jako lišta', ribbonColor: 'Barva pásu (prázdné = barva lišty)', posterHeading: 'Plakát a logo',
-            bannerHeading: 'Banner nahoře', bannerHint: 'Vlastní obrázek položky přes celou šířku nahoře na její stránce. Jellyfin ho ukazuje jen tomu, kdo si zapnul „banner na detailu“; tenhle je součástí tématu a vidí ho všichni.', bannerOn: 'Ukázat banner na stránce položky', bannerImage: 'Obrázek', bannerBackdrop: 'Backdrop', bannerBanner: 'Banner (backdrop, když žádný není)', bannerThumb: 'Náhled (backdrop, když žádný není)', bannerHeightLabel: 'Výška (% okna)', bannerFade: 'Přechod do stránky dole',
+            bannerHeading: 'Banner', bannerHint: 'Vlastní obrázek položky za její stránkou – tak, jak to dělá „banner na detailu“ v Jellyfinu, ale z tématu, takže ho vidí všichni bez ohledu na nastavené pozadí.', bannerOn: 'Obrázek položky za její stránkou', bannerImage: 'Obrázek', bannerBackdrop: 'Backdrop', bannerBanner: 'Banner (backdrop, když žádný není)', bannerThumb: 'Náhled (backdrop, když žádný není)', bannerDimLabel: 'Ztmavení (s vlastním pozadím platí ztmavení pozadí)', bannerTop: 'Držet horní část obrázku',
             detail: 'Stránka detailu', transparentRibbon: 'Průhledná stuha s názvem pod backdropem', posterRadius: 'Zaoblení plakátu (-1 = jako karty)', posterShadow: 'Stín plakátu', hideTitleLogo: 'Schovat obrázkové logo titulu', peopleHeading: 'Herci a tvůrci', peopleShape: 'Tvar fotky', peopleDefault: 'Karty na výšku (výchozí)', peopleCircle: 'Kruhy, jméno na střed', peopleSquare: 'Čtverce', peopleRounded: 'Na výšku s velkým zaoblením', peopleScale: 'Velikost karet', peopleRing: 'Kroužek ve zvýrazňovací barvě kolem fotky', peopleGray: 'Černobíle, barevně při najetí', hideCastSection: 'Schovat sekci Herci a tvůrci', detailBlocksHeading: 'Popis a informační bloky', chipColor: 'Barva štítků (prázdné = automaticky)', detailBlockSurfacesHeading: 'Pozadí bloků', detailBlockSurfacesHint: 'Dej kterékoli části stránky vlastní pozadí – kartu, sklo nebo jeden ze stylů – každé s vlastní barvou.', blockNone: 'Žádné (přímo na stránce)', blockColor: 'Barva bloku (prázdné = plochy; u neo-brutalismu zvýraznění)', blockOpacity: 'Krytí bloků', blockRadius: 'Zaoblení bloků', blockSelectors: 'Výběr Verze / Video / Zvuk / Titulky', blockOverview: 'Popis (tagline + text)', blockGenres: 'Žánry', blockTags: 'Štítky', blockLinks: 'Externí odkazy', trackSelections: 'Výběr Verze / Video / Zvuk / Titulky', genresRow: 'Žánry', tagsRow: 'Štítky', externalLinksRow: 'Externí odkazy (IMDb, TMDB…)', blockDefault: 'Výchozí', blockChips: 'Štítky (chips)', blockAccentChips: 'Štítky ve zvýrazňovací barvě', overviewScale: 'Velikost textu popisu', overviewMaxWidth: 'Max. šířka popisu (0 = bez limitu)', hideTagline: 'Schovat tagline', detailSectionsHeading: 'Sekce níže', sectionTitles: 'Nadpisy sekcí', titleUppercase: 'Malé verzálky', titleAccentLine: 'Barevná linka pod nadpisem', titleAccentBar: 'Barevný proužek vlevo', hideSimilar: 'Schovat „Podobné položky“',
             backdropSolid: 'Jedna barva (backdropy jen na stránkách položek, pokud jsou níže zapnuté)', backdropGradient: 'Přechod mezi dvěma barvami (jako na přihlášení)', backdropColor: 'Barva (prázdné = barva pozadí)', loginSolid: 'Jedna barva (má přednost před přechodem; adresa obrázku před obojím)',
             backdropMode: 'Zdroj', backdropDefault: 'Výchozí Jellyfin (nastavení uživatele „Zobrazit pozadí“)', backdropRandom: 'Náhodný backdrop z knihovny, na každé stránce', backdropCustom: 'Vlastní adresa obrázku',
@@ -117,7 +117,7 @@
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             themeDashboard: 'Aplikovat téma i na Nástěnku (Jellyfin admin stránky barví po svém; vyžaduje skript)',
-            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
+            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
@@ -222,10 +222,10 @@
     // travel inside state.Overrides as JSON strings.
     // ------------------------------------------------------------------
     var editDevice = 'All';
-    var overrides = { Web: {}, Tv: {}, Mobile: {} };
+    var overrides = { Web: {}, Tv: {}, Mobile: {}, Dashboard: {} };
 
     function overridesFromState() {
-        ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+        ['Web', 'Tv', 'Mobile', 'Dashboard'].forEach(function (d) {
             var text = state.Overrides && state.Overrides[d];
             try {
                 overrides[d] = text ? JSON.parse(text) : {};
@@ -239,7 +239,7 @@
         if (!state.Overrides) {
             state.Overrides = {};
         }
-        ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+        ['Web', 'Tv', 'Mobile', 'Dashboard'].forEach(function (d) {
             state.Overrides[d] = Object.keys(overrides[d]).length ? JSON.stringify(overrides[d]) : '';
         });
     }
@@ -264,7 +264,7 @@
         var v = deepMerge(JSON.parse(JSON.stringify(state)), overrides[editDevice]);
         // The sidebar is a desktop thing: the TV and the phone keep a plain
         // top bar with it, so that is what their view shows.
-        if (v.Header.Layout === 'Sidebar') {
+        if (v.Header.Layout === 'Sidebar' && editDevice !== 'Dashboard') {
             v.Header.Layout = 'Full';
         }
         return v;
@@ -323,7 +323,7 @@
                 tags.remove();
             }
             if (editDevice === 'All') {
-                var devs = ['Tv', 'Mobile'].filter(function (d) { return getPath(overrides[d], path) !== undefined; });
+                var devs = ['Tv', 'Mobile', 'Dashboard'].filter(function (d) { return getPath(overrides[d], path) !== undefined; });
                 if (devs.length) {
                     tags = document.createElement('span');
                     tags.className = 'jc-dev-tags';
@@ -331,7 +331,7 @@
                         var tag = document.createElement('button');
                         tag.type = 'button';
                         tag.className = 'jc-dev-tag';
-                        tag.textContent = d === 'Tv' ? t('editTv') : t('editMobile');
+                        tag.textContent = d === 'Tv' ? t('editTv') : d === 'Mobile' ? t('editMobile') : t('editDashboard');
                         tag.title = t('devTagHint');
                         tag.addEventListener('click', function (e) {
                             e.preventDefault();
@@ -371,6 +371,7 @@
         controls.classList.toggle('jc-device-mode', d !== 'All');
         controls.classList.toggle('jc-edit-tv', d === 'Tv');
         controls.classList.toggle('jc-edit-mobile', d === 'Mobile');
+        controls.classList.toggle('jc-edit-dashboard', d === 'Dashboard');
         page.querySelectorAll('.jc-section[data-device-only]').forEach(function (s) {
             s.classList.toggle('jc-off-device', s.getAttribute('data-device') !== d);
         });
@@ -381,6 +382,15 @@
         var want = d === 'Tv' ? 'tv' : d === 'Mobile' ? 'mobile' : 'web';
         if (!keepPreview && device !== want) {
             selectDevice(want);
+        }
+        // The Dashboard is an ordinary desktop page; the preview goes there.
+        var pageSelect = page.querySelector('#jcPage');
+        if (!keepPreview && d === 'Dashboard' && pageSelect.value !== 'dashboard') {
+            pageSelect.value = 'dashboard';
+            pageSelect.dispatchEvent(new Event('change'));
+        } else if (!keepPreview && d !== 'Dashboard' && pageSelect.value === 'dashboard') {
+            pageSelect.value = 'home';
+            pageSelect.dispatchEvent(new Event('change'));
         }
     }
 
@@ -1612,7 +1622,8 @@
         // when the device overrides the clicked control (or, failing that,
         // anything in the section); otherwise on the defaults, which is
         // what the device shows then. The preview stays where it is.
-        var previewDev = device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
+        var previewDev = page.querySelector('#jcPage').value === 'dashboard' ? 'Dashboard'
+            : device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
         var wantEdit = 'All';
         if (details.hasAttribute('data-device-only')) {
             // A section one device alone has (the phone's side menu): only its view shows it.
@@ -1713,6 +1724,8 @@
                 return findItem().then(function (id) { return base + (id ? '#/details?id=' + id : '#/home'); });
             case 'login':
                 return Promise.resolve(base + '#/login');
+            case 'dashboard':
+                return Promise.resolve(base + '#/dashboard');
             case 'player':
             case 'upnext':
             case 'stillwatching':
@@ -2161,7 +2174,7 @@
         stripPrivate(copy);
         // The per-device documents can carry the same things (a backdrop address, say).
         if (copy.Overrides) {
-            ['Web', 'Tv', 'Mobile'].forEach(function (d) {
+            ['Web', 'Tv', 'Mobile', 'Dashboard'].forEach(function (d) {
                 var doc = null;
                 try {
                     doc = copy.Overrides[d] ? JSON.parse(copy.Overrides[d]) : null;

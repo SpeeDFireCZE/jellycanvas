@@ -20,6 +20,9 @@ public static class DeviceOverrides
         ("Web", "html:not(.layout-tv):not(.layout-mobile)"),
         ("Tv", "html.layout-tv"),
         ("Mobile", "html.layout-mobile"),
+        // The Dashboard has no class of its own on <html>; the client marks
+        // <body> while an admin page is open.
+        ("Dashboard", "html:has(body.dashboardDocument)"),
     ];
 
     private static readonly JsonSerializerOptions Options = new()
@@ -52,6 +55,7 @@ public static class DeviceOverrides
         "Web" => c.Overrides.Web,
         "Tv" => c.Overrides.Tv,
         "Mobile" => c.Overrides.Mobile,
+        "Dashboard" => c.Overrides.Dashboard,
         _ => string.Empty,
     };
 

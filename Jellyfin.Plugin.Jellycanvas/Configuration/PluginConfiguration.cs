@@ -844,6 +844,9 @@ public class DeviceOverrideSettings
 
     /// <summary>The phone layout.</summary>
     public string Mobile { get; set; } = string.Empty;
+
+    /// <summary>The Dashboard (the admin pages).</summary>
+    public string Dashboard { get; set; } = string.Empty;
 }
 
 /// <summary>The picture the item page's banner uses.</summary>
@@ -1099,20 +1102,21 @@ public enum RibbonStyle
 /// <summary>The movie / series detail page.</summary>
 public class DetailSettings
 {
-    /// <summary>The item's own picture as a banner across the top of its page (Jellyfin shows one only if the user turned "details banner" on).</summary>
+    /// <summary>
+    /// The item's own picture behind its page, the way Jellyfin's own
+    /// "details banner" does it - but from the theme, so every user sees
+    /// it, whatever the background is set to.
+    /// </summary>
     public bool Banner { get; set; } = false;
 
     /// <summary>Which picture the banner uses.</summary>
     public BannerImage BannerImage { get; set; } = BannerImage.Backdrop;
 
-    /// <summary>Banner height as a percentage of the window height.</summary>
-    public int BannerHeight { get; set; } = 38;
-
-    /// <summary>Banner dimming in percent.</summary>
+    /// <summary>Banner dimming in percent (0 = the picture as it is).</summary>
     public int BannerDim { get; set; } = 25;
 
-    /// <summary>Fade the banner into the page at its bottom edge.</summary>
-    public bool BannerFade { get; set; } = true;
+    /// <summary>Keep the top of the picture in view (Jellyfin anchors it there); off = centred.</summary>
+    public bool BannerTop { get; set; } = true;
 
     /// <summary>Transparent "ribbon" with the title and buttons under the backdrop.</summary>
     /// <summary>Kept for themes saved before the ribbon got a style of its own; true means "Transparent".</summary>

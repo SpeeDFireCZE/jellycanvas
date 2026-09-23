@@ -684,6 +684,19 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void The_dashboard_is_a_scope_of_its_own()
+    {
+        var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#00a4dc" } };
+        cfg.Overrides.Dashboard = "{\"Colors\":{\"Accent\":\"#ff0000\"}}";
+        var css = CssBuilder.Build(cfg);
+        Assert.Contains("/* ===== Dashboard: the defaults with this device's changes ===== */", css, StringComparison.Ordinal);
+        Assert.Contains("html:has(body.dashboardDocument), html[data-theme]:has(body.dashboardDocument) {", css, StringComparison.Ordinal);
+        // and the defaults stay off the admin pages
+        Assert.Contains("html:not(:has(body.dashboardDocument)) .cardImageContainer", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("html:has(body.dashboardDocument) html", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Device_overrides_add_a_scoped_copy_of_the_theme()
     {
         var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#00a4dc" } };

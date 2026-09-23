@@ -995,6 +995,14 @@
             if (bdDetailId !== id || !item) {
                 return;
             }
+            var kind = banner && banner.image;
+            var tags = item.ImageTags || {};
+            if (kind === 'Banner' && tags.Banner) {
+                return backdropShow(api.getScaledImageUrl(item.Id, { type: 'Banner', maxWidth: 1920, tag: tags.Banner }));
+            }
+            if (kind === 'Thumb' && tags.Thumb) {
+                return backdropShow(api.getScaledImageUrl(item.Id, { type: 'Thumb', maxWidth: 1920, tag: tags.Thumb }));
+            }
             var own = item.BackdropImageTags && item.BackdropImageTags.length;
             var owner = own ? item.Id : item.ParentBackdropItemId;
             var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
@@ -1063,69 +1071,6 @@
             }
         }
         return false;
-    }
-
-    // ------------------------------------------------------------------
-    // The item page's banner: the strip Jellyfin leaves empty at the top
-    // (.itemBackdrop) gets the item's own picture.
-    // ------------------------------------------------------------------
-    var bannerId = null;
-
-    function bannerSync() {
-        if (!banner || disposed) {
-            return;
-        }
-        var strip = document.querySelector('.itemBackdrop');
-        var id = detailItemId();
-        if (!strip || !id) {
-            bannerId = null;
-            return;
-        }
-        if (id === bannerId && strip.classList.contains('jellycanvas-banner')) {
-            return;
-        }
-        bannerId = id;
-        var api = window.ApiClient;
-        if (!api || !api.getCurrentUserId()) {
-            bannerId = null; // not signed in yet; the next sync tries again
-            return;
-        }
-        api.getItem(api.getCurrentUserId(), id).then(function (item) {
-            if (bannerId !== id || !item) {
-                return;
-            }
-            var url = bannerUrl(api, item);
-            if (!url) {
-                strip.classList.remove('jellycanvas-banner');
-                return;
-            }
-            strip.style.backgroundImage = 'url("' + url + '")';
-            strip.classList.add('jellycanvas-banner');
-        }).catch(function () { bannerId = null; });
-    }
-
-    /** The picture for the banner: the chosen kind, its backdrop as the fallback (a series' own for an episode). */
-    function bannerUrl(api, item) {
-        var opts = { maxWidth: 1920 };
-        var tags = item.ImageTags || {};
-        if (banner.image === 'Banner' && tags.Banner) {
-            return api.getScaledImageUrl(item.Id, { type: 'Banner', maxWidth: 1920, tag: tags.Banner });
-        }
-        if (banner.image === 'Thumb' && tags.Thumb) {
-            return api.getScaledImageUrl(item.Id, { type: 'Thumb', maxWidth: 1920, tag: tags.Thumb });
-        }
-        if (banner.image === 'Thumb' && item.ParentThumbItemId) {
-            return api.getScaledImageUrl(item.ParentThumbItemId, { type: 'Thumb', maxWidth: 1920, tag: item.ParentThumbImageTag });
-        }
-        var own = item.BackdropImageTags && item.BackdropImageTags.length;
-        var owner = own ? item.Id : item.ParentBackdropItemId;
-        var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
-        if (!owner) {
-            return null;
-        }
-        opts.type = 'Backdrop';
-        opts.tag = tag;
-        return api.getScaledImageUrl(owner, opts);
     }
 
     function backdropUrl() {
@@ -2188,7 +2133,6 @@
         }
         ssSync();
         dashboardSync();
-        bannerSync();
         syncInfoBar();
         badgeSync();
         backdropSync();

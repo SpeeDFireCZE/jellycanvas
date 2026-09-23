@@ -81,7 +81,7 @@ public static class CssBuilder
             }
 
             var merged = DeviceOverrides.Merge(c, json);
-            if (name != "Web" && merged.Header.Layout == HeaderLayout.Sidebar)
+            if (name is "Tv" or "Mobile" && merged.Header.Layout == HeaderLayout.Sidebar)
             {
                 // The sidebar is a desktop thing; the TV and the phone keep a plain top bar.
                 merged.Header.Layout = HeaderLayout.Full;
@@ -923,7 +923,10 @@ public static class CssBuilder
 
         if (d.Radius > 0)
         {
-            sb.AppendLine($"{x.P}html .mainDrawer, {x.P}html .MuiDrawer-paper {{ border-radius: 0 {Px(d.Radius)} {Px(d.Radius)} 0 !important; overflow: hidden; }}");
+            // The rounded edge needs clipping, but the same paper holds the
+            // Dashboard's menu, which is taller than the screen: only the
+            // sideways overflow is cut, the menu still scrolls.
+            sb.AppendLine($"{x.P}html .mainDrawer, {x.P}html .MuiDrawer-paper {{ border-radius: 0 {Px(d.Radius)} {Px(d.Radius)} 0 !important; overflow-x: hidden; overflow-y: auto; }}");
         }
     }
 
@@ -937,28 +940,35 @@ public static class CssBuilder
     /// nothing here is scoped to it.
     /// </summary>
     /// <summary>
-    /// The banner across the top of an item page: Jellyfin keeps an empty
-    /// .itemBackdrop there unless the user turned its own "details banner"
-    /// on, and the script fills ours with the item's picture.
+    /// The item page's banner: the item's own picture behind its page (the
+    /// script paints it on the backdrop layer, as it does for an item's
+    /// backdrop) - Jellyfin does the same for users who turned its
+    /// "details banner" on, and this brings it to everyone.
     /// </summary>
     private static void AppendDetailBanner(StringBuilder sb, Context x)
     {
         var d = x.Config.Detail;
+        var bd = x.Config.Backdrop;
         if (!d.Banner)
         {
             return;
         }
 
-        var height = Math.Clamp(d.BannerHeight, 15, 80);
-        var dim = x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0);
         sb.AppendLine("/* --- the item page's banner --- */");
-        sb.AppendLine($"{x.P}html .itemBackdrop {{ display: block !important; height: {height}vh !important; min-height: 180px; background-position: center 30% !important; background-size: cover !important; background-repeat: no-repeat !important; }}");
-        sb.AppendLine($"{x.P}html .itemBackdrop.jellycanvas-banner {{ position: relative; }}");
-        // The dim (and the fade into the page) as a layer over the picture.
-        var fade = d.BannerFade
-            ? $"linear-gradient(to bottom, {x.Background.Rgba(0)} 55%, {x.Background.Hex} 100%), "
-            : string.Empty;
-        sb.AppendLine($"{x.P}html .itemBackdrop.jellycanvas-banner::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {fade}linear-gradient({dim}, {dim}); pointer-events: none; }}");
+        // With a background of its own the layer is already styled; a plain
+        // Jellyfin background needs the layer (and its container) set up.
+        var carries = bd.Mode != BackdropMode.Default || bd.ItemDetail;
+        if (!carries)
+        {
+            sb.AppendLine($"{x.P}html .backdropContainer {{ display: none !important; }}");
+            sb.AppendLine($"{x.P}html .backgroundContainer {{ opacity: 1 !important; }}");
+            AppendBackdropLayers(sb, x, x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0), false);
+        }
+
+        if (d.BannerTop)
+        {
+            sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ background-position: center top; }}");
+        }
     }
 
     private static void AppendPlayButton(StringBuilder sb, Context x)

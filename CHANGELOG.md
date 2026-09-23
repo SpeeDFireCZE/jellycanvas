@@ -6,7 +6,9 @@ All notable changes to Jellycanvas. The format follows
 ## Unreleased
 
 - The Dashboard can carry the theme too (*Misc → Theme the Dashboard too*, on by default, needs the client script): Jellyfin 12 renders the branding CSS on the user-facing pages only, so the admin pages came up in the stock colors even though the designer's preview showed them themed.
-- Item page: a banner of the item's own picture across the top (*Item page → Banner at the top*): backdrop, banner or thumb, with height, dimming and a fade into the page. Jellyfin shows one only to users who turned its own "details banner" on; this one is part of the theme.
+- Item page: a banner of the item's own picture behind its page (*Item page → Banner*): backdrop, banner or thumb, with dimming and the top of the picture kept in view. It is the look Jellyfin gives users who turned its own "details banner" on - this one comes from the theme, so everyone sees it whatever the background is set to.
+- The Dashboard has a tab of its own next to TV and Mobile: the admin pages can be set apart from the rest (the same sections, and what is left alone follows the defaults). Ctrl+click on the Dashboard preview lands there.
+- Fixed: the Dashboard's left menu could not be scrolled (the rounded drawer edge was clipping it).
 - Lighter on weak clients: badges are placed only for cards near the screen and a few at a time (the rest follow as you scroll), a burst of page changes wakes the script at most every 120 ms instead of every frame, and scrolling wakes the badge pass alone.
 
 - Share / import points at the theme site (jellycanvas.jellyscope.cz): browsing, previewing and downloading are open to everyone, uploading needs an account there.
