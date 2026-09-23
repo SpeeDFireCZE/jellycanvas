@@ -81,6 +81,12 @@ public enum ButtonStyle
     Filled,
     Outline,
     Soft,
+
+    /// <summary>Frosted glass: a translucent fill with a blur behind it.</summary>
+    Glass,
+
+    /// <summary>A tint of the accent color with a glow around it.</summary>
+    Glow,
 }
 
 /// <summary>Look of the main Play button on the item detail page.</summary>

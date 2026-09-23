@@ -55,7 +55,7 @@
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             clickTip: '<kbd>Ctrl</kbd> + click an element to open its settings', clickTipOpens: '<kbd>Ctrl</kbd> + click opens: {0}',
             buttonFallback: 'Button', actionOverlay: 'overlay', actionNavigate: 'in place',
-            editTv: 'TV', editMobile: 'Mobile', editDashboard: 'Dashboard', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
+            pill: 'pill', glowBtn: 'Glow (accent)', editTv: 'TV', editMobile: 'Mobile', editDashboard: 'Dashboard', resetOverride: 'Back to the default', devTagHint: 'This device has its own value here - click to open it', importDone: 'Theme loaded into the designer - check the preview, then Apply.', importBad: 'That is not a Jellycanvas theme (expected a JSON object with the settings).',
             seerrTestOk: 'Connected: {0}', seerrTestFail: 'Failed: {0}',
             themeFilesHeading: 'Theme files on the server', themeFilesHint: 'Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.',
             themeRepair: 'Patch the old files', themeRepairHint: 'Appends the missing rules to each old theme.css (a copy is kept as theme.css.jellycanvas-bak). Needs write access to the web folder - a packaged install usually has none; the proper fix is reinstalling the jellyfin-web package.',
@@ -118,6 +118,7 @@
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             themeDashboard: 'Aplikovat téma na Nástěnku (Jellyfin drží admin stránky ve svých barvách)', themeDashboardHint: 'Vypnuté = admin stránky zůstanou tak, jak je kreslí Jellyfin, a nic z téhle záložky se neprojeví. Vyžaduje skript a je to jeden přepínač pro celý server, ne hodnota pro zařízení.',
             dashboard: 'Admin stránky', dashboardHint: 'Panely, ze kterých jsou admin stránky složené (informace o serveru, úlohy, uživatelé, formuláře nastavení). Platí jen pro Nástěnku, ať je nastavíš kdekoli.', dashPanelOpacity: 'Krytí panelů', dashPanelRadius: 'Zaoblení panelů (-1 = jak je má Jellyfin)', dashPanelColor: 'Barva panelů (prázdné = barva ploch)', dashPanelBorder: 'Tenký rámeček kolem panelu', dashPanelShadow: 'Stín pod panelem', dashHideHelp: 'Schovat odkazy na nápovědu pod nadpisy nastavení',
+            pill: 'kulaté', glass: 'Sklo', glowBtn: 'Záře (akcent)',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', pageDashboardSettings: 'Nástěnka: stránka nastavení', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
@@ -441,8 +442,13 @@
             var input = document.createElement('input');
             input.type = 'range';
             input.className = 'jc-slider';
+            // A pill row (a fully rounded button) would need a slider up to
+            // 999 for the last useful pixel: the notch past the visible
+            // range is the pill instead.
+            var pill = parseInt(row.getAttribute('data-pill'), 10) || 0;
+            var shownMax = parseInt(row.getAttribute('data-max'), 10);
             input.min = row.getAttribute('data-min');
-            input.max = row.getAttribute('data-max');
+            input.max = String(pill ? shownMax + 1 : shownMax);
             input.step = row.getAttribute('data-step') || '1';
             input.setAttribute('data-path', path);
             // The number next to the slider is editable: anything the slider
@@ -470,10 +476,16 @@
                 v = Math.max(parseInt(input.min, 10), v);
                 if (!fromNumber) {
                     v = Math.min(parseInt(input.max, 10), v);
+                    if (pill && v > shownMax) {
+                        v = pill; // the notch past the range
+                    }
                 }
-                input.value = v;
+                input.value = pill && v >= pill ? shownMax + 1 : v;
                 if (!fromNumber || document.activeElement !== numInput) {
                     numInput.value = v;
+                }
+                if (pill) {
+                    unitEl.textContent = v >= pill ? t('pill') : unit;
                 }
                 writePath(path, v);
                 followPreview(path);
@@ -491,8 +503,11 @@
             numInput.addEventListener('input', function () { commit(parseInt(numInput.value, 10), true); });
             numInput.addEventListener('blur', function () { numInput.value = getPath(view(), path); });
             input.jcShow = function (v) {
-                input.value = v;
+                input.value = pill && v >= pill ? shownMax + 1 : v;
                 numInput.value = v;
+                if (pill) {
+                    unitEl.textContent = v >= pill ? t('pill') : unit;
+                }
             };
         });
     }

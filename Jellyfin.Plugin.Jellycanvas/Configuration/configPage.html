@@ -334,7 +334,7 @@
                                     </select>
                                 </div>
                                 <h4 class="jc-sub" data-when="Header.Layout=Full|Sections" data-i18n="topBarHeading">Top bar</h4>
-                                <div class="jc-row" data-when="Header.Layout=Sections" data-slider="Header.SectionRadius" data-min="0" data-max="999" data-unit="px" data-i18n-label="sectionRadius">Section radius (999 = pill)</div>
+                                <div class="jc-row" data-when="Header.Layout=Sections" data-slider="Header.SectionRadius" data-min="0" data-max="40" data-pill="999" data-unit="px" data-i18n-label="sectionRadius">Section radius (999 = pill)</div>
                                 <div class="jc-row" data-when="Header.Layout=Full|Sections" data-slider="Header.Height" data-min="0" data-max="96" data-unit="px" data-i18n-label="height">Height (0 = default)</div>
                                 <h4 class="jc-sub" data-when="Header.Layout=Sidebar" data-i18n="sidebarHeading">Sidebar</h4>
                                 <div class="jc-row" data-when="Header.Layout=Sidebar" data-slider="Header.SidebarWidth" data-min="140" data-max="360" data-unit="px" data-i18n-label="sidebarWidth">Sidebar width</div>
@@ -588,7 +588,7 @@
                                         <option value="BottomRight" data-i18n="cornerBr">Bottom right</option>
                                     </select>
                                 </div>
-                                <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Corner radius (-1 = same as icon buttons, 999 = round)</div>
+                                <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayRadius" data-min="-1" data-max="40" data-pill="999" data-unit="px" data-i18n-label="playRadius">Corner radius (-1 = same as icon buttons, 999 = round)</div>
                                 <div class="jc-row" data-device="Mobile" data-slider="Cards.PlayScale" data-min="50" data-max="200" data-unit="%" data-i18n-label="ssButtonScale">Size</div>
                                 <div class="checkboxContainer" data-nodevice="1"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.PlayHideOnMobile"><span data-i18n="playHideMobile">No play button on phones</span></label></div>
                                 <h4 class="jc-sub" data-i18n="playedHeading">Watched &amp; progress</h4>
@@ -624,13 +624,15 @@
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="buttonsHint">Affects the flat buttons on item pages, dialogs and settings, and the Play all / filter buttons in libraries.</div>
                                 <h4 class="jc-sub" data-i18n="buttonsAllHeading">All buttons</h4>
-                                <div class="jc-row" data-slider="Buttons.Radius" data-min="0" data-max="999" data-unit="px" data-i18n-label="radius">Corner radius</div>
+                                <div class="jc-row" data-slider="Buttons.Radius" data-min="0" data-max="40" data-pill="999" data-unit="px" data-i18n-label="radius">Corner radius</div>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcButtonStyle" data-i18n="style">Style</label>
                                     <select is="emby-select" id="jcButtonStyle" data-path="Buttons.Style" class="emby-select-withcolor emby-select">
                                         <option value="Filled" data-i18n="filled">Filled</option>
                                         <option value="Outline" data-i18n="outline">Outline</option>
                                         <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
                                     </select>
                                 </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HoverLift"><span data-i18n="hoverLift">Lift on hover</span></label></div>
@@ -650,7 +652,7 @@
                                     </select>
                                 </div>
                                 <div data-nodash="1" class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
-                                <div data-nodash="1" class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
+                                <div data-nodash="1" class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="40" data-pill="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
                                 <div data-nodash="1" class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
                             </div>
                         </details>
@@ -1307,7 +1309,7 @@
                                 <div class="jc-row" data-slider="Drawer.Opacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
                                 <div class="jc-row" data-slider="Drawer.Blur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Blur (glass)</div>
                                 <h4 class="jc-sub" data-i18n="shapeHeading">Shape</h4>
-                                <div class="jc-row" data-slider="Drawer.ItemRadius" data-min="0" data-max="999" data-unit="px" data-i18n-label="itemRadius">Menu item radius</div>
+                                <div class="jc-row" data-slider="Drawer.ItemRadius" data-min="0" data-max="40" data-pill="999" data-unit="px" data-i18n-label="itemRadius">Menu item radius</div>
                                 <div class="jc-row" data-slider="Drawer.Width" data-min="0" data-max="420" data-unit="px" data-i18n-label="width">Width (0 = default)</div>
                                 <div class="jc-row" data-slider="Drawer.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="drawerRadius">Rounded outer edge</div>
                             </div>

@@ -87,6 +87,14 @@ public static class CssBuilder
                 merged.Header.Layout = HeaderLayout.Full;
             }
 
+            if (name == "Dashboard" && merged.Header.Layout != HeaderLayout.Full)
+            {
+                // The admin pages have a plain bar next to the menu: there
+                // are no island groups to make and no sidebar to move, so
+                // the bar's own settings (color, radius, shadow) apply.
+                merged.Header.Layout = HeaderLayout.Full;
+            }
+
             sb.AppendLine($"/* ===== {name}: the defaults with this device's changes ===== */");
             sb.Append(BuildScoped(merged, scope));
         }
@@ -1019,7 +1027,7 @@ public static class CssBuilder
         // of plain lists (the activity feed, the devices) and cards.
         var panel = string.Join(", ", new[]
         {
-            $"{dash} .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper)",
+            $"{dash} .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper):not(.MuiAppBar-root)",
             $"{dash} .MuiList-root:not(.MuiMenu-list):not(.MuiDrawer-paper .MuiList-root)",
             $"{dash} .MuiCard-root",
         });
@@ -1464,6 +1472,22 @@ public static class CssBuilder
                 sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
                 sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: transparent !important; box-shadow: inset 0 0 0 2px {x.Accent.Hex} !important; color: {x.Accent.Hex} !important; }}");
                 sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ background: {x.Accent.Rgba(0.18)} !important; }}");
+                break;
+            case ButtonStyle.Glass:
+                sb.AppendLine($"{x.P}html .MuiButton-outlined, {x.P}html .MuiButton-text {{ background: {x.Text.Rgba(0.08)} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }}");
+                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Text.Rgba(0.1)} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px {x.Text.Rgba(0.18)} !important; }}");
+                sb.AppendLine($"{x.P}.raised:hover, {detail}:hover {{ background: {x.Text.Rgba(0.18)} !important; }}");
+                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
+                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: {x.Accent.Rgba(0.28)} !important; color: {x.Accent.Lighten(0.35).Hex} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px {x.Accent.Rgba(0.45)} !important; }}");
+                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ background: {x.Accent.Rgba(0.4)} !important; }}");
+                break;
+            case ButtonStyle.Glow:
+                sb.AppendLine($"{x.P}html .MuiButton-outlined, {x.P}html .MuiButton-text {{ background: {x.Accent.Rgba(0.12)} !important; color: {x.Accent.Lighten(0.3).Hex} !important; box-shadow: 0 0 10px {x.Accent.Rgba(0.22)} !important; }}");
+                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Accent.Rgba(0.14)} !important; color: {x.Accent.Lighten(0.3).Hex} !important; box-shadow: 0 0 12px {x.Accent.Rgba(0.25)} !important; transition: box-shadow 0.2s ease, background 0.2s ease; }}");
+                sb.AppendLine($"{x.P}.raised:hover, {detail}:hover {{ background: {x.Accent.Rgba(0.24)} !important; box-shadow: 0 0 18px {x.Accent.Rgba(0.45)} !important; }}");
+                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
+                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: {x.Accent.Hex} !important; color: {x.Accent.ContrastText} !important; box-shadow: 0 0 18px {x.Accent.Rgba(0.55)} !important; }}");
+                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ box-shadow: 0 0 26px {x.Accent.Rgba(0.75)} !important; }}");
                 break;
             case ButtonStyle.Soft:
                 sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Text.Rgba(0.08)} !important; }}");
@@ -2620,6 +2644,7 @@ public static class CssBuilder
         public Context(PluginConfiguration config, string? scope = null)
         {
             Config = config;
+            IsDashboard = scope is not null && scope.Contains("dashboardDocument", StringComparison.Ordinal);
             Accent = Color.Parse(config.Colors.Accent, "#00a4dc");
             Background = Color.Parse(config.Colors.Background, "#101010");
             Surface = Color.Parse(config.Colors.Surface, "#202020");
@@ -2706,7 +2731,10 @@ public static class CssBuilder
         /// forces it: its frame and offset shadow are the whole point, and a
         /// bar glued to the edges would show a single stripe of them.
         /// </summary>
-        public bool HeaderFloating => Config.Header.Floating || Config.Header.Style == SurfaceStyle.NeoBrutalism;
+        /// <summary>The admin pages dock their bar next to the menu; floating it would leave it nowhere.</summary>
+        public bool IsDashboard { get; }
+
+        public bool HeaderFloating => !IsDashboard && (Config.Header.Floating || Config.Header.Style == SurfaceStyle.NeoBrutalism);
 
         public Color Focus { get; }
 
