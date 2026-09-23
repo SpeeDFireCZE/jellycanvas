@@ -915,6 +915,8 @@ public static class CssBuilder
             // Menu items run edge to edge; rounding without an inset would
             // look cut off, hence the margin too.
             sb.AppendLine($"{x.P}html .navMenuOption {{ border-radius: {Px(d.ItemRadius)} !important; margin: 2px 10px !important; padding-left: 1.6em !important; }}");
+            // The Dashboard's menu is a MUI list, not the client's nav menu.
+            sb.AppendLine($"{x.P}html .MuiDrawer-paper .MuiListItemButton-root {{ border-radius: {Px(d.ItemRadius)} !important; margin: 2px 10px !important; width: auto !important; }}");
         }
 
         if (d.Width > 0)
@@ -1002,13 +1004,25 @@ public static class CssBuilder
         sb.AppendLine($"{dash} .MuiListItemButton-root.Mui-selected, {dash} .MuiListItem-root.Mui-selected {{ background-color: {x.Accent.Rgba(0.2)} !important; }}");
         sb.AppendLine($"{dash} .MuiAlert-root {{ color: var(--jf-palette-text-primary) !important; }}");
         sb.AppendLine($"{dash} .MuiAlert-standardInfo, {dash} .MuiAlert-filledInfo {{ background-color: {x.Accent.Rgba(0.18)} !important; }}");
+        // The admin pages come with a background of their own (white in the
+        // light theme); the theme's background shows through the panels.
+        sb.AppendLine($"{dash} .backgroundContainer {{ background-color: var(--jf-palette-background-default) !important; }}");
+        // The picture a device card falls back to is Jellyfin blue.
+        sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; background-image: none !important; }}");
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)
         {
             return;
         }
 
         // The drawer is a paper too, and it has its own settings.
-        var panel = $"{x.P}html body.dashboardDocument .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper)";
+        // A panel is a Paper, but the Dashboard also builds whole blocks out
+        // of plain lists (the activity feed, the devices) and cards.
+        var panel = string.Join(", ", new[]
+        {
+            $"{dash} .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper)",
+            $"{dash} .MuiList-root:not(.MuiMenu-list):not(.MuiDrawer-paper .MuiList-root)",
+            $"{dash} .MuiCard-root",
+        });
         var color = custom ? Color.Parse(d.PanelColor, x.Surface) : x.Surface;
         var opacity = Math.Clamp(d.PanelOpacity, 0, 100) / 100.0;
         if (custom || d.PanelOpacity != 100)
@@ -1023,7 +1037,10 @@ public static class CssBuilder
 
         if (d.PanelRadius >= 0)
         {
-            sb.AppendLine($"{panel} {{ border-radius: {Px(d.PanelRadius)} !important; }}");
+            sb.AppendLine($"{panel} {{ border-radius: {Px(d.PanelRadius)} !important; overflow: hidden; }}");
+            // A card's picture sits at its top: the same corners, or it
+            // squares the card off again.
+            sb.AppendLine($"{dash} .MuiCardMedia-root {{ border-radius: {Px(d.PanelRadius)} {Px(d.PanelRadius)} 0 0 !important; }}");
         }
 
         sb.AppendLine($"{panel} {{ box-shadow: {(d.PanelShadow ? "0 6px 20px rgba(0, 0, 0, 0.35)" : "none")} !important; border: {(d.PanelBorder ? $"1px solid {x.Text.Rgba(0.12)}" : "0")}; }}");

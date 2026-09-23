@@ -86,7 +86,7 @@
                 /* Group headings: a colored label with a rule, so the groups read at a glance. */
                 .jc-group-title { display: flex; align-items: center; gap: .7em; font-size: .8em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--jf-palette-primary-main, #00a4dc); margin: 0 0 .6em .2em; }
                 .jc-group-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--jf-palette-primary-main, #00a4dc), transparent); opacity: .5; }
-                .jc-section { border: 1px solid rgba(255,255,255,.08); border-radius: .6em; margin-bottom: .5em; background: rgba(255,255,255,.025); transition: border-color .15s ease, box-shadow .15s ease; }
+                .jc-section { border: 1px solid rgba(255,255,255,.08); border-radius: .6em; margin-bottom: .5em; background: var(--jf-palette-background-paper, rgba(255,255,255,.025)); transition: border-color .15s ease, box-shadow .15s ease; }
                 .jc-section > summary { cursor: pointer; padding: .75em 1em; font-weight: 600; list-style: none; display: flex; align-items: center; gap: .6em; border-radius: .6em; }
                 .jc-section > summary:hover { background: rgba(255,255,255,.05); }
                 /* An open section stands out: accent frame, a glow, a tinted heading and a light body. */

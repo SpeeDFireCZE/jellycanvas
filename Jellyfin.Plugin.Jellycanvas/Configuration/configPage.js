@@ -1851,6 +1851,11 @@
         if (!page.querySelector('#jcFollow').checked) {
             return;
         }
+        // The Dashboard is a place of its own: a setting changed while it is
+        // shown does not drag the preview back to the client's pages.
+        if (onDashboardPage()) {
+            return;
+        }
         for (var d = 0; d < FOLLOW_DEVICE.length; d++) {
             if (path.indexOf(FOLLOW_DEVICE[d][0]) === 0 && device !== FOLLOW_DEVICE[d][1]) {
                 selectDevice(FOLLOW_DEVICE[d][1]);
