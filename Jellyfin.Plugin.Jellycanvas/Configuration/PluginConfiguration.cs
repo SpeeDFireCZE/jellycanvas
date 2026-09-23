@@ -55,7 +55,6 @@ public enum CardText
     Hidden,
 }
 
-/// <summary>Button look.</summary>
 /// <summary>Look of the second row of the bar on library pages (title, sort, filter, view buttons).</summary>
 public enum LibraryRowStyle
 {
@@ -76,6 +75,10 @@ public enum LibraryRowStyle
     Neumorphism,
 }
 
+/// <summary>
+/// Button look. Past the three plain ones it is the same family of looks
+/// the bars and the player's control bar are built from, sized for a button.
+/// </summary>
 public enum ButtonStyle
 {
     Filled,
@@ -87,6 +90,21 @@ public enum ButtonStyle
 
     /// <summary>A tint of the accent color with a glow around it.</summary>
     Glow,
+
+    /// <summary>A gradient from the accent color into a lighter shade of it.</summary>
+    Gradient,
+
+    /// <summary>Neo-brutalism: flat color, thick contrasting border, hard offset shadow.</summary>
+    NeoBrutalism,
+
+    /// <summary>Glowmorphism: a translucent button with an accent ring and a glow around it.</summary>
+    Glowmorphism,
+
+    /// <summary>Claymorphism: a puffy, clay-like button with inner highlight and shadow.</summary>
+    Claymorphism,
+
+    /// <summary>Neumorphism: the page color itself, raised by a light and a dark shadow.</summary>
+    Neumorphism,
 }
 
 /// <summary>Look of the main Play button on the item detail page.</summary>
@@ -103,6 +121,27 @@ public enum PlayStyle
 
     /// <summary>Tinted with the play color.</summary>
     Soft,
+
+    /// <summary>Frosted glass in the play color.</summary>
+    Glass,
+
+    /// <summary>The play color with a glow around it.</summary>
+    Glow,
+
+    /// <summary>A gradient built from the play color.</summary>
+    Gradient,
+
+    /// <summary>Neo-brutalism: flat fill, thick border, hard offset shadow.</summary>
+    NeoBrutalism,
+
+    /// <summary>Glowmorphism: translucent, an accent ring and a glow.</summary>
+    Glowmorphism,
+
+    /// <summary>Claymorphism: a puffy, clay-like button.</summary>
+    Claymorphism,
+
+    /// <summary>Neumorphism: raised by a light and a dark shadow.</summary>
+    Neumorphism,
 }
 
 /// <summary>UI font.</summary>
@@ -384,6 +423,24 @@ public enum SlideshowButtonStyle
 
     /// <summary>White, dark text.</summary>
     Light,
+
+    /// <summary>A tint of white, the way the soft buttons look.</summary>
+    Soft,
+
+    /// <summary>The accent color with a glow around it.</summary>
+    Glow,
+
+    /// <summary>A gradient built from the accent color.</summary>
+    Gradient,
+
+    /// <summary>Neo-brutalism: flat fill, thick border, hard offset shadow.</summary>
+    NeoBrutalism,
+
+    /// <summary>Claymorphism: a puffy, clay-like button.</summary>
+    Claymorphism,
+
+    /// <summary>Neumorphism: raised by a light and a dark shadow.</summary>
+    Neumorphism,
 }
 
 /// <summary>Item types the slideshow draws from.</summary>
@@ -815,6 +872,24 @@ public enum PlayButtonStyle
 
     /// <summary>Frosted glass.</summary>
     Glass,
+
+    // The looks below bring their own fill and shading, so the opacity
+    // slider does not reach them.
+
+    /// <summary>The accent color with a glow around it.</summary>
+    Glow,
+
+    /// <summary>A gradient built from the accent color.</summary>
+    Gradient,
+
+    /// <summary>Neo-brutalism: flat fill, thick border, hard offset shadow.</summary>
+    NeoBrutalism,
+
+    /// <summary>Claymorphism: a puffy, clay-like disc.</summary>
+    Claymorphism,
+
+    /// <summary>Neumorphism: raised by a light and a dark shadow.</summary>
+    Neumorphism,
 }
 
 /// <summary>Where the poster's play button sits.</summary>
@@ -981,6 +1056,24 @@ public enum SkipStyle
 
     /// <summary>Loud fill, hard frame and shadow.</summary>
     NeoBrutalism,
+
+    /// <summary>A tint of the accent color.</summary>
+    Soft,
+
+    /// <summary>The accent color with a glow around it.</summary>
+    Glow,
+
+    /// <summary>A gradient built from the accent color.</summary>
+    Gradient,
+
+    /// <summary>Glowmorphism: translucent, an accent ring and a glow.</summary>
+    Glowmorphism,
+
+    /// <summary>Claymorphism: a puffy, clay-like button.</summary>
+    Claymorphism,
+
+    /// <summary>Neumorphism: raised by a light and a dark shadow.</summary>
+    Neumorphism,
 }
 
 /// <summary>Where the skip button sits on the screen.</summary>

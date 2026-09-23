@@ -1082,6 +1082,7 @@ public static class CssBuilder
         var alpha = Math.Clamp(k.PlayOpacity, 10, 100) / 100.0;
         string? fill = null;
         string? ink = null;
+        string? shared = null;
         var extra = string.Empty;
         switch (k.PlayStyle)
         {
@@ -1103,9 +1104,18 @@ public static class CssBuilder
                 ink = "#ffffff";
                 extra = " backdrop-filter: blur(8px) !important; -webkit-backdrop-filter: blur(8px) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important;";
                 break;
+            case PlayButtonStyle.Glow:
+            case PlayButtonStyle.Gradient:
+            case PlayButtonStyle.NeoBrutalism:
+            case PlayButtonStyle.Claymorphism:
+            case PlayButtonStyle.Neumorphism:
+                // These bring a fill and a shading of their own (the same the
+                // buttons elsewhere get), so the opacity slider stays out.
+                shared = ButtonLook(k.PlayStyle.ToString(), Color.Parse(k.PlayColor, x.Accent), x, true).Css;
+                break;
         }
 
-        if (custom)
+        if (custom && shared is null)
         {
             var c = Color.Parse(k.PlayColor, x.Accent);
             fill = c.Rgba(alpha);
@@ -1115,6 +1125,15 @@ public static class CssBuilder
         // ":hover" has to go on every selector of a list, not just the last.
         static string Hover(string list, string tail = "") => string.Join(", ", list.Split(", ").Select(sel => sel + ":hover" + tail));
         var hovered = $"{Hover(web)}, {Hover(grouped)}, {Hover(legacy, " > .cardOverlayButtonIcon")}";
+        if (shared is not null)
+        {
+            sb.AppendLine($"{disc} {{ {shared} }}");
+            if (!hover)
+            {
+                sb.AppendLine($"{hovered} {{ filter: brightness(1.15); }}");
+            }
+        }
+
         if (fill is not null)
         {
             sb.AppendLine($"{disc} {{ background: {fill} !important; color: {ink} !important;{extra} }}");
@@ -1461,41 +1480,30 @@ public static class CssBuilder
         sb.AppendLine($"{x.P}html .MuiButtonGroup-root .MuiButton-root:last-child {{ border-radius: 0 {Px(b.Radius)} {Px(b.Radius)} 0 !important; }}");
 
         var detail = $"{x.P}html .detailButton";
-        switch (b.Style)
+        if (b.Style == ButtonStyle.Filled)
         {
-            case ButtonStyle.Filled:
-                sb.AppendLine($"{detail} {{ background: {x.Text.Rgba(0.1)} !important; margin: 0 0.25em !important; }}");
-                sb.AppendLine($"{detail}:hover {{ background: {x.Text.Rgba(0.18)} !important; }}");
-                break;
-            case ButtonStyle.Outline:
-                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: transparent !important; box-shadow: inset 0 0 0 2px {x.Text.Rgba(0.35)} !important; }}");
-                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
-                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: transparent !important; box-shadow: inset 0 0 0 2px {x.Accent.Hex} !important; color: {x.Accent.Hex} !important; }}");
-                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ background: {x.Accent.Rgba(0.18)} !important; }}");
-                break;
-            case ButtonStyle.Glass:
-                sb.AppendLine($"{x.P}html .MuiButton-outlined, {x.P}html .MuiButton-text {{ background: {x.Text.Rgba(0.08)} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }}");
-                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Text.Rgba(0.1)} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px {x.Text.Rgba(0.18)} !important; }}");
-                sb.AppendLine($"{x.P}.raised:hover, {detail}:hover {{ background: {x.Text.Rgba(0.18)} !important; }}");
-                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
-                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: {x.Accent.Rgba(0.28)} !important; color: {x.Accent.Lighten(0.35).Hex} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px {x.Accent.Rgba(0.45)} !important; }}");
-                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ background: {x.Accent.Rgba(0.4)} !important; }}");
-                break;
-            case ButtonStyle.Glow:
-                sb.AppendLine($"{x.P}html .MuiButton-outlined, {x.P}html .MuiButton-text {{ background: {x.Accent.Rgba(0.12)} !important; color: {x.Accent.Lighten(0.3).Hex} !important; box-shadow: 0 0 10px {x.Accent.Rgba(0.22)} !important; }}");
-                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Accent.Rgba(0.14)} !important; color: {x.Accent.Lighten(0.3).Hex} !important; box-shadow: 0 0 12px {x.Accent.Rgba(0.25)} !important; transition: box-shadow 0.2s ease, background 0.2s ease; }}");
-                sb.AppendLine($"{x.P}.raised:hover, {detail}:hover {{ background: {x.Accent.Rgba(0.24)} !important; box-shadow: 0 0 18px {x.Accent.Rgba(0.45)} !important; }}");
-                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
-                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: {x.Accent.Hex} !important; color: {x.Accent.ContrastText} !important; box-shadow: 0 0 18px {x.Accent.Rgba(0.55)} !important; }}");
-                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ box-shadow: 0 0 26px {x.Accent.Rgba(0.75)} !important; }}");
-                break;
-            case ButtonStyle.Soft:
-                sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail} {{ background: {x.Text.Rgba(0.08)} !important; }}");
-                sb.AppendLine($"{x.P}.raised:hover, {detail}:hover {{ background: {x.Text.Rgba(0.14)} !important; }}");
-                sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
-                sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ background: {x.Accent.Rgba(0.2)} !important; color: {x.Accent.Lighten(0.25).Hex} !important; box-shadow: none !important; }}");
-                sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ background: {x.Accent.Rgba(0.32)} !important; }}");
-                break;
+            // Jellyfin's own buttons, with the flat item-page ones given a fill.
+            sb.AppendLine($"{detail} {{ background: {x.Text.Rgba(0.1)} !important; margin: 0 0.25em !important; }}");
+            sb.AppendLine($"{detail}:hover {{ background: {x.Text.Rgba(0.18)} !important; }}");
+        }
+        else
+        {
+            // The buttons the client has, in the chosen look: the plain ones
+            // (raised, item page, MUI outlined and text) and the accented
+            // ones (submit, MUI contained).
+            var plain = ButtonLook(b.Style.ToString(), x.Accent, x, false);
+            var strong = ButtonLook(b.Style.ToString(), x.Accent, x, true);
+            // The rows of the user settings menu are buttons too - anchors
+            // with .emby-button on them - and they are what that page is
+            // made of, so they follow the look like everything else.
+            var rows = $"{x.P}html .userPreferencesPage a.emby-button";
+            sb.AppendLine($"{x.P}.raised, {x.P}a[data-role=button], {detail}, {rows}, {x.P}html .MuiButton-outlined, {x.P}html .MuiButton-text {{ {plain.Css} }}");
+            sb.AppendLine($"{x.P}.raised:hover, {detail}:hover, {rows}:hover, {x.P}html .MuiButton-outlined:hover, {x.P}html .MuiButton-text:hover {{ {plain.Hover} }}");
+            // A row is a wide block; the fill needs a little air around it.
+            sb.AppendLine($"{rows} {{ margin-bottom: 0.4em; }}");
+            sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
+            sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ {strong.Css} }}");
+            sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ {strong.Hover} }}");
         }
 
         if (b.DetailScale != 100)
@@ -1544,27 +1552,16 @@ public static class CssBuilder
         var play = $"{detail}.btnPlay";
         var playColor = Color.Parse(b.PlayColor, x.Accent);
         var playRadius = b.PlayRadius >= 0 ? $"border-radius: {Px(b.PlayRadius)} !important;" : string.Empty;
-        switch (b.Play)
+        if (b.Play != PlayStyle.Inherit)
         {
-            case PlayStyle.Accent:
-                sb.AppendLine($"{play} {{ background: {playColor.Hex} !important; color: {playColor.ContrastText} !important; box-shadow: none !important; padding-left: 1.2em !important; padding-right: 1.2em !important; {playRadius} }}");
-                sb.AppendLine($"{play}:hover {{ background: {playColor.Darken(0.15).Hex} !important; }}");
-                break;
-            case PlayStyle.Outline:
-                sb.AppendLine($"{play} {{ background: transparent !important; box-shadow: inset 0 0 0 2px {playColor.Hex} !important; color: {playColor.Hex} !important; padding-left: 1.2em !important; padding-right: 1.2em !important; {playRadius} }}");
-                sb.AppendLine($"{play}:hover {{ background: {playColor.Rgba(0.18)} !important; }}");
-                break;
-            case PlayStyle.Soft:
-                sb.AppendLine($"{play} {{ background: {playColor.Rgba(0.2)} !important; color: {playColor.Lighten(0.25).Hex} !important; box-shadow: none !important; padding-left: 1.2em !important; padding-right: 1.2em !important; {playRadius} }}");
-                sb.AppendLine($"{play}:hover {{ background: {playColor.Rgba(0.32)} !important; }}");
-                break;
-            default:
-                if (playRadius.Length > 0)
-                {
-                    sb.AppendLine($"{play} {{ {playRadius} }}");
-                }
-
-                break;
+            // "Accent" is the filled look under the name it had first.
+            var skin = ButtonLook(b.Play == PlayStyle.Accent ? "Filled" : b.Play.ToString(), playColor, x, true);
+            sb.AppendLine($"{play} {{ {skin.Css} padding-left: 1.2em !important; padding-right: 1.2em !important; {playRadius} }}");
+            sb.AppendLine($"{play}:hover {{ {skin.Hover} }}");
+        }
+        else if (playRadius.Length > 0)
+        {
+            sb.AppendLine($"{play} {{ {playRadius} }}");
         }
     }
 
@@ -2482,13 +2479,17 @@ public static class CssBuilder
         var skip = $"{box} .skip-button";
         if (p.Skip != SkipStyle.Default)
         {
-            var fill = Color.Parse(p.SkipColor, p.Skip is SkipStyle.Accent or SkipStyle.NeoBrutalism ? x.Accent : x.Surface);
+            var accented = p.Skip is SkipStyle.Accent or SkipStyle.NeoBrutalism or SkipStyle.Soft or SkipStyle.Glow or SkipStyle.Gradient or SkipStyle.Glowmorphism;
+            var fill = Color.Parse(p.SkipColor, accented ? x.Accent : x.Surface);
             var look = p.Skip switch
             {
                 SkipStyle.Accent => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);",
                 SkipStyle.Surface => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);",
                 SkipStyle.Glass => $"background: {fill.Rgba(0.35)} !important; color: {x.Text.Hex} !important; backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4); border: 1px solid {x.Text.Rgba(0.25)};",
                 SkipStyle.Outline => $"background: rgba(0, 0, 0, 0.25) !important; color: {x.Text.Hex} !important; border: 2px solid {fill.Hex};",
+                // The looks the buttons share, built from the button's color.
+                SkipStyle.Soft or SkipStyle.Glow or SkipStyle.Gradient or SkipStyle.Glowmorphism or SkipStyle.Claymorphism or SkipStyle.Neumorphism
+                    => ButtonLook(p.Skip.ToString(), fill, x, true).Css,
                 _ => $"background: {fill.Hex} !important; color: {fill.ContrastText} !important; border: 3px solid {x.Outline.Hex}; box-shadow: 5px 5px 0 {x.Outline.Hex};",
             };
             sb.AppendLine($"{skip} {{ {look} }}");
@@ -2563,6 +2564,89 @@ public static class CssBuilder
     // ------------------------------------------------------------------
     // Helpers.
     // ------------------------------------------------------------------
+
+    /// <summary>
+    /// One of the shared looks - the same family the bars and the player's
+    /// control bar are built from - on a button. <see cref="Surface"/> builds
+    /// them with shadows meant for a whole bar; a button is small, so the
+    /// shading is tighter here. The look is named by its enum value, and
+    /// every button setting spells the shared looks the same way.
+    /// </summary>
+    /// <param name="look">Name of the style, from one of the button enums.</param>
+    /// <param name="tint">The color the look is built from (the accent, or the button's own color).</param>
+    /// <param name="x">The build context.</param>
+    /// <param name="solid">A prominent button (submit, play, skip): the look leans on the tint instead of the text color.</param>
+    /// <returns>The declarations at rest and the ones for :hover.</returns>
+    private static (string Css, string Hover) ButtonLook(string look, Color tint, Context x, bool solid)
+    {
+        switch (look)
+        {
+            case "Outline":
+                return (
+                    solid
+                        ? $"background: transparent !important; box-shadow: inset 0 0 0 2px {tint.Hex} !important; color: {tint.Hex} !important;"
+                        : $"background: transparent !important; box-shadow: inset 0 0 0 2px {x.Text.Rgba(0.35)} !important;",
+                    $"background: {tint.Rgba(0.18)} !important;");
+            case "Soft":
+                return (
+                    solid
+                        ? $"background: {tint.Rgba(0.2)} !important; color: {tint.Lighten(0.25).Hex} !important; box-shadow: none !important;"
+                        : $"background: {x.Text.Rgba(0.08)} !important;",
+                    solid ? $"background: {tint.Rgba(0.32)} !important;" : $"background: {x.Text.Rgba(0.14)} !important;");
+            case "Glass":
+                var blur = "backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4);";
+                return (
+                    solid
+                        ? $"background: {tint.Rgba(0.28)} !important; color: {tint.Lighten(0.35).Hex} !important; box-shadow: inset 0 0 0 1px {tint.Rgba(0.45)} !important; {blur}"
+                        : $"background: {x.Text.Rgba(0.1)} !important; box-shadow: inset 0 0 0 1px {x.Text.Rgba(0.18)} !important; {blur}",
+                    solid ? $"background: {tint.Rgba(0.4)} !important;" : $"background: {x.Text.Rgba(0.18)} !important;");
+            case "Glow":
+                return (
+                    solid
+                        ? $"background: {tint.Hex} !important; color: {tint.ContrastText} !important; box-shadow: 0 0 18px {tint.Rgba(0.55)} !important; transition: box-shadow 0.2s ease, background 0.2s ease;"
+                        : $"background: {tint.Rgba(0.14)} !important; color: {tint.Lighten(0.3).Hex} !important; box-shadow: 0 0 12px {tint.Rgba(0.25)} !important; transition: box-shadow 0.2s ease, background 0.2s ease;",
+                    solid
+                        ? $"box-shadow: 0 0 26px {tint.Rgba(0.75)} !important;"
+                        : $"background: {tint.Rgba(0.24)} !important; box-shadow: 0 0 18px {tint.Rgba(0.45)} !important;");
+            case "Gradient":
+                return (
+                    $"background: linear-gradient(135deg, {tint.Hex}, {tint.Lighten(0.35).Hex}) !important; color: {tint.ContrastText} !important; box-shadow: none !important;",
+                    "filter: brightness(1.12);");
+            case "NeoBrutalism":
+                // Flat and loud: the frame and the hard shadow are the look,
+                // and hovering moves the button onto its own shadow.
+                var face = solid ? tint : x.Surface;
+                return (
+                    $"background: {face.Hex} !important; color: {face.ContrastText} !important; border: 3px solid {x.Outline.Hex} !important; box-shadow: 3px 3px 0 {x.Outline.Hex} !important;",
+                    $"transform: translate(1px, 1px); box-shadow: 2px 2px 0 {x.Outline.Hex} !important;");
+            case "Glowmorphism":
+                return (
+                    $"background: {x.Surface.Rgba(0.45)} !important; color: {(solid ? tint.Lighten(0.35).Hex : x.Text.Hex)} !important; border: 1px solid {tint.Rgba(0.45)} !important; box-shadow: 0 0 16px {tint.Rgba(0.4)} !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);",
+                    $"box-shadow: 0 0 24px {tint.Rgba(0.65)} !important;");
+            case "Claymorphism":
+                // Clay is a touch lighter than the color it is built from, so
+                // the inner shading has room.
+                var clay = (solid ? tint : x.Surface).Lighten(0.08);
+                return (
+                    $"background: {clay.Hex} !important; color: {clay.ContrastText} !important; border: 0 !important; box-shadow: inset 3px 3px 7px {clay.Lighten(0.22).Hex}, inset -3px -3px 7px {clay.Darken(0.35).Hex}, 4px 4px 12px rgba(0, 0, 0, 0.3) !important;",
+                    "filter: brightness(1.08);");
+            case "Neumorphism":
+                // The fill has to match what is around the button, or the
+                // shadows read as a box instead of a raised surface; hovering
+                // turns the shadows inward, as if it were pressed.
+                var neu = solid ? tint : x.Background;
+                return (
+                    $"background: {neu.Hex} !important; color: {(solid ? neu.ContrastText : x.Text.Hex)} !important; border: 0 !important; box-shadow: 4px 4px 9px {neu.Darken(0.6).Hex}, -4px -4px 9px {neu.Lighten(0.18).Hex} !important;",
+                    $"box-shadow: inset 4px 4px 9px {neu.Darken(0.6).Hex}, inset -4px -4px 9px {neu.Lighten(0.18).Hex} !important;");
+            default:
+                // Filled (and "Accent", the name it has on the play buttons).
+                return (
+                    solid
+                        ? $"background: {tint.Hex} !important; color: {tint.ContrastText} !important; box-shadow: none !important;"
+                        : $"background: {x.Text.Rgba(0.1)} !important;",
+                    solid ? $"background: {tint.Darken(0.15).Hex} !important;" : $"background: {x.Text.Rgba(0.18)} !important;");
+        }
+    }
 
     /// <summary>
     /// Background declarations for one "surface" (bar, island, menu, dialog):

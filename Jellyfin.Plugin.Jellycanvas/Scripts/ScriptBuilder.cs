@@ -51,7 +51,10 @@ public static class ScriptBuilder
         // their own copy when they have changes of their own.
         // The Dashboard: Jellyfin renders the branding CSS on the
         // user-facing pages only, so the script puts it on the admin pages.
-        var dashboard = c.Misc.ThemeDashboard && c.Enabled;
+        // The switch means "the admin pages follow the defaults", so it goes
+        // off as soon as they get settings of their own - and those are just
+        // as good a reason to carry the theme there.
+        var dashboard = c.Enabled && (c.Misc.ThemeDashboard || !string.IsNullOrWhiteSpace(c.Overrides.Dashboard));
         var backdrop = BackdropFor(c);
         var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
         var devices = new Dictionary<string, object?>();

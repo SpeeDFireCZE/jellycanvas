@@ -743,6 +743,36 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Buttons_wear_the_looks_the_bars_have()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.NeoBrutalism } });
+
+        // Every kind of button the client has, including the rows the user
+        // settings menu is made of.
+        Assert.Contains("html .userPreferencesPage a.emby-button", css, StringComparison.Ordinal);
+        Assert.Contains("border: 3px solid #000000 !important; box-shadow: 3px 3px 0 #000000 !important;", css, StringComparison.Ordinal);
+        // The accented ones (submit, MUI contained) are built from the accent.
+        Assert.Contains(".button-submit, html .MuiButton-contained { background: #00a4dc !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_shared_looks_reach_the_play_and_skip_buttons()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Buttons.Play = PlayStyle.Glow;
+        cfg.Cards.PlayStyle = PlayButtonStyle.NeoBrutalism;
+        cfg.Player.Skip = SkipStyle.Claymorphism;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .detailButton.btnPlay { background: #00a4dc !important;", css, StringComparison.Ordinal);
+        Assert.Contains("box-shadow: 0 0 18px rgba(0, 164, 220, 0.55) !important;", css, StringComparison.Ordinal);
+        Assert.Contains("box-shadow: 3px 3px 0 #000000 !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".skip-button { background: ", css, StringComparison.Ordinal);
+        Assert.Contains("inset 3px 3px 7px", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Device_override_merge_keeps_the_server_side_parts()
     {
         var cfg = new PluginConfiguration();

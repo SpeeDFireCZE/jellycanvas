@@ -2326,6 +2326,18 @@
                 return look + 'background: rgba(255, 255, 255, 0.16); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);';
             case 'Light':
                 return look + 'background: #fff; color: #111;';
+            case 'Soft':
+                return look + 'background: rgba(255, 255, 255, 0.16); color: #fff;';
+            case 'Glow':
+                return look + 'background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); box-shadow: 0 0 18px var(--jf-palette-primary-main, #00a4dc);';
+            case 'Gradient':
+                return look + 'background: linear-gradient(135deg, var(--jf-palette-primary-main, #00a4dc), rgba(255, 255, 255, 0.4)); color: #fff;';
+            case 'NeoBrutalism':
+                return look + 'background: var(--jf-palette-primary-main, #00a4dc); color: #000; border: 3px solid #000; box-shadow: 4px 4px 0 #000;';
+            case 'Claymorphism':
+                return look + 'background: rgba(255, 255, 255, 0.18); color: #fff; box-shadow: inset 3px 3px 8px rgba(255, 255, 255, 0.25), inset -3px -3px 8px rgba(0, 0, 0, 0.35), 4px 4px 14px rgba(0, 0, 0, 0.35);';
+            case 'Neumorphism':
+                return look + 'background: rgba(24, 24, 24, 0.92); color: #fff; box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.65), -5px -5px 12px rgba(255, 255, 255, 0.08);';
             default:
                 return look + 'background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000);';
         }

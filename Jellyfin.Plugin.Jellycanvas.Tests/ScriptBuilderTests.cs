@@ -159,6 +159,12 @@ public class ScriptBuilderTests
         only.Overrides.Tv = "{\"Backdrop\":{\"Mode\":\"RandomLibrary\",\"RotateSeconds\":20}}";
         Assert.Contains("\"devices\":{\"tv\":{\"backdrop\":{\"seconds\":20,", ScriptBuilder.Build(only), StringComparison.Ordinal);
         Assert.Contains("\"backdrop\":null,\"banner\":null,\"dashboard\":false,\"rows\":[]", ScriptBuilder.Build(only), StringComparison.Ordinal);
+
+        // The switch is off, but the admin pages have settings of their own:
+        // the theme still has to be carried there, or they would not show.
+        only.Enabled = true;
+        only.Overrides.Dashboard = "{\"Dashboard\":{\"PanelRadius\":12}}";
+        Assert.Contains("\"dashboard\":true", ScriptBuilder.Build(only), StringComparison.Ordinal);
     }
 
     [Fact]

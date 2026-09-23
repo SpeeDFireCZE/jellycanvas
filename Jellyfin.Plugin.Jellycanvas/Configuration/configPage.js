@@ -116,7 +116,7 @@
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, řádky ze Seerru i s adresou a klíčem, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Preferované jazyky zvuku a titulků se vyprazdňují taky – jsou tvoje, ne tématu. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
-            themeDashboard: 'Aplikovat téma na Nástěnku (Jellyfin drží admin stránky ve svých barvách)', themeDashboardHint: 'Vypnuté = admin stránky zůstanou tak, jak je kreslí Jellyfin, a nic z téhle záložky se neprojeví. Vyžaduje skript a je to jeden přepínač pro celý server, ne hodnota pro zařízení.',
+            themeDashboard: 'Nástěnka podle výchozího nastavení', themeDashboardHint: 'Zaškrtnutí vrátí admin stránky na téma tak, jak je nastavené v Defaults, a zahodí, co je nastavené tady; první vlastní změna ho zase odškrtne a Nástěnka si ji nechá. Odškrtnuté a bez vlastního nastavení = admin stránky zůstanou tak, jak je kreslí Jellyfin. Vyžaduje skript.',
             dashboard: 'Admin stránky', dashboardHint: 'Panely, ze kterých jsou admin stránky složené (informace o serveru, úlohy, uživatelé, formuláře nastavení). Platí jen pro Nástěnku, ať je nastavíš kdekoli.', dashPanelOpacity: 'Krytí panelů', dashPanelRadius: 'Zaoblení panelů (-1 = jak je má Jellyfin)', dashPanelColor: 'Barva panelů (prázdné = barva ploch)', dashPanelBorder: 'Tenký rámeček kolem panelu', dashPanelShadow: 'Stín pod panelem', dashHideHelp: 'Schovat odkazy na nápovědu pod nadpisy nastavení',
             pill: 'kulaté', glass: 'Sklo', glowBtn: 'Záře (akcent)',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', pageDashboardSettings: 'Nástěnka: stránka nastavení', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
@@ -279,8 +279,37 @@
             return;
         }
         setPath(overrides[editDevice], path, value);
+        if (editDevice === 'Dashboard') {
+            dashboardTouched();
+        }
         overridesIntoState();
         markOverrides();
+    }
+
+    /**
+     * "Theme the Dashboard with the default theme" is exactly that: a change
+     * of your own on this tab means the admin pages no longer just follow the
+     * defaults, so the switch goes off (the theme stays on them either way).
+     */
+    function dashboardTouched() {
+        if (!state.Misc || !state.Misc.ThemeDashboard) {
+            return;
+        }
+        state.Misc.ThemeDashboard = false;
+        var box = page.querySelector('[data-path="Misc.ThemeDashboard"]');
+        if (box) {
+            box.checked = false;
+        }
+    }
+
+    /** And ticking it again is the way back: the Dashboard's own settings go. */
+    function resetDashboardScope() {
+        overrides.Dashboard = {};
+        overridesIntoState();
+        refreshControls();
+        markOverrides();
+        schedulePreview();
+        scheduleScriptPreview();
     }
 
     function hasOverride(path) {
@@ -591,6 +620,9 @@
                     writePath(path, val);
                 }
                 followPreview(path);
+                if (path === 'Misc.ThemeDashboard' && el.checked) {
+                    resetDashboardScope();
+                }
                 if (path === 'Header.Layout') {
                     renderSlots();
                 }

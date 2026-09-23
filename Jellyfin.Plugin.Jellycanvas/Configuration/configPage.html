@@ -230,8 +230,8 @@
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Dashboard"><span data-i18n="editDashboard">Dashboard</span></button>
                     </div>
                     <div id="jcDashToggle" hidden>
-                        <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard" data-global="1"><span data-i18n="themeDashboard">Theme the Dashboard (Jellyfin keeps the admin pages in its own colors)</span></label></div>
-                        <div class="jc-hint" data-i18n="themeDashboardHint">Off, the admin pages stay as Jellyfin draws them and nothing set here shows. It needs the client script, and it is one switch for the server, not a per-device value.</div>
+                        <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard" data-global="1"><span data-i18n="themeDashboard">Theme the Dashboard with the default theme</span></label></div>
+                        <div class="jc-hint" data-i18n="themeDashboardHint">Ticking it puts the admin pages back to the theme as it is set in Defaults and throws away what is set here; the first change of your own unticks it again, and the Dashboard then keeps that change. Unticked with nothing set here, the admin pages stay as Jellyfin draws them. Needs the client script.</div>
                     </div>
                     <div class="jc-hint jc-edit-hint" id="jcEditHint" hidden data-i18n="editHint">The same sections as the default, but a value changed here applies to this device only and overrides the default; what is left alone keeps following the default. A changed row is marked, ↺ puts the default back. Script features, Seerr and sharing are set once for all devices.</div>
 
@@ -572,6 +572,11 @@
                                         <option value="Dark" data-i18n="playDark">Dark</option>
                                         <option value="Light" data-i18n="ssBtnLight">White</option>
                                         <option value="Glass" data-i18n="ssBtnGlass">Glass</option>
+                                        <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
                                 <div class="jc-color" data-device="Mobile" data-color="Cards.PlayColor" data-optional="1" data-i18n-label="playColor">Color (empty = by the style)</div>
@@ -633,6 +638,11 @@
                                         <option value="Soft" data-i18n="soft">Soft (tinted)</option>
                                         <option value="Glass" data-i18n="glass">Glass</option>
                                         <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HoverLift"><span data-i18n="hoverLift">Lift on hover</span></label></div>
@@ -649,6 +659,13 @@
                                         <option value="Accent" data-i18n="playAccent">Filled</option>
                                         <option value="Outline" data-i18n="outline">Outline</option>
                                         <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                        <option value="Glass" data-i18n="glass">Glass</option>
+                                        <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
                                 <div data-nodash="1" class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
@@ -695,10 +712,16 @@
                                         <option value="Surface" data-i18n="skipSurface">Surface color</option>
                                         <option value="Glass" data-i18n="glass">Glass</option>
                                         <option value="Outline" data-i18n="skipOutline">Outline</option>
+                                        <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                        <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
                                         <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
-                                <div class="jc-color" data-when="Player.Skip=Accent|Surface|Glass|Outline|NeoBrutalism" data-color="Player.SkipColor" data-optional="1" data-i18n-label="skipColor">Button color (empty = accent or surface color by style)</div>
+                                <div class="jc-color" data-when="Player.Skip=Accent|Surface|Glass|Outline|NeoBrutalism|Soft|Glow|Gradient|Glowmorphism|Claymorphism|Neumorphism" data-color="Player.SkipColor" data-optional="1" data-i18n-label="skipColor">Button color (empty = accent or surface color by style)</div>
                                 <div class="jc-row" data-slider="Player.SkipRadius" data-min="0" data-max="40" data-unit="px" data-i18n-label="radius">Corner radius</div>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcSkipPosition" data-i18n="skipPosition">Position</label>
@@ -1159,6 +1182,12 @@
                                         <option value="Outline" data-i18n="ssBtnOutline">Outline</option>
                                         <option value="Glass" data-i18n="ssBtnGlass">Glass</option>
                                         <option value="Light" data-i18n="ssBtnLight">White</option>
+                                        <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                        <option value="Glow" data-i18n="glowBtn">Glow (accent)</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
                                 <div class="jc-row" data-when="Scripts.Slideshow.ShowButton=true" data-slider="Scripts.Slideshow.ButtonRadius" data-min="-1" data-max="40" data-unit="px" data-i18n-label="ssButtonRadius">Corner radius (-1 = same as cards)</div>
