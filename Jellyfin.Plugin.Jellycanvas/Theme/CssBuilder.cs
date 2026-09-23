@@ -982,12 +982,31 @@ public static class CssBuilder
     {
         var d = x.Config.Dashboard;
         var custom = !string.IsNullOrWhiteSpace(d.PanelColor);
+        var dash = $"{x.P}html body.dashboardDocument";
+        sb.AppendLine("/* --- the admin pages --- */");
+        // The admin pages come with a MUI theme of their own: tables, chips
+        // and lists carry Jellyfin's stock greys and blues whatever the
+        // palette says. They are put back on the theme here - the surface
+        // under them is the panel, so they only need to stop painting.
+        sb.AppendLine($"{dash} .MuiTableContainer-root, {dash} .MuiTable-root, {dash} .MuiTableHead-root, {dash} .MuiTableBody-root, {dash} .MuiTableRow-root, {dash} .MuiTableCell-root, {dash} .MuiTableFooter-root {{ background-color: transparent !important; color: var(--jf-palette-text-primary) !important; }}");
+        sb.AppendLine($"{dash} .MuiTableCell-root {{ border-color: {x.Text.Rgba(0.12)} !important; }}");
+        // The toolbars a grid puts inside its panel (filters, pagination)
+        // paint a slab of their own over the panel's rounded corners.
+        sb.AppendLine($"{dash} .MuiPaper-root > .MuiBox-root, {dash} .MuiPaper-root > .MuiToolbar-root {{ background-color: transparent !important; }}");
+        sb.AppendLine($"{dash} .MuiTableRow-root:hover > .MuiTableCell-root {{ background-color: {x.Text.Rgba(0.05)} !important; }}");
+        // A neutral chip (a tag, a path, a state) follows the accent; the
+        // ones that mean success, a warning or an error keep their color.
+        sb.AppendLine($"{dash} .MuiChip-filled:not(.MuiChip-colorSuccess):not(.MuiChip-colorWarning):not(.MuiChip-colorError) {{ background-color: {x.Accent.Rgba(0.22)} !important; color: var(--jf-palette-text-primary) !important; border-color: {x.Accent.Rgba(0.35)} !important; }}");
+        sb.AppendLine($"{dash} .MuiChip-outlined {{ border-color: {x.Text.Rgba(0.25)} !important; color: var(--jf-palette-text-primary) !important; }}");
+        // Paths, list rows and the alerts above a form.
+        sb.AppendLine($"{dash} .MuiListItemButton-root.Mui-selected, {dash} .MuiListItem-root.Mui-selected {{ background-color: {x.Accent.Rgba(0.2)} !important; }}");
+        sb.AppendLine($"{dash} .MuiAlert-root {{ color: var(--jf-palette-text-primary) !important; }}");
+        sb.AppendLine($"{dash} .MuiAlert-standardInfo, {dash} .MuiAlert-filledInfo {{ background-color: {x.Accent.Rgba(0.18)} !important; }}");
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)
         {
             return;
         }
 
-        sb.AppendLine("/* --- the admin pages --- */");
         // The drawer is a paper too, and it has its own settings.
         var panel = $"{x.P}html body.dashboardDocument .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper)";
         var color = custom ? Color.Parse(d.PanelColor, x.Surface) : x.Surface;

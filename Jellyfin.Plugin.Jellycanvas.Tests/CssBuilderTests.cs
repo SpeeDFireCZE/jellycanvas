@@ -698,8 +698,10 @@ public class CssBuilderTests
             }
         }
 
-        // nothing set, nothing written
-        Assert.DoesNotContain("the admin pages", CssBuilder.Build(new PluginConfiguration()), StringComparison.Ordinal);
+        // even with nothing set, the admin pages are put back on the theme
+        var plain = CssBuilder.Build(new PluginConfiguration());
+        Assert.Contains("html body.dashboardDocument .MuiTableCell-root { border-color:", plain, StringComparison.Ordinal);
+        Assert.DoesNotContain(".MuiPaper-root:not(.MuiDrawer-paper)", plain, StringComparison.Ordinal);
     }
 
     [Fact]
