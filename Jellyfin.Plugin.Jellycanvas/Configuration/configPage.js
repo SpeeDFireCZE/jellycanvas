@@ -75,7 +75,7 @@
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
             cardText: 'Název a text', below: 'Pod obrázkem', overlay: 'Přes obrázek', hidden: 'Skrytý', border: 'Tenký rámeček',
             hideOverlay: 'Schovat tlačítka při najetí (přehrát, menu)', spacing: 'Rozestupy',
-            buttons: 'Tlačítka a pole', filled: 'Plná', outline: 'Obrys', soft: 'Jemná (tónovaná)',
+            buttons: 'Tlačítka a pole', filled: 'Plná', outline: 'Obrys', soft: 'Jemná (tónovaná)', btnSkipHeader: 'Nepoužívat styl na tlačítka v horní liště (odkazy na knihovny a řádek pod nimi zůstanou v původním vzhledu; Přehrát vše se stylem řídí dál)',
             typography: 'Písmo', family: 'Rodina', fontDefault: 'Výchozí Jellyfin (Noto Sans)', fontSystem: 'Systémové písmo', fontCustom: 'Vlastní název…',
             fontCustomName: 'Název vlastního písma (přesně jako na Google Fonts)', googleFonts: 'Načíst z Google Fonts',
             googleFontsHint: 'Inter, Roboto, Poppins, Nunito i vlastní název. Vypni, pokud prohlížeče nesmí na internet.', fontScale: 'Velikost',

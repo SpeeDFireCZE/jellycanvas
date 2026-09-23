@@ -6,6 +6,7 @@ All notable changes to Jellycanvas. The format follows
 ## Unreleased
 
 - Buttons: the whole family of looks the bars and the player's control bar have - glass, glow, gradient, neo-brutalism, glowmorphism, claymorphism, neumorphism - on every kind of button the client has, and the same looks on the item page's Play button, the play button on posters, the "skip intro" button and the slideshow button.
+- Buttons: a switch to leave the top bar out of it (*Buttons and inputs → Leave the buttons in the top bar out of it*). A frame or a fill around every library link turns the bar into a row of boxes; the links and the row under them keep Jellyfin's plain look while Play all and everything else follow the style.
 - Fixed: the rows of the user settings menu (Profile, Display, Home screen...) are buttons, but only their corners followed the Buttons section; they wear the chosen look now.
 - The radius sliders that went to 999 now end at 40 with one notch past it for a fully rounded button (the slider was unusable: everything above about 25 px looks the same).
 - "Theme the Dashboard" (the Dashboard tab) is the way back to the defaults: ticking it puts the admin pages on the theme as it is set in Defaults and drops what the tab has of its own, and the first change made there unticks it again - the Dashboard keeps that change, and the theme still reaches the admin pages.

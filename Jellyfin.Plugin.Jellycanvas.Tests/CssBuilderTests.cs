@@ -753,6 +753,12 @@ public class CssBuilderTests
         Assert.Contains("border: 3px solid #000000 !important; box-shadow: 3px 3px 0 #000000 !important;", css, StringComparison.Ordinal);
         // The accented ones (submit, MUI contained) are built from the accent.
         Assert.Contains(".button-submit, html .MuiButton-contained { background: #00a4dc !important;", css, StringComparison.Ordinal);
+        // Untouched, the bar's links wear the look like everything else.
+        Assert.DoesNotContain("html .MuiAppBar-root .MuiButton-text", css, StringComparison.Ordinal);
+
+        var spared = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.NeoBrutalism, SkipHeader = true } });
+
+        Assert.Contains("html .MuiAppBar-root .MuiButton-text, html .MuiAppBar-root .MuiButton-outlined { background: transparent !important;", spared, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -1504,6 +1504,17 @@ public static class CssBuilder
             sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
             sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ {strong.Css} }}");
             sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ {strong.Hover} }}");
+
+            if (b.SkipHeader)
+            {
+                // The bar is a row of links; a frame or a fill around each of
+                // them reads as a row of boxes. They go back to the plain
+                // look Jellyfin gives them - the accented ones (Play all)
+                // keep the style.
+                var barButtons = $"{x.P}html .MuiAppBar-root .MuiButton-text, {x.P}html .MuiAppBar-root .MuiButton-outlined";
+                sb.AppendLine($"{barButtons} {{ background: transparent !important; background-image: none !important; box-shadow: none !important; border: 0 !important; color: inherit !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; filter: none !important; transform: none !important; }}");
+                sb.AppendLine($"{x.P}html .MuiAppBar-root .MuiButton-text:hover, {x.P}html .MuiAppBar-root .MuiButton-outlined:hover {{ background: {x.Text.Rgba(0.08)} !important; box-shadow: none !important; transform: none !important; }}");
+            }
         }
 
         if (b.DetailScale != 100)

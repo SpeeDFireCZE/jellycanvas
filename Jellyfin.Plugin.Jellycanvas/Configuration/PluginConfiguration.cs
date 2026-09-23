@@ -1498,6 +1498,14 @@ public class ButtonSettings
     /// <summary>Radius of round icon buttons (header icons, card overlay buttons); -1 = keep them round.</summary>
     public int IconRadius { get; set; } = -1;
 
+    /// <summary>
+    /// Leave the plain buttons in the top bar (the library links, the row
+    /// under them) out of the chosen look - a frame or a fill on every link
+    /// turns the bar into a row of boxes. The accented ones (Play all) and
+    /// the corner radius still follow the settings.
+    /// </summary>
+    public bool SkipHeader { get; set; } = false;
+
     public PlayStyle Play { get; set; } = PlayStyle.Inherit;
 
     /// <summary>Color of the Play button; empty = accent color.</summary>
