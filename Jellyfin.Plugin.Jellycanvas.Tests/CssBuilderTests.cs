@@ -684,6 +684,25 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Dashboard_panels_never_reach_the_rest_of_the_client()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Dashboard = new DashboardSettings { PanelOpacity = 60, PanelRadius = 12, PanelBorder = true } });
+        Assert.Contains("html body.dashboardDocument .MuiPaper-root:not(.MuiDrawer-paper)", css, StringComparison.Ordinal);
+        Assert.Contains("border-radius: 12px !important;", css, StringComparison.Ordinal);
+        // every rule of the section names the admin pages
+        foreach (var line in css.Split(Environment.NewLine))
+        {
+            if (line.Contains(".MuiPaper-root:not(.MuiDrawer-paper)", StringComparison.Ordinal))
+            {
+                Assert.Contains("body.dashboardDocument", line, StringComparison.Ordinal);
+            }
+        }
+
+        // nothing set, nothing written
+        Assert.DoesNotContain("the admin pages", CssBuilder.Build(new PluginConfiguration()), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void The_dashboard_is_a_scope_of_its_own()
     {
         var cfg = new PluginConfiguration { Colors = new ColorSettings { Accent = "#00a4dc" } };

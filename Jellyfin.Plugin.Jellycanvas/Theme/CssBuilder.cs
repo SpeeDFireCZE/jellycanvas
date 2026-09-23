@@ -118,6 +118,7 @@ public static class CssBuilder
         AppendCards(sb, ctx);
         AppendPlayButton(sb, ctx);
         AppendDetailBanner(sb, ctx);
+        AppendDashboard(sb, ctx);
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
         AppendPlayer(sb, ctx);
@@ -968,6 +969,49 @@ public static class CssBuilder
         if (d.BannerTop)
         {
             sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ background-position: center top; }}");
+        }
+    }
+
+    /// <summary>
+    /// The admin pages: the panels they are built from. Every selector
+    /// names body.dashboardDocument, so the rules apply there and nowhere
+    /// else - whether they come from the defaults or from the Dashboard's
+    /// own copy of the theme.
+    /// </summary>
+    private static void AppendDashboard(StringBuilder sb, Context x)
+    {
+        var d = x.Config.Dashboard;
+        var custom = !string.IsNullOrWhiteSpace(d.PanelColor);
+        if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)
+        {
+            return;
+        }
+
+        sb.AppendLine("/* --- the admin pages --- */");
+        // The drawer is a paper too, and it has its own settings.
+        var panel = $"{x.P}html body.dashboardDocument .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper)";
+        var color = custom ? Color.Parse(d.PanelColor, x.Surface) : x.Surface;
+        var opacity = Math.Clamp(d.PanelOpacity, 0, 100) / 100.0;
+        if (custom || d.PanelOpacity != 100)
+        {
+            sb.AppendLine($"{panel} {{ background-color: {color.Rgba(opacity)} !important; background-image: none !important; }}");
+        }
+
+        if (d.Blur > 0)
+        {
+            sb.AppendLine($"{panel} {{ backdrop-filter: blur({Px(d.Blur)}); -webkit-backdrop-filter: blur({Px(d.Blur)}); }}");
+        }
+
+        if (d.PanelRadius >= 0)
+        {
+            sb.AppendLine($"{panel} {{ border-radius: {Px(d.PanelRadius)} !important; }}");
+        }
+
+        sb.AppendLine($"{panel} {{ box-shadow: {(d.PanelShadow ? "0 6px 20px rgba(0, 0, 0, 0.35)" : "none")} !important; border: {(d.PanelBorder ? $"1px solid {x.Text.Rgba(0.12)}" : "0")}; }}");
+
+        if (d.HideHelp)
+        {
+            sb.AppendLine($"{x.P}html body.dashboardDocument .sectionTitleContainer > a[href*=\"jellyfin.org\"], {x.P}html body.dashboardDocument .fieldDescription a[href*=\"jellyfin.org\"] {{ display: none !important; }}");
         }
     }
 

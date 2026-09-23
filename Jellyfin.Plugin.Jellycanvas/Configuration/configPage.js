@@ -117,6 +117,7 @@
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             themeDashboard: 'Aplikovat téma na Nástěnku (Jellyfin drží admin stránky ve svých barvách)', themeDashboardHint: 'Vypnuté = admin stránky zůstanou tak, jak je kreslí Jellyfin, a nic z téhle záložky se neprojeví. Vyžaduje skript a je to jeden přepínač pro celý server, ne hodnota pro zařízení.',
+            dashboard: 'Admin stránky', dashboardHint: 'Panely, ze kterých jsou admin stránky složené (informace o serveru, úlohy, uživatelé, formuláře nastavení). Platí jen pro Nástěnku, ať je nastavíš kdekoli.', dashPanelOpacity: 'Krytí panelů', dashPanelRadius: 'Zaoblení panelů (-1 = jak je má Jellyfin)', dashPanelColor: 'Barva panelů (prázdné = barva ploch)', dashPanelBorder: 'Tenký rámeček kolem panelu', dashPanelShadow: 'Stín pod panelem', dashHideHelp: 'Schovat odkazy na nápovědu pod nadpisy nastavení',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
@@ -2453,6 +2454,18 @@
     translate(page);
     buildSliders();
     buildColors();
+    // Rows that mean nothing on the admin pages (an item page's buttons, a
+    // library row, a rotating backdrop): marked here rather than in the
+    // markup, because a control sits inside a container of its own.
+    // (the background source stays: an admin page may want a flat color of
+    // its own while the client keeps its backdrops)
+    ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Backdrop.RotateSeconds', 'Backdrop.ItemDetail', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
+        page.querySelectorAll('[data-path^="' + prefix + '"], [data-slider^="' + prefix + '"], [data-color^="' + prefix + '"]').forEach(function (el) {
+            var box = el.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer') || el;
+            box.setAttribute('data-nodash', '1');
+        });
+    });
+
     bindInputs(page);
 
     function init() {

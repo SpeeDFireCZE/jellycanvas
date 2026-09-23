@@ -62,6 +62,9 @@
                 .jc-device-mode.jc-edit-dashboard [data-device="Tv"], .jc-device-mode.jc-edit-dashboard [data-device="Mobile"] { display: none !important; }
                 /* The admin pages have no posters, no player, no item page and no login form. */
                 .jc-device-mode.jc-edit-dashboard .jc-section[data-nodash] { display: none; }
+                .jc-device-mode.jc-edit-dashboard [data-nodash]:not(.jc-section) { display: none !important; }
+                /* The admin pages' own section: nowhere else. */
+                .jc-controls:not(.jc-edit-dashboard) .jc-section[data-dashonly] { display: none; }
                 .jc-device-mode option[data-nodevice] { display: none; }
                 /* The TV / phone sections live in that device's view only (the default view has nothing of theirs to show). */
                 .jc-section.jc-off-device { display: none; }
@@ -368,7 +371,7 @@
                                     <div class="jc-slot" data-slot="SlotRight"><div class="jc-slot-title" data-i18n="slotRight">Right</div></div>
                                 </div>
 
-                                <h4 class="jc-sub" data-i18n="libraryRowHeading">Library bar (library name, count, play, filter, sort, view, paging)</h4>
+                                <h4 data-nodash="1" class="jc-sub" data-i18n="libraryRowHeading">Library bar (library name, count, play, filter, sort, view, paging)</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcLibraryRow" data-i18n="style">Style</label>
                                     <select is="emby-select" id="jcLibraryRow" data-path="Header.LibraryRow" class="emby-select-withcolor emby-select">
@@ -384,21 +387,21 @@
                                         <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
-                                <div class="jc-color" data-when="Header.LibraryRow=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Header.LibraryRowColor" data-optional="1" data-i18n-label="libraryRowColor">Row color (empty = surface color; accent for neo-brutalism)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-slider="Header.LibraryRowOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=Glass|Gradient|Transparent|Glowmorphism" data-slider="Header.LibraryRowBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowHeight" data-min="44" data-max="96" data-unit="px" data-i18n-label="libraryRowHeight">Row height (52 = Jellyfin default, 44 = the least the controls fit in)</div>
-                                <div class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="libraryRowRadius">Row corner radius (inset from the edges when rounded)</div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowIslands"><span data-i18n="libraryRowIslands">Islands: the surface around each group, not across the whole row (always so under an islands bar with "same as bar")</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowBorder"><span data-i18n="libraryRowBorder">Thin outline</span></label></div>
-                                <div class="jc-hint" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-i18n="libraryRowHideHint">Hide parts of the row:</div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideTitle"><span data-i18n="libraryRowHideTitle">Library name</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideCount"><span data-i18n="libraryRowHideCount">Item count</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePlay"><span data-i18n="libraryRowHidePlay">Play all / Shuffle</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideFilter"><span data-i18n="libraryRowHideFilter">Filter</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideSort"><span data-i18n="libraryRowHideSort">Sort</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideView"><span data-i18n="libraryRowHideView">View settings</span></label></div>
-                                <div class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePaging"><span data-i18n="libraryRowHidePaging">Previous / Next paging</span></label></div>
+                                <div data-nodash="1" class="jc-color" data-when="Header.LibraryRow=Solid|Glass|Gradient|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-color="Header.LibraryRowColor" data-optional="1" data-i18n-label="libraryRowColor">Row color (empty = surface color; accent for neo-brutalism)</div>
+                                <div data-nodash="1" class="jc-row" data-when="Header.LibraryRow=Solid|Glass|Gradient|Glowmorphism|Claymorphism" data-slider="Header.LibraryRowOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="opacity">Opacity</div>
+                                <div data-nodash="1" class="jc-row" data-when="Header.LibraryRow=Glass|Gradient|Transparent|Glowmorphism" data-slider="Header.LibraryRowBlur" data-min="0" data-max="40" data-unit="px" data-i18n-label="blur">Background blur (visible when opacity &lt; 100)</div>
+                                <div data-nodash="1" class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowHeight" data-min="44" data-max="96" data-unit="px" data-i18n-label="libraryRowHeight">Row height (52 = Jellyfin default, 44 = the least the controls fit in)</div>
+                                <div data-nodash="1" class="jc-row" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-slider="Header.LibraryRowRadius" data-min="0" data-max="32" data-unit="px" data-i18n-label="libraryRowRadius">Row corner radius (inset from the edges when rounded)</div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowIslands"><span data-i18n="libraryRowIslands">Islands: the surface around each group, not across the whole row (always so under an islands bar with "same as bar")</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowBorder"><span data-i18n="libraryRowBorder">Thin outline</span></label></div>
+                                <div data-nodash="1" class="jc-hint" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism" data-i18n="libraryRowHideHint">Hide parts of the row:</div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideTitle"><span data-i18n="libraryRowHideTitle">Library name</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideCount"><span data-i18n="libraryRowHideCount">Item count</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePlay"><span data-i18n="libraryRowHidePlay">Play all / Shuffle</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideFilter"><span data-i18n="libraryRowHideFilter">Filter</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideSort"><span data-i18n="libraryRowHideSort">Sort</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHideView"><span data-i18n="libraryRowHideView">View settings</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Header.LibraryRow=SameAsBar|Solid|Glass|Gradient|Transparent|NeoBrutalism|Glowmorphism|Claymorphism|Neumorphism"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Header.LibraryRowHidePaging"><span data-i18n="libraryRowHidePaging">Previous / Next paging</span></label></div>
 
                                 <h4 class="jc-sub" data-i18n="navHeading">Links &amp; icons</h4>
                                 <div class="selectContainer">
@@ -633,10 +636,10 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HoverLift"><span data-i18n="hoverLift">Lift on hover</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.Uppercase"><span data-i18n="uppercase">Uppercase text</span></label></div>
                                 <div class="jc-row" data-slider="Buttons.IconRadius" data-min="-1" data-max="24" data-unit="px" data-i18n-label="iconRadius">Icon buttons radius (-1 = round)</div>
-                                <h4 class="jc-sub" data-i18n="buttonsDetailHeading">Item-page buttons</h4>
-                                <div class="jc-row" data-slider="Buttons.DetailScale" data-min="70" data-max="150" data-unit="%" data-i18n-label="detailScale">Size of item-page buttons</div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.DetailLabels"><span data-i18n="detailLabels">Show text labels next to the icons on item pages</span></label></div>
-                                <h4 class="jc-sub" data-i18n="playHeading">Play button (item page)</h4>
+                                <h4 data-nodash="1" class="jc-sub" data-i18n="buttonsDetailHeading">Item-page buttons</h4>
+                                <div data-nodash="1" class="jc-row" data-slider="Buttons.DetailScale" data-min="70" data-max="150" data-unit="%" data-i18n-label="detailScale">Size of item-page buttons</div>
+                                <div data-nodash="1" class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.DetailLabels"><span data-i18n="detailLabels">Show text labels next to the icons on item pages</span></label></div>
+                                <h4 data-nodash="1" class="jc-sub" data-i18n="playHeading">Play button (item page)</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPlayStyle" data-i18n="style">Style</label>
                                     <select is="emby-select" id="jcPlayStyle" data-path="Buttons.Play" class="emby-select-withcolor emby-select">
@@ -646,9 +649,9 @@
                                         <option value="Soft" data-i18n="soft">Soft (tinted)</option>
                                     </select>
                                 </div>
-                                <div class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
-                                <div class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
+                                <div data-nodash="1" class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
+                                <div data-nodash="1" class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
+                                <div data-nodash="1" class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
                             </div>
                         </details>
 
@@ -941,10 +944,10 @@
                                 <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
                                 <div class="jc-row" data-slider="Backdrop.Dim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dim">Dimming</div>
                                 <div class="jc-row" data-when="Backdrop.Mode=Default|RandomLibrary|Custom" data-slider="Backdrop.Blur" data-min="0" data-max="60" data-unit="px" data-i18n-label="blur">Blur</div>
-                                <div class="checkboxContainer" data-when="Backdrop.Mode=Default|RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
-                                <h4 class="jc-sub" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" data-i18n="backdropRotationHeading">Rotation</h4>
-                                <div class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
-                                <div class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Backdrop.Mode=Default|RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.Animate"><span data-i18n="animate">Slow panning animation</span></label></div>
+                                <h4 data-nodash="1" class="jc-sub" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" data-i18n="backdropRotationHeading">Rotation</h4>
+                                <div data-nodash="1" class="jc-row" data-when="Backdrop.Mode=RandomLibrary" data-slider="Backdrop.RotateSeconds" data-min="0" data-max="600" data-step="5" data-unit="s" data-i18n-label="rotate">Change random backdrop every (0 = only on page load)</div>
+                                <div data-nodash="1" class="checkboxContainer jc-needs-script" data-when="Backdrop.Mode=RandomLibrary|Custom|Solid|Gradient" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Backdrop.ItemDetail"><span data-i18n="backdropItemDetail">On an item's page show that item's own backdrop (client script)</span></label></div>
                                 <h4 class="jc-sub" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom" data-i18n="tvBackdropHeading">On TV</h4>
                                 <div class="checkboxContainer" data-nodevice="1" data-when="Backdrop.Mode=RandomLibrary|Custom"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Tv.StaticBackdrop"><span data-i18n="tvStaticBackdrop">Still background on TV (no rotation, no panning; an item's page keeps its own backdrop)</span></label></div>
                                 <div class="jc-hint" data-i18n="backdropHint">"Random" picks a new movie or series backdrop on each page load - anyone opening the login page sees it too. With "Jellyfin default", the image only shows where the user has backdrops enabled (item pages, home if turned on in Display settings).</div>
@@ -1240,6 +1243,19 @@
 
                     <div class="jc-group">
                         <h3 class="jc-group-title" data-i18n="groupDevices">Devices</h3>
+                        <details class="jc-section" data-dashonly="1" data-section="dashboard">
+                            <summary><span class="material-icons" aria-hidden="true">admin_panel_settings</span><span data-i18n="dashboard">Admin pages</span><span class="jc-caret"></span></summary>
+                            <div class="jc-section-body">
+                                <div class="jc-hint" data-i18n="dashboardHint">The panels the admin pages are built from (server info, tasks, users, the settings forms). These apply to the Dashboard only, wherever they are set.</div>
+                                <div class="jc-row" data-slider="Dashboard.PanelOpacity" data-min="0" data-max="100" data-unit="%" data-i18n-label="dashPanelOpacity">Panel opacity</div>
+                                <div class="jc-row" data-slider="Dashboard.PanelRadius" data-min="-1" data-max="40" data-unit="px" data-i18n-label="dashPanelRadius">Panel corners (-1 = as Jellyfin has them)</div>
+                                <div class="jc-color" data-color="Dashboard.PanelColor" data-optional="1" data-i18n-label="dashPanelColor">Panel color (empty = the surface color)</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dashboard.PanelBorder"><span data-i18n="dashPanelBorder">Thin border around a panel</span></label></div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dashboard.PanelShadow"><span data-i18n="dashPanelShadow">Shadow under a panel</span></label></div>
+                                <div class="jc-row" data-slider="Dashboard.Blur" data-min="0" data-max="30" data-unit="px" data-i18n-label="blur">Glass blur behind a panel</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dashboard.HideHelp"><span data-i18n="dashHideHelp">Hide the help links under the settings headings</span></label></div>
+                            </div>
+                        </details>
                         <details class="jc-section jc-off-device" data-section="tv" data-device="Tv" data-device-only="1">
                             <summary><span class="material-icons" aria-hidden="true">tv</span><span data-i18n="tv">TV layout</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">

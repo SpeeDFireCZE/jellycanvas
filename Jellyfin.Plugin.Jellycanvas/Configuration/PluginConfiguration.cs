@@ -849,6 +849,35 @@ public class DeviceOverrideSettings
     public string Dashboard { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// The Dashboard's own look: the panels the admin pages are built from.
+/// Every rule names body.dashboardDocument, so these never reach the rest
+/// of the client even when they are set in the defaults.
+/// </summary>
+public class DashboardSettings
+{
+    /// <summary>Panel opacity in percent.</summary>
+    public int PanelOpacity { get; set; } = 100;
+
+    /// <summary>Panel corner radius in px; -1 = whatever Jellyfin has.</summary>
+    public int PanelRadius { get; set; } = -1;
+
+    /// <summary>Panel color; empty = the surface color.</summary>
+    public string PanelColor { get; set; } = string.Empty;
+
+    /// <summary>A thin border around a panel.</summary>
+    public bool PanelBorder { get; set; } = false;
+
+    /// <summary>A shadow under a panel.</summary>
+    public bool PanelShadow { get; set; } = false;
+
+    /// <summary>Glass blur behind a panel (needs some transparency to show).</summary>
+    public int Blur { get; set; } = 0;
+
+    /// <summary>Hide the help links under the settings headings.</summary>
+    public bool HideHelp { get; set; } = false;
+}
+
 /// <summary>The picture the item page's banner uses.</summary>
 public enum BannerImage
 {
@@ -1608,4 +1637,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Per-device changes on top of these defaults (web, TV, phone).</summary>
     public DeviceOverrideSettings Overrides { get; set; } = new();
+
+    /// <summary>The admin pages (they are styled only when the client script carries the theme there).</summary>
+    public DashboardSettings Dashboard { get; set; } = new();
 }
