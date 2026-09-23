@@ -222,6 +222,10 @@
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Mobile"><span data-i18n="editMobile">Mobile</span></button>
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Dashboard"><span data-i18n="editDashboard">Dashboard</span></button>
                     </div>
+                    <div id="jcDashToggle" hidden>
+                        <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard" data-global="1"><span data-i18n="themeDashboard">Theme the Dashboard (Jellyfin keeps the admin pages in its own colors)</span></label></div>
+                        <div class="jc-hint" data-i18n="themeDashboardHint">Off, the admin pages stay as Jellyfin draws them and nothing set here shows. It needs the client script, and it is one switch for the server, not a per-device value.</div>
+                    </div>
                     <div class="jc-hint jc-edit-hint" id="jcEditHint" hidden data-i18n="editHint">The same sections as the default, but a value changed here applies to this device only and overrides the default; what is left alone keeps following the default. A changed row is marked, ↺ puts the default back. Script features, Seerr and sharing are set once for all devices.</div>
 
                     <div class="jc-group">
@@ -1295,7 +1299,6 @@
                         <details class="jc-section" data-nodevice="1" data-section="misc">
                             <summary><span class="material-icons" aria-hidden="true">tune</span><span data-i18n="misc">Misc</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
-                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard"><span data-i18n="themeDashboard">Theme the Dashboard too (Jellyfin styles the admin pages on its own; needs the script)</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.HideScrollbars"><span data-i18n="hideScrollbars">Hide scrollbars</span></label></div>
                                 <h4 class="jc-sub" data-i18n="themeFilesHeading">Theme files on the server</h4>
                                 <div class="jc-hint" data-i18n="themeFilesHint">Jellyfin 12 themes (web/themes/*/theme.css) read the --jf-* variables this theme sets. A server upgraded from 10.x can keep the old files, which do not; Jellycanvas carries the missing rules in its own CSS, so the theme still works - the files are checked here for your information.</div>

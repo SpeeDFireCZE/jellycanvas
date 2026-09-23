@@ -116,7 +116,7 @@
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, řádky ze Seerru i s adresou a klíčem, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Preferované jazyky zvuku a titulků se vyprazdňují taky – jsou tvoje, ne tématu. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
-            themeDashboard: 'Aplikovat téma i na Nástěnku (Jellyfin admin stránky barví po svém; vyžaduje skript)',
+            themeDashboard: 'Aplikovat téma na Nástěnku (Jellyfin drží admin stránky ve svých barvách)', themeDashboardHint: 'Vypnuté = admin stránky zůstanou tak, jak je kreslí Jellyfin, a nic z téhle záložky se neprojeví. Vyžaduje skript a je to jeden přepínač pro celý server, ne hodnota pro zařízení.',
             misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
@@ -314,7 +314,7 @@
         page.querySelectorAll('[data-path], [data-color]').forEach(function (el) {
             var path = el.getAttribute('data-path') || el.getAttribute('data-color');
             var box = el.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer');
-            if (!box || box.closest('.jc-btn')) {
+            if (!box || box.closest('.jc-btn') || el.hasAttribute('data-global')) {
                 return;
             }
             // In the default view: which devices go their own way here.
@@ -376,6 +376,9 @@
             s.classList.toggle('jc-off-device', s.getAttribute('data-device') !== d);
         });
         page.querySelector('#jcEditHint').hidden = d === 'All';
+        // "Theme the Dashboard" is one switch for the whole server, so it
+        // lives on the Dashboard tab rather than among the default settings.
+        page.querySelector('#jcDashToggle').hidden = d !== 'Dashboard' || !(status && (status.FileTransformation || status.JsInjector));
         refreshControls();
         // The switch also turns the preview to the device being edited
         // (a Ctrl+click from a preview leaves the preview where it is).
@@ -565,8 +568,8 @@
             var event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, function () {
                 var val = el.type === 'checkbox' ? el.checked : el.type === 'number' || el.hasAttribute('data-int') ? (parseInt(el.value, 10) || 0) : el.value;
-                if (el.closest('.jc-btn')) {
-                    setPath(state, path, val); // list editors (buttons, Seerr rows) are defaults only
+                if (el.closest('.jc-btn') || el.hasAttribute('data-global')) {
+                    setPath(state, path, val); // list editors (buttons, Seerr rows) and server-wide switches are defaults only
                 } else {
                     writePath(path, val);
                 }
@@ -625,7 +628,7 @@
             if (el.closest('.jc-btn')) {
                 return; // the toolbar-button rows are rendered from state by renderButtons
             }
-            var v = getPath(shown, el.getAttribute('data-path'));
+            var v = getPath(el.hasAttribute('data-global') ? state : shown, el.getAttribute('data-path'));
             if (el.type === 'checkbox') {
                 el.checked = !!v;
             } else {
@@ -1152,6 +1155,7 @@
         page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
         refreshConditions();
         page.querySelector('#jcScriptsMissing').hidden = available;
+        page.querySelector('#jcDashToggle').hidden = editDevice !== 'Dashboard' || !available;
         if (!available) {
             page.querySelector('#jcScriptsMissing').textContent = t('scriptsNone');
             return;
