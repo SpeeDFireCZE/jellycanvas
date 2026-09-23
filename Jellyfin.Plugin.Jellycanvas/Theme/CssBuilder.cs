@@ -1013,8 +1013,14 @@ public static class CssBuilder
         sb.AppendLine($"{dash} .MuiAlert-root {{ color: var(--jf-palette-text-primary) !important; }}");
         sb.AppendLine($"{dash} .MuiAlert-standardInfo, {dash} .MuiAlert-filledInfo {{ background-color: {x.Accent.Rgba(0.18)} !important; }}");
         // The admin pages come with a background of their own (white in the
-        // light theme); the theme's background shows through the panels.
-        sb.AppendLine($"{dash} .backgroundContainer {{ background-color: var(--jf-palette-background-default) !important; }}");
+        // light theme); the theme's background shows through the panels. A
+        // background set here paints the same element, and this selector is
+        // the more specific one - so it stays out of the way whenever the
+        // background settings have something of their own to paint.
+        if (x.Config.Backdrop.Mode == BackdropMode.Default)
+        {
+            sb.AppendLine($"{dash} .backgroundContainer {{ background-color: var(--jf-palette-background-default) !important; }}");
+        }
         // The picture a device card falls back to is Jellyfin blue.
         sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; background-image: none !important; }}");
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)

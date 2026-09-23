@@ -131,6 +131,12 @@
     var badgeTimer = null;
     var badgeMoreTimer = null;
     var jcOnScroll = null;
+    // Cards are watched, not measured: an IntersectionObserver reports the
+    // ones that come near the screen. Walking the grid and reading every
+    // card's rectangle on a timer is what made a big library stutter.
+    var badgeIo = null;
+    var badgeReady = [];
+    var badgeFrame = null;
 
     function badgeCss() {
         if (!badges) {
@@ -816,6 +822,15 @@
             cards[j].removeAttribute('data-jc-badges');
             cards[j].removeAttribute('data-jc-badges-w');
         }
+        badgeReady = [];
+        if (badgeIo) {
+            badgeIo.disconnect();
+            badgeIo = null;
+        }
+        var watched = document.querySelectorAll('[data-jc-watched]');
+        for (var k = 0; k < watched.length; k++) {
+            watched[k].removeAttribute('data-jc-watched');
+        }
     }
 
     function badgeFetch() {
@@ -842,7 +857,10 @@
                 if (badgeQueue.length) {
                     badgeTimer = setTimeout(badgeFetch, 50);
                 }
-                badgeSync();
+                badgePlaceSoon();
+                if (!badgeIo) {
+                    badgeSync();
+                }
             });
     }
 
@@ -856,6 +874,133 @@
         return r.bottom > -margin && r.top < window.innerHeight + margin;
     }
 
+    /** The watcher that reports cards coming near the screen (null: the browser has none). */
+    function badgeWatcher() {
+        if (badgeIo || !window.IntersectionObserver) {
+            return badgeIo;
+        }
+        badgeIo = new IntersectionObserver(function (entries) {
+            var wake = false;
+            for (var i = 0; i < entries.length; i++) {
+                var card = entries[i].target;
+                card.jcNear = entries[i].isIntersecting;
+                if (card.jcNear && !card.getAttribute('data-jc-badges')) {
+                    badgeReady.push(card);
+                    wake = true;
+                }
+            }
+            if (wake) {
+                badgePlaceSoon();
+            }
+        }, { rootMargin: '300px 0px' });
+        return badgeIo;
+    }
+
+    /**
+     * One placement pass, never more than one in flight. Idle time is used
+     * where the browser offers it (placing badges means measuring, and a
+     * scroll in progress matters more), with a short deadline so the cards
+     * on screen do not stay bare while something keeps the client busy.
+     */
+    function badgePlaceSoon() {
+        if (badgeFrame || disposed || !badges) {
+            return;
+        }
+        var run = function () {
+            badgeFrame = null;
+            badgePlace();
+        };
+        badgeFrame = window.requestIdleCallback
+            ? window.requestIdleCallback(run, { timeout: 300 })
+            : (window.requestAnimationFrame || window.setTimeout)(run, 16);
+    }
+
+    /**
+     * Places the badges on the cards the watcher reported, a handful per
+     * frame: measuring is what a weak client feels, so the rest wait for the
+     * next frame, or for the fetch that brings their media info.
+     */
+    function badgePlace() {
+        if (!badges || disposed) {
+            badgeReady = [];
+            return;
+        }
+        // Six cards a pass: each one is measured and fitted, and a bigger
+        // bite is a frame the client drops.
+        var budget = 6;
+        var queued = false;
+        var keep = [];
+        for (var i = 0; i < badgeReady.length; i++) {
+            var card = badgeReady[i];
+            if (!card.parentNode || card.getAttribute('data-jc-badges')) {
+                continue; // gone from the page, or done in an earlier pass
+            }
+            if (budget <= 0) {
+                keep.push(card);
+                continue;
+            }
+            var id = card.getAttribute('data-id');
+            if (badgeCache.hasOwnProperty(id)) {
+                budget--;
+                renderBadges(card, badgeCache[id]);
+            } else {
+                keep.push(card); // waits for its media info
+                if (!badgePending[id]) {
+                    badgePending[id] = true;
+                    badgeQueue.push(id);
+                    queued = true;
+                }
+            }
+        }
+        badgeReady = keep;
+        if (queued && !badgeTimer) {
+            badgeTimer = setTimeout(badgeFetch, 120);
+        }
+        if (badgeReady.length && budget <= 0) {
+            badgePlaceSoon();
+        }
+    }
+
+    /**
+     * A card laid out since its badges were placed (the grid settled, the
+     * phone turned, a font arrived) gets them placed again - the placement
+     * was measured against the old size. Only cards near the screen are
+     * measured, and this runs on a resize or a font, never on a scroll.
+     */
+    function badgeRecheck() {
+        if (!badges || disposed) {
+            return;
+        }
+        var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
+        var again = false;
+        for (var i = 0; i < done.length; i++) {
+            var card = done[i];
+            if (badgeIo && !card.jcNear) {
+                continue;
+            }
+            var host = card.querySelector('.cardScalable');
+            var w = host ? Math.round(host.offsetWidth) : 0; // layout width: a hover zoom (a transform) is no reason to place again
+            if (w && Math.abs(w - parseInt(card.getAttribute('data-jc-badges-w'), 10)) > 2) {
+                var boxes = card.querySelectorAll('.jellycanvas-badges');
+                for (var b = 0; b < boxes.length; b++) {
+                    boxes[b].remove();
+                }
+                card.removeAttribute('data-jc-badges');
+                card.removeAttribute('data-jc-badges-w');
+                badgeReady.push(card);
+                again = true;
+            }
+        }
+        if (again) {
+            badgePlaceSoon();
+        }
+    }
+
+    /**
+     * New cards are handed to the watcher (and the ones that never get
+     * badges - people, the menu - are marked and forgotten). Without a
+     * watcher the old measured pass takes over.
+     */
     function badgeSync() {
         if (!badges || disposed) {
             return;
@@ -863,27 +1008,27 @@
         if ((badges.hideOnMobile && isMobile()) || (badges.hideOnTv && isTv())) {
             return;
         }
-        // A card laid out since its badges were placed (the grid settled,
-        // the phone turned, a font arrived) gets them placed again: the
-        // placement was measured against the old size. Only the cards on
-        // screen are checked - measuring the rest costs more than it saves.
-        var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
-        for (var d = 0; d < done.length; d++) {
-            if (!nearViewport(done[d])) {
+        var io = badgeWatcher();
+        if (!io) {
+            badgeSyncMeasured();
+            return;
+        }
+        var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges]):not([data-jc-watched])');
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            var type = card.getAttribute('data-type');
+            if ((type && !BADGE_TYPES.test(type)) || card.closest('.personCard, .mainDrawer')) {
+                card.setAttribute('data-jc-badges', 'skip');
                 continue;
             }
-            var hostNow = done[d].querySelector('.cardScalable');
-            var wNow = hostNow ? Math.round(hostNow.offsetWidth) : 0; // layout width: a hover zoom (a transform) is no reason to place again
-            if (wNow && Math.abs(wNow - parseInt(done[d].getAttribute('data-jc-badges-w'), 10)) > 2) {
-                done[d].querySelectorAll('.jellycanvas-badges').forEach(function (b) { b.remove(); });
-                done[d].removeAttribute('data-jc-badges');
-                done[d].removeAttribute('data-jc-badges-w');
-            }
+            card.setAttribute('data-jc-watched', '1');
+            io.observe(card);
         }
-        // Placing badges means measuring, and measuring a whole library
-        // grid at once is what a weak TV feels. Only cards near the screen
-        // are done, and at most a handful per pass; the rest wait for the
-        // next sync (scrolling brings one along).
+    }
+
+    /** The same work without an IntersectionObserver: measure, and come back for the rest. */
+    function badgeSyncMeasured() {
+        badgeRecheck();
         var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges])');
         var queued = false;
         var budget = 14;
@@ -916,7 +1061,7 @@
             badgeTimer = setTimeout(badgeFetch, 120);
         }
         if (more && !badgeMoreTimer) {
-            badgeMoreTimer = setTimeout(function () { badgeMoreTimer = null; badgeSync(); }, 150);
+            badgeMoreTimer = setTimeout(function () { badgeMoreTimer = null; badgeSyncMeasured(); }, 150);
         }
     }
 
@@ -1867,6 +2012,8 @@
         if (rows.length && rowsContainer()) {
             rowsRender();
         }
+        // The cards are a different size now, so their badges are measured again.
+        badgeRecheck();
     }
 
     function closeAll() {
@@ -2645,13 +2792,14 @@
         rootObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         observers.push(bodyObserver, rootObserver);
         window.addEventListener('resize', onResize);
-        // Scrolling brings new cards into view: the badge pass alone, throttled.
+        // Scrolling brings new cards into view. With a watcher that is its
+        // job; without one, the measured pass is throttled behind a timer.
         var scrollTimer = null;
         var onScroll = function () {
-            if (scrollTimer || disposed || !badges) {
+            if (scrollTimer || disposed || !badges || window.IntersectionObserver) {
                 return;
             }
-            scrollTimer = setTimeout(function () { scrollTimer = null; badgeSync(); }, 150);
+            scrollTimer = setTimeout(function () { scrollTimer = null; badgeSyncMeasured(); }, 150);
         };
         window.addEventListener('scroll', onScroll, true);
         jcOnScroll = onScroll;
