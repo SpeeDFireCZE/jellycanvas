@@ -118,7 +118,7 @@
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             themeDashboard: 'Aplikovat téma na Nástěnku (Jellyfin drží admin stránky ve svých barvách)', themeDashboardHint: 'Vypnuté = admin stránky zůstanou tak, jak je kreslí Jellyfin, a nic z téhle záložky se neprojeví. Vyžaduje skript a je to jeden přepínač pro celý server, ne hodnota pro zařízení.',
             dashboard: 'Admin stránky', dashboardHint: 'Panely, ze kterých jsou admin stránky složené (informace o serveru, úlohy, uživatelé, formuláře nastavení). Platí jen pro Nástěnku, ať je nastavíš kdekoli.', dashPanelOpacity: 'Krytí panelů', dashPanelRadius: 'Zaoblení panelů (-1 = jak je má Jellyfin)', dashPanelColor: 'Barva panelů (prázdné = barva ploch)', dashPanelBorder: 'Tenký rámeček kolem panelu', dashPanelShadow: 'Stín pod panelem', dashHideHelp: 'Schovat odkazy na nápovědu pod nadpisy nastavení',
-            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
+            misc: 'Různé', hideScrollbars: 'Schovat posuvníky', editDevice: 'Upravuješ', editAll: 'Výchozí (web i ostatní)', editTv: 'TV', editMobile: 'Mobil', editDashboard: 'Nástěnka', pageDashboard: 'Nástěnka (admin)', pageDashboardSettings: 'Nástěnka: stránka nastavení', editHint: 'Stejné sekce jako výchozí, ale hodnota změněná tady platí jen pro toto zařízení a výchozí přebije; čeho se nedotkneš, dál sleduje výchozí. Změněný řádek je označený, ↺ vrátí výchozí. Skriptové funkce, Seerr a sdílení se nastavují jednou pro všechna zařízení.', resetOverride: 'Vrátit výchozí hodnotu', devTagHint: 'Toto zařízení tu má vlastní hodnotu – kliknutím ji otevřeš',
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
@@ -389,10 +389,11 @@
         }
         // The Dashboard is an ordinary desktop page; the preview goes there.
         var pageSelect = page.querySelector('#jcPage');
-        if (!keepPreview && d === 'Dashboard' && pageSelect.value !== 'dashboard') {
+        var onDash = pageSelect.value === 'dashboard' || pageSelect.value === 'dashboardsettings';
+        if (!keepPreview && d === 'Dashboard' && !onDash) {
             pageSelect.value = 'dashboard';
             pageSelect.dispatchEvent(new Event('change'));
-        } else if (!keepPreview && d !== 'Dashboard' && pageSelect.value === 'dashboard') {
+        } else if (!keepPreview && d !== 'Dashboard' && onDash) {
             pageSelect.value = 'home';
             pageSelect.dispatchEvent(new Event('change'));
         }
@@ -1338,10 +1339,30 @@
         return true;
     }
 
+    // On the admin pages the same element means something else: a panel is
+    // the Dashboard's own setting, a form row is the buttons and inputs.
+    var DASH_MAP = [
+        ['.MuiDrawer-paper, .mainDrawer', 'drawer'],
+        ['header.MuiAppBar-root, .skinHeader', 'header', 'topBarHeading'],
+        ['.emby-button, .MuiButton-root, button, .emby-input, .emby-select, .emby-textarea, input, select, textarea, .MuiInputBase-root, .MuiSwitch-root, .MuiCheckbox-root', 'buttons', 'buttonsAllHeading'],
+        ['.MuiPaper-root, .MuiTableContainer-root, .MuiTable-root, table, .paperList, .listItem, .MuiAccordion-root, .MuiCard-root', 'dashboard', '[data-slider="Dashboard.PanelOpacity"]'],
+        ['.dialog, .MuiMenu-paper, .MuiPopover-paper, .MuiDialog-paper, .toast', 'dialogs'],
+        ['h1, h2, h3, h4, .sectionTitle, .MuiTypography-root, p, label, td, th, .fieldDescription', 'typography'],
+    ];
+
     /** Which section (and sub-heading) a Ctrl+click on this preview element opens. */
     function resolveClick(target, x, y) {
         var section = 'colors';
         var anchor = null;
+        if (onDashboardPage()) {
+            for (var m = 0; m < DASH_MAP.length; m++) {
+                if (target.closest && target.closest(DASH_MAP[m][0])) {
+                    return { section: DASH_MAP[m][1], anchor: DASH_MAP[m][2] || null };
+                }
+            }
+            // Bare page on an admin page: the background color.
+            return { section: 'colors', anchor: '[data-color="Colors.Background"]' };
+        }
         // Things with no element under the pointer: the info strip (a
         // pseudo-element) and the card badges (they let clicks through to
         // the poster) are found by their place.
@@ -1373,7 +1394,7 @@
         }
         // The admin pages have no backdrop of their own: bare page there is
         // the background color.
-        if (section === 'backdrop' && page.querySelector('#jcPage').value === 'dashboard') {
+        if (section === 'backdrop' && onDashboardPage()) {
             section = 'colors';
             anchor = '[data-color="Colors.Background"]';
         }
@@ -1443,6 +1464,12 @@
     }
 
     /** A pseudo hit at the point: {section, anchor, rect}, or null. */
+    /** Is the preview showing an admin page? */
+    function onDashboardPage() {
+        var doc = frame.contentDocument;
+        return !!(doc && doc.body && doc.body.classList.contains('dashboardDocument'));
+    }
+
     function spotAt(target, x, y) {
         var strip = infoBarRect(target.ownerDocument, x, y);
         if (strip) {
@@ -1643,7 +1670,7 @@
         // when the device overrides the clicked control (or, failing that,
         // anything in the section); otherwise on the defaults, which is
         // what the device shows then. The preview stays where it is.
-        var dash = page.querySelector('#jcPage').value === 'dashboard' && !details.hasAttribute('data-nodash');
+        var dash = onDashboardPage() && !details.hasAttribute('data-nodash');
         var previewDev = dash ? 'Dashboard' : device === 'tv' ? 'Tv' : device === 'mobile' ? 'Mobile' : null;
         var wantEdit = 'All';
         // On the Dashboard every setting belongs to the Dashboard tab: the
@@ -1752,6 +1779,9 @@
                 return Promise.resolve(base + '#/login');
             case 'dashboard':
                 return Promise.resolve(base + '#/dashboard');
+            case 'dashboardsettings':
+                // A form-heavy admin page: the same controls a plugin page has.
+                return Promise.resolve(base + '#/dashboard/settings');
             case 'player':
             case 'upnext':
             case 'stillwatching':
