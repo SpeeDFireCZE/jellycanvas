@@ -5,6 +5,9 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Share / import points at the theme site (jellycanvas.jellyscope.cz): browsing, previewing and downloading are open to everyone, uploading needs an account there.
+- The JSON export leaves out the whole Seerr section (address, key and the rows) and empties the preferred audio and subtitle languages - a theme from abroad should not arrive filtering for someone else\'s languages. Nothing in the running theme changes; only what leaves the server.
+
 ## 1.2.3 - 2026-09-21
 
 A bug-fix release. Several fixes and the new flat backgrounds live in the generated CSS: open the designer and press Apply once after updating; the client script reloads by itself.

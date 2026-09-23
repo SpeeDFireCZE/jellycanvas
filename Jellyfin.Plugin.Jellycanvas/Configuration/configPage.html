@@ -96,6 +96,7 @@
                 .jc-section-body { padding: .5em 1em 1em; }
                 .jc-sub { font-size: .8em; letter-spacing: .06em; text-transform: uppercase; color: #7ec8f2; margin: 1.2em 0 .4em; }
                 .jc-hint { font-size: 85%; opacity: .7; margin: .2em 0 .6em; line-height: 1.4; }
+                .jc-share-site { display: inline-flex; align-items: center; gap: .4em; text-decoration: none; }
 
                 /* Rows */
                 .jc-row { display: grid; grid-template-columns: minmax(0, 1fr) 6.5em; grid-template-areas: "label value" "slider slider"; align-items: center; column-gap: .8em; row-gap: .15em; margin: .6em 0 .9em; }
@@ -246,7 +247,11 @@
                         <details class="jc-section" data-nodevice="1" data-section="share">
                             <summary><span class="material-icons" aria-hidden="true">swap_horiz</span><span data-i18n="share">Share / import</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
-                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the info bar text, the login title, the uploaded logo, image links on private addresses. Copy it to share; paste one - or a link to one (a raw GitHub file, for example) - to try it. Nothing is applied until you click Apply.</div>
+                                <div class="jc-hint" data-i18n="shareHint">A theme is one JSON file with the look from this page. Nothing that points at your server goes in it: custom buttons and their addresses, the Seerr rows with their address and key, the info bar text, the login title, the uploaded logo, image links on private addresses. The preferred audio and subtitle languages are left empty too - they are yours, not the theme's. Copy it to share; paste one - or a link to one (a raw GitHub file, for example) - to try it. Nothing is applied until you click Apply.</div>
+                                <div class="jc-hint" data-i18n="shareSite">Themes to browse, preview and download - and a place to put yours (browsing and downloading is open to everyone; uploading needs an account there):</div>
+                                <div class="jc-actions">
+                                    <a class="raised emby-button jc-share-site" href="https://jellycanvas.jellyscope.cz" target="_blank" rel="noopener"><span class="material-icons" aria-hidden="true">public</span><span>jellycanvas.jellyscope.cz</span></a>
+                                </div>
                                 <h4 class="jc-sub" data-i18n="exportHeading">Export</h4>
                                 <div class="jc-actions">
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy"><span data-i18n="exportCopy">Copy theme JSON</span></button>
