@@ -20,9 +20,13 @@ public static class DeviceOverrides
         ("Web", "html:not(.layout-tv):not(.layout-mobile)"),
         ("Tv", "html.layout-tv"),
         ("Mobile", "html.layout-mobile"),
-        // The Dashboard has no class of its own on <html>; the client marks
-        // <body> while an admin page is open.
-        ("Dashboard", "html:has(body.dashboardDocument)"),
+        // The Dashboard: Jellyfin marks <body> on an admin page, and the
+        // client script (which is what carries the theme there) mirrors it
+        // onto <html>. "html:has(body.dashboardDocument)" said the same
+        // without the script, but every default rule then carried
+        // ":not(:has(...))", and a browser older than Chromium 105 - most
+        // TVs - drops a rule it cannot parse: the whole theme went there.
+        ("Dashboard", "html.jc-dashboard"),
     ];
 
     private static readonly JsonSerializerOptions Options = new()

@@ -2292,6 +2292,8 @@ public static class CssBuilder
             // Islands: the logo group, the icon group and the row of tabs.
             sb.AppendLine($"{bar} {{ background: transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 0 !important; }}");
             sb.AppendLine($"{bar} .headerTop {{ gap: 10px; padding: 8px 12px !important; }}");
+            // A flex gap needs Chromium 84; an older TV gets the space as a margin.
+            sb.AppendLine($"@supports not (gap: 1px) {{ {bar} .headerTop > * + * {{ margin-left: 10px !important; }} }}");
             sb.AppendLine($"{bar} .headerLeft, {bar} .headerRight, {bar} .headerTabs .emby-tabs-slider {{ {Surface(h.Style, color, h.Opacity, h.Blur, x, "90deg")} border-radius: {Px(h.SectionRadius)} !important; padding: 2px 10px !important; box-shadow: {shadow} !important; border: {border}; }}");
             sb.AppendLine($"{bar} .headerTabs .emby-tabs-slider {{ display: inline-flex !important; }}");
             // Jellyfin lets the left group grow across the whole row; as an
@@ -2342,7 +2344,10 @@ public static class CssBuilder
         var tvHeight = x.Config.Tv.BarHeight > 0 ? x.Config.Tv.BarHeight : h.Height;
         var buttons = 55.6 * x.Config.Tv.BarScale / 100;
         var rowEstimate = (int)Math.Ceiling(Math.Max(tvHeight, buttons + (h.Layout == HeaderLayout.Sections ? 20 : 32))) + (x.HeaderFloating ? 8 : 0);
-        sb.AppendLine($"{tv} .mainAnimatedPage {{ margin-top: max(0px, calc({Px(rowEstimate)} + var(--jellycanvas-info, 0px) + 20px - 134px)) !important; }}");
+        // max() needs Chromium 79; an older TV (webOS 4 is Chromium 53) drops
+        // that declaration and keeps the plain one before it, worked out here.
+        var tvOffset = Math.Max(0, rowEstimate + 20 - 134);
+        sb.AppendLine($"{tv} .mainAnimatedPage {{ margin-top: calc({Px(tvOffset)} + var(--jellycanvas-info, 0px)) !important; margin-top: max(0px, calc({Px(rowEstimate)} + var(--jellycanvas-info, 0px) + 20px - 134px)) !important; }}");
 
         // The TV bar has its own height setting (under TV): Jellyfin's row is low.
         if (tvHeight > 0)
@@ -2774,7 +2779,7 @@ public static class CssBuilder
         public Context(PluginConfiguration config, string? scope = null)
         {
             Config = config;
-            IsDashboard = scope is not null && scope.Contains("dashboardDocument", StringComparison.Ordinal);
+            IsDashboard = scope is not null && scope.Contains(".jc-dashboard", StringComparison.Ordinal) && !scope.Contains(":not(.jc-dashboard)", StringComparison.Ordinal);
             IsTv = scope is not null && scope.Contains(".layout-tv", StringComparison.Ordinal) && !scope.Contains(":not(.layout-tv)", StringComparison.Ordinal);
             IsMobile = scope is not null && scope.Contains(".layout-mobile", StringComparison.Ordinal) && !scope.Contains(":not(.layout-mobile)", StringComparison.Ordinal);
             Accent = Color.Parse(config.Colors.Accent, "#00a4dc");

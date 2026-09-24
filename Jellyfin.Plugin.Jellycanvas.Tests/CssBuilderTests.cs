@@ -711,10 +711,13 @@ public class CssBuilderTests
         cfg.Overrides.Dashboard = "{\"Colors\":{\"Accent\":\"#ff0000\"}}";
         var css = CssBuilder.Build(cfg);
         Assert.Contains("/* ===== Dashboard: the defaults with this device's changes ===== */", css, StringComparison.Ordinal);
-        Assert.Contains("html:has(body.dashboardDocument), html[data-theme]:has(body.dashboardDocument) {", css, StringComparison.Ordinal);
+        Assert.Contains("html.jc-dashboard, html[data-theme].jc-dashboard {", css, StringComparison.Ordinal);
         // and the defaults stay off the admin pages
-        Assert.Contains("html:not(:has(body.dashboardDocument)) .cardImageContainer", css, StringComparison.Ordinal);
-        Assert.DoesNotContain("html:has(body.dashboardDocument) html", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.jc-dashboard) .cardImageContainer", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("html.jc-dashboard html", css, StringComparison.Ordinal);
+        // A browser without :has() (most TVs: webOS before 23, Tizen before
+        // 2024) drops a whole rule it cannot parse; the scopes must not need it.
+        Assert.DoesNotContain(":has(body.dashboardDocument)", css, StringComparison.Ordinal);
     }
 
     [Fact]

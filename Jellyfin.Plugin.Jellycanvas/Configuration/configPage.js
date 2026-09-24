@@ -1813,6 +1813,9 @@
         var html = doc.documentElement;
         ['layout-desktop', 'layout-tv', 'layout-mobile'].forEach(function (c) { html.classList.remove(c); });
         html.classList.add(devices[device].cls);
+        // The admin pages' scope is a class the client script sets; the
+        // preview sets it too, so it does not wait for the script's next pass.
+        html.classList.toggle('jc-dashboard', !!(doc.body && doc.body.classList.contains('dashboardDocument')));
         hookPreviewClicks(doc);
     }
 

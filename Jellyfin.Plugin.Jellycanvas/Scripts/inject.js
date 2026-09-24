@@ -2284,6 +2284,10 @@
         if (disposed) {
             return;
         }
+        // The admin pages' own scope in the theme is "html.jc-dashboard":
+        // a class, because the selector that needs none of this (:has) is
+        // one an older TV browser cannot read - and it drops the whole rule.
+        document.documentElement.classList.toggle('jc-dashboard', onDashboard());
         ssSync();
         dashboardSync();
         syncInfoBar();
