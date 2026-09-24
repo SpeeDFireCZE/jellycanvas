@@ -173,6 +173,10 @@ public class ScriptBuilderTests
         only.Enabled = true;
         only.Overrides.Dashboard = "{\"Dashboard\":{\"PanelRadius\":12}}";
         Assert.Contains("\"dashboard\":true", ScriptBuilder.Build(only), StringComparison.Ordinal);
+
+        // Jellyfin's own Dashboard wins over everything the tab says.
+        only.Misc.StockDashboard = true;
+        Assert.Contains("\"dashboard\":false", ScriptBuilder.Build(only), StringComparison.Ordinal);
     }
 
     [Fact]

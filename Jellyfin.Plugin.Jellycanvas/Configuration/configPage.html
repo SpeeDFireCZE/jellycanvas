@@ -51,7 +51,9 @@
                 .jc-edit-device { display: flex; align-items: center; gap: .4em; flex-wrap: wrap; margin: 0 0 .6em; padding: .5em .7em; border-radius: .6em; background: rgba(255,255,255,.04); }
                 .jc-edit-device-label { font-size: .78em; letter-spacing: .1em; text-transform: uppercase; opacity: .7; margin-right: .3em; }
                 .jc-edit-device .emby-button { margin: 0; padding: .35em .8em; }
-                .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
+                .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc) !important; color: var(--jf-palette-primary-contrastText, #000) !important; outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 2px; }
+                /* The Dashboard switched to Jellyfin's own: this tab's settings say nothing. */
+                .jc-controls.jc-edit-dashboard.jc-stock-dash .jc-section { opacity: .45; pointer-events: none; }
                 .jc-edit-hint { margin: 0 0 1em; }
                 .jc-device-mode .jc-section[data-nodevice] { display: none; }
                 /* Rows that say "on TV" / "on phones": they belong to the defaults - in a device view the setting itself is the device's. */
@@ -176,7 +178,7 @@
                 /* Preview */
                 .jc-devices { display: flex; gap: .4em; flex-wrap: wrap; align-items: center; margin-bottom: .6em; }
                 .jc-devices .emby-button { margin: 0; padding: .5em .9em; }
-                .jc-devices .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #000); }
+                .jc-devices .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc) !important; color: var(--jf-palette-primary-contrastText, #000) !important; outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 2px; }
                 .jc-devices .jc-spacer { flex: 1; }
                 .jc-devices select { width: auto; min-width: 11em; }
                 .jc-devices .jc-follow { width: auto; margin: 0 0 0 .4em; font-size: .9em; }
@@ -235,6 +237,7 @@
                         <button is="emby-button" type="button" class="raised emby-button jc-edit-btn" data-edit="Dashboard"><span data-i18n="editDashboard">Dashboard</span></button>
                     </div>
                     <div id="jcDashToggle" hidden>
+                        <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.StockDashboard" data-global="1"><span data-i18n="stockDashboard">Jellyfin's own Dashboard (the theme stays off the admin pages)</span></label></div>
                         <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Misc.ThemeDashboard" data-global="1"><span data-i18n="themeDashboard">Theme the Dashboard with the default theme</span></label></div>
                         <div class="jc-hint" data-i18n="themeDashboardHint">Ticking it puts the admin pages back to the theme as it is set in Defaults and throws away what is set here; the first change of your own unticks it again, and the Dashboard then keeps that change. Unticked with nothing set here, the admin pages stay as Jellyfin draws them. Needs the client script.</div>
                     </div>
@@ -651,6 +654,7 @@
                                         <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
                                     </select>
                                 </div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HighlightSelected"><span data-i18n="highlightSelected">Mark the selected button (an open tab, a pressed toggle) with the accented look and an outline - glass, glow and the other looks paint over Jellyfin's own mark</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.SkipHeader"><span data-i18n="btnSkipHeader">Leave the buttons in the top bar out of it (the library links and the row under them keep Jellyfin's plain look; Play all still follows)</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.HoverLift"><span data-i18n="hoverLift">Lift on hover</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.Uppercase"><span data-i18n="uppercase">Uppercase text</span></label></div>
@@ -797,12 +801,11 @@
                                 <div class="selectContainer jc-needs-script" data-when="Detail.Banner=true" hidden>
                                     <label class="selectLabel" for="jcBannerImage" data-i18n="bannerImage">Picture</label>
                                     <select is="emby-select" id="jcBannerImage" data-path="Detail.BannerImage" class="emby-select-withcolor emby-select">
-                                        <option value="Backdrop" data-i18n="bannerBackdrop">Backdrop</option>
-                                        <option value="Banner" data-i18n="bannerBanner">Banner - or the thumb, or the backdrop</option>
-                                        <option value="Thumb" data-i18n="bannerThumb">Thumb - or the backdrop</option>
+                                        <option value="Backdrop" data-i18n="bannerBackdrop">Backdrop - across the whole page</option>
+                                        <option value="Banner" data-i18n="bannerBanner">Banner (or the thumb) - a strip down to the title bar</option>
                                     </select>
                                 </div>
-                                <div class="jc-hint jc-needs-script" data-when="Detail.Banner=true" hidden data-i18n="bannerFallbackHint">The names are Jellyfin's own (Edit images on an item shows which it has). Films rarely have a banner, most have a thumb; an episode borrows its series' picture.</div>
+                                <div class="jc-hint jc-needs-script" data-when="Detail.Banner=true" hidden data-i18n="bannerFallbackHint">Banner fills the top of the page down to the bottom of the title bar and scrolls with it; without a banner the thumb (Jellyfin's name, "Edit images" shows what an item has) is drawn the same way. Only Backdrop covers the whole page. An episode borrows its series' picture.</div>
                                 <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-slider="Detail.BannerDim" data-min="0" data-max="100" data-unit="%" data-i18n-label="bannerDimLabel" hidden>Dimming over the picture</div>
                                 <div class="checkboxContainer jc-needs-script" data-when="Detail.Banner=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.BannerTop"><span data-i18n="bannerTop">Keep the top of the picture in view</span></label></div>
                                 <h4 class="jc-sub" data-i18n="peopleHeading">Cast &amp; crew</h4>

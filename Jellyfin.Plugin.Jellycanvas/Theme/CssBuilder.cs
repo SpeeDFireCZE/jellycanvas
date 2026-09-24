@@ -1005,6 +1005,16 @@ public static class CssBuilder
             AppendBackdropLayers(sb, x, x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0), false);
         }
 
+        // "Banner" is a strip, not the page: the script puts the picture into
+        // the item page's own banner box (Jellyfin's .itemBackdrop, which
+        // ends at the bottom of the title ribbon), lifted up behind the top
+        // bar. It scrolls with the page; the ribbon lies over its bottom.
+        var strip = $"{x.P}html .itemBackdrop > .jellycanvas-banner";
+        sb.AppendLine($"{x.P}html .itemDetailPage .itemBackdrop {{ position: relative; }}");
+        sb.AppendLine($"{strip} {{ position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; background-size: cover; background-repeat: no-repeat; background-position: center {(d.BannerTop ? "top" : "center")}; opacity: 0; transition: opacity 0.6s ease; }}");
+        sb.AppendLine($"{strip}.is-on {{ opacity: 1; }}");
+        sb.AppendLine($"{strip}::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0)}; }}");
+
         // The script marks the layer while it shows an item's own picture:
         // the banner's dim and position are for that, not for the random
         // pictures elsewhere (a background of its own has its own dim).
@@ -1550,6 +1560,22 @@ public static class CssBuilder
             sb.AppendLine($"{detail} {{ margin: 0 0.25em !important; }}");
             sb.AppendLine($"{x.P}.button-submit, {x.P}html .MuiButton-contained {{ {strong.Css} }}");
             sb.AppendLine($"{x.P}.button-submit:hover, {x.P}.button-submit:focus, {x.P}html .MuiButton-contained:hover {{ {strong.Hover} }}");
+
+            if (b.HighlightSelected)
+            {
+                // The look paints over the stock "selected" fill, so a row of
+                // tabs stops saying which one is open: the selected one gets
+                // the accented look and an outline (which no look uses).
+                var selected = string.Join(", ", new[]
+                {
+                    $"{x.P}html .emby-button.jc-active",
+                    $"{x.P}html .emby-button[aria-pressed=\"true\"]",
+                    $"{x.P}html .MuiButton-root[aria-pressed=\"true\"]",
+                    $"{x.P}html .MuiButton-root.Mui-selected",
+                    $"{x.P}html .MuiToggleButton-root.Mui-selected",
+                });
+                sb.AppendLine($"{selected} {{ {strong.Css} outline: 2px solid {x.Accent.Hex} !important; outline-offset: 2px; }}");
+            }
 
             if (b.SkipHeader)
             {

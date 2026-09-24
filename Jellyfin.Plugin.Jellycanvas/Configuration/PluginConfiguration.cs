@@ -1474,6 +1474,12 @@ public class MiscSettings
     /// the client script carries the theme there (it needs the script).
     /// </summary>
     public bool ThemeDashboard { get; set; } = true;
+
+    /// <summary>
+    /// Jellyfin's own Dashboard: the theme is not carried onto the admin
+    /// pages at all, whatever the Dashboard tab says.
+    /// </summary>
+    public bool StockDashboard { get; set; } = false;
 }
 
 /// <summary>Buttons (<c>.emby-button</c>, <c>.raised</c>, <c>.button-submit</c>, MUI buttons, item-page buttons).</summary>
@@ -1505,6 +1511,14 @@ public class ButtonSettings
     /// the corner radius still follow the settings.
     /// </summary>
     public bool SkipHeader { get; set; } = false;
+
+    /// <summary>
+    /// Give the selected button (a chosen tab, a pressed toggle) the accented
+    /// look and an outline. Under glass, glow and the other looks the stock
+    /// "selected" fill is painted over, and a row of tabs no longer says
+    /// which one is open.
+    /// </summary>
+    public bool HighlightSelected { get; set; } = true;
 
     public PlayStyle Play { get; set; } = PlayStyle.Inherit;
 

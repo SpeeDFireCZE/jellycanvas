@@ -54,7 +54,7 @@ public static class ScriptBuilder
         // The switch means "the admin pages follow the defaults", so it goes
         // off as soon as they get settings of their own - and those are just
         // as good a reason to carry the theme there.
-        var dashboard = c.Enabled && (c.Misc.ThemeDashboard || !string.IsNullOrWhiteSpace(c.Overrides.Dashboard));
+        var dashboard = c.Enabled && !c.Misc.StockDashboard && (c.Misc.ThemeDashboard || !string.IsNullOrWhiteSpace(c.Overrides.Dashboard));
         var backdrop = BackdropFor(c);
         var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
         var devices = new Dictionary<string, object?>();

@@ -746,6 +746,31 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void The_selected_button_stays_visible_under_a_custom_look()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.Glow } });
+
+        Assert.Contains("html .emby-button.jc-active, html .emby-button[aria-pressed=\"true\"]", css, StringComparison.Ordinal);
+        Assert.Contains("outline: 2px solid #00a4dc !important;", css, StringComparison.Ordinal);
+
+        var off = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.Glow, HighlightSelected = false } });
+        Assert.DoesNotContain("html .emby-button.jc-active", off, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_banner_is_a_strip_down_to_the_title_bar()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Detail.Banner = true;
+        cfg.Detail.BannerTop = true;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .itemBackdrop > .jellycanvas-banner { position: absolute; left: 0; right: 0; bottom: 0;", css, StringComparison.Ordinal);
+        Assert.Contains("background-position: center top;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Dialogs_that_scroll_themselves_keep_scrolling()
     {
         var css = CssBuilder.Build(new PluginConfiguration());

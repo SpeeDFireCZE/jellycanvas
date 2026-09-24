@@ -69,7 +69,7 @@
             colors: 'Barvy', accent: 'Zvýraznění', background: 'Pozadí', surface: 'Plochy (lišty, dialogy)', text: 'Text', outline: 'Rámeček a tvrdý stín neo-brutalismu (prázdné = černá)', secondaryText: 'Krytí vedlejšího textu',
             header: 'Lišta', style: 'Styl', solid: 'Plná', glass: 'Sklo', gradient: 'Přechod', transparent: 'Průhledná', neoBrutalism: 'Neo-brutalismus', glowmorphism: 'Glowmorfismus', claymorphism: 'Claymorfismus', neumorphism: 'Neumorfismus',
             styleHint: 'Neo-brutalismus vyplní lištu zvýrazňovací barvou (změníš ji barvou lišty), odsadí ji od okrajů okna, aby byl vidět rámeček i stín, a nejlépe vypadá se zaoblením 0; glow, clay a neumorfismus vyniknou na ostrůvcích nebo plovoucí liště se zaoblením; neumorfismus bere barvu pozadí stránky, pokud není nastavená barva lišty.', barColor: 'Barva lišty (prázdné = barva ploch)', opacity: 'Krytí', blur: 'Rozmazání pozadí (vidět při krytí pod 100)', radius: 'Zaoblení rohů',
-            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', cardsTextHeading: 'Název a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', bannerFallbackHint: 'Názvy jsou ty z Jellyfinu (co položka má, ukáže „Editovat obrázky“). Filmy banner většinou nemají, Náhled ano; epizoda si půjčí obrázek seriálu.', bannerBackdrop: 'Pozadí (backdrop)', bannerBanner: 'Banner – jinak Náhled, jinak Pozadí', bannerThumb: 'Náhled (thumb) – jinak Pozadí', bannerDimLabel: 'Ztmavení obrázku', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
+            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', cardsTextHeading: 'Název a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', bannerFallbackHint: 'Banner vyplní horní část stránky až ke spodní hraně lišty s názvem a jezdí se stránkou; bez banneru se stejně vykreslí Náhled (co položka má, ukáže „Editovat obrázky“). Přes celou stránku jde jen Pozadí. Epizoda si půjčí obrázek seriálu.', bannerBackdrop: 'Pozadí – přes celou stránku', bannerBanner: 'Banner (jinak Náhled) – pruh až k liště s názvem', stockDashboard: 'Výchozí Nástěnka Jellyfinu (motiv se na admin stránky nedostane)', highlightSelected: 'Zvýraznit vybrané tlačítko (otevřená záložka, zapnutý přepínač) akcentním vzhledem a obrysem – sklo, záře a další styly jinak přebijí zvýraznění Jellyfinu', bannerDimLabel: 'Ztmavení obrázku', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
             drawer: 'Boční menu (mobil / úzké okno)', menuColor: 'Barva menu (prázdné = barva pozadí)', itemRadius: 'Zaoblení položek', width: 'Šířka (0 = výchozí)',
             playButtonHeading: 'Tlačítko přehrát na plakátech', playButtonHint: 'Tlačítko, které spustí přehrávání z plakátu: na webu se objeví při najetí, mobily a tablety ho mají na každém plakátu pořád. Na TV není.', playDefault: 'Jellyfin (tmavý kotouč)', playDark: 'Tmavé', playColor: 'Barva (prázdné = podle stylu)', playHoverColor: 'Barva při najetí (prázdné = lehce zesvětlit, ikona ve zvýrazňovací barvě)', playOpacity: 'Krytí výplně (sklo škáluje svou tenkou výplň)', playPosition: 'Umístění', playPosDefault: 'Jellyfin (uprostřed na webu, vpravo dole na mobilu)', playPosCenter: 'Uprostřed', playRadius: 'Zaoblení rohů (-1 = jako ikonová tlačítka, 999 = kulaté)', playHideMobile: 'Bez tlačítka přehrát na mobilu',
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
@@ -302,6 +302,20 @@
         }
     }
 
+    /** Jellyfin's own Dashboard: the tab's settings grey out and the "follow the defaults" switch goes. */
+    function stockDashboardView() {
+        var stock = !!(state && state.Misc && state.Misc.StockDashboard);
+        page.querySelector('.jc-controls').classList.toggle('jc-stock-dash', stock);
+        var follow = page.querySelector('[data-path="Misc.ThemeDashboard"]');
+        if (follow) {
+            follow.closest('.checkboxContainer').hidden = stock;
+            var hint = follow.closest('.checkboxContainer').nextElementSibling;
+            if (hint && hint.classList.contains('jc-hint')) {
+                hint.hidden = stock;
+            }
+        }
+    }
+
     /** And ticking it again is the way back: the Dashboard's own settings go. */
     function resetDashboardScope() {
         overrides.Dashboard = {};
@@ -410,6 +424,7 @@
         // "Theme the Dashboard" is one switch for the whole server, so it
         // lives on the Dashboard tab rather than among the default settings.
         page.querySelector('#jcDashToggle').hidden = d !== 'Dashboard' || !(status && (status.FileTransformation || status.JsInjector));
+        stockDashboardView();
         refreshControls();
         // The switch also turns the preview to the device being edited
         // (a Ctrl+click from a preview leaves the preview where it is).
@@ -622,6 +637,11 @@
                 followPreview(path);
                 if (path === 'Misc.ThemeDashboard' && el.checked) {
                     resetDashboardScope();
+                }
+                if (path === 'Misc.StockDashboard') {
+                    stockDashboardView();
+                    schedulePreview();
+                    scheduleScriptPreview();
                 }
                 if (path === 'Header.Layout') {
                     renderSlots();
@@ -1805,8 +1825,11 @@
                 other.disabled = true;
             }
         });
-        if (style.textContent !== lastCss) {
-            style.textContent = lastCss;
+        // Jellyfin's own Dashboard: an admin page in the preview gets no theme,
+        // as it would not on the server either.
+        var css = state && state.Misc && state.Misc.StockDashboard && doc.body.classList.contains('dashboardDocument') ? '' : lastCss;
+        if (style.textContent !== css) {
+            style.textContent = css;
         }
         // The client picks its layout class from the device; for the preview
         // we override it with the one the user selected.
@@ -2610,6 +2633,9 @@
         ]).then(function (r) {
             state = r[0];
             presets = r[1];
+            if (state.Detail && state.Detail.BannerImage === 'Thumb') {
+                state.Detail.BannerImage = 'Banner'; // the thumb is the banner's own fallback now
+            }
             overridesFromState();
             renderPresets();
             refreshControls();

@@ -1182,6 +1182,66 @@
         }
     }
 
+    // ------------------------------------------------------------------
+    // The banner strip: the item page's own banner box (.itemBackdrop runs
+    // from the top of the page to the bottom of the title ribbon) gets the
+    // picture, lifted up behind the top bar so it starts at the very top.
+    // The full-page layer goes quiet meanwhile: only "backdrop" covers the
+    // whole page. Where the page has no such box (the TV layout), the
+    // picture falls back to the full-page layer.
+    // ------------------------------------------------------------------
+    function bannerBox() {
+        var pages = document.querySelectorAll('.itemDetailPage');
+        for (var i = 0; i < pages.length; i++) {
+            if (!pages[i].classList.contains('hide')) {
+                var box = pages[i].querySelector('.itemBackdrop');
+                return box && box.offsetWidth && box.offsetHeight ? box : null;
+            }
+        }
+        return null;
+    }
+
+    function bannerLift(el) {
+        // From the box's top up to the top of the page: behind the bar.
+        var box = el.parentNode;
+        var top = box.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0);
+        el.style.top = (-Math.max(0, Math.round(top))) + 'px';
+    }
+
+    function bannerRemoveAll() {
+        var all = document.querySelectorAll('.jellycanvas-banner');
+        for (var i = 0; i < all.length; i++) {
+            all[i].parentNode.removeChild(all[i]);
+        }
+    }
+
+    function bannerStrip(id, url) {
+        var box = bannerBox();
+        if (!box) {
+            return backdropShow(url, true);
+        }
+        backdropClear();
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () { resolve(url); };
+            img.onerror = reject;
+            img.src = url;
+        }).then(function () {
+            if (bdDetailId !== id || !box.parentNode) {
+                return;
+            }
+            var el = box.querySelector('.jellycanvas-banner');
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 'jellycanvas-banner';
+                box.insertBefore(el, box.firstChild);
+            }
+            el.style.backgroundImage = 'url("' + url + '")';
+            bannerLift(el);
+            requestAnimationFrame(function () { el.classList.add('is-on'); });
+        });
+    }
+
     // The item's own backdrop (an episode's comes from its series).
     function backdropShowItem(id) {
         var api = window.ApiClient;
@@ -1215,26 +1275,42 @@
                 }
                 return backdrop();
             };
-            if (kind === 'Thumb') {
-                return thumb();
+            if (kind !== 'Banner' && kind !== 'Thumb') {
+                return backdrop(); // the backdrop, across the whole page
             }
-            if (kind === 'Banner') {
-                if (tags.Banner) {
-                    return show(item.Id, 'Banner', tags.Banner);
+            // A banner is a strip at the top of the page, not the page: the
+            // banner, or else the thumb (the wide picture with the title,
+            // which films have and banners they rarely do), or else the
+            // backdrop - all drawn the same way. ("Thumb" was a choice of
+            // its own once; a saved theme with it gets the same strip.)
+            var strip = function (owner, type, tag) {
+                return bannerStrip(id, api.getScaledImageUrl(owner, { type: type, maxWidth: 1920, tag: tag }));
+            };
+            var stripThumb = function () {
+                if (tags.Thumb) {
+                    return strip(item.Id, 'Thumb', tags.Thumb);
                 }
-                if (!item.SeriesId) {
-                    return thumb();
+                if (item.ParentThumbItemId && item.ParentThumbImageTag) {
+                    return strip(item.ParentThumbItemId, 'Thumb', item.ParentThumbImageTag);
                 }
-                // An episode or a season has no banner of its own; the series may.
-                return api.getItem(api.getCurrentUserId(), item.SeriesId).then(function (series) {
-                    if (bdDetailId !== id) {
-                        return undefined;
-                    }
-                    var st = series && series.ImageTags && series.ImageTags.Banner;
-                    return st ? show(series.Id, 'Banner', st) : thumb();
-                });
+                var own = item.BackdropImageTags && item.BackdropImageTags.length;
+                var owner = own ? item.Id : item.ParentBackdropItemId;
+                return owner ? strip(owner, 'Backdrop', own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0]) : undefined;
+            };
+            if (tags.Banner) {
+                return strip(item.Id, 'Banner', tags.Banner);
             }
-            return backdrop();
+            if (!item.SeriesId) {
+                return stripThumb();
+            }
+            // An episode or a season has no banner of its own; the series may.
+            return api.getItem(api.getCurrentUserId(), item.SeriesId).then(function (series) {
+                if (bdDetailId !== id) {
+                    return undefined;
+                }
+                var st = series && series.ImageTags && series.ImageTags.Banner;
+                return st ? strip(series.Id, 'Banner', st) : stripThumb();
+            });
         }).catch(function () { /* no backdrop for this item - keep what is there */ });
     }
 
@@ -1335,6 +1411,7 @@
     }
 
     function backdropStop() {
+        bannerRemoveAll();
         if (bdTimer) {
             clearInterval(bdTimer);
             bdTimer = null;
@@ -1385,6 +1462,12 @@
         if (!bd.detail) {
             return;
         }
+        // The page settles (a logo loads, the window changes): the strip
+        // keeps reaching up to the top of the page.
+        var strips = document.querySelectorAll('.jellycanvas-banner');
+        for (var s = 0; s < strips.length; s++) {
+            bannerLift(strips[s]);
+        }
         // An item's page shows that item's backdrop; leaving it goes back
         // to the rotation (next random picture) or to the still background.
         var id = detailItemId();
@@ -1397,6 +1480,7 @@
             return;
         }
         bdDetailId = id;
+        bannerRemoveAll();
         if (id) {
             backdropShowItem(id);
         } else if (backdropRotates()) {
