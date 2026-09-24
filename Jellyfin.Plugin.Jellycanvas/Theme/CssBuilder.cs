@@ -1023,6 +1023,20 @@ public static class CssBuilder
             : dim;
         sb.AppendLine($"{strip}::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {layers}; }}");
 
+        // Under the strip: the page's own background, or a colour or a
+        // gradient of the banner's own. The script marks <html> while an
+        // item page shows the strip, so the rest of the client keeps its
+        // background settings.
+        if (d.BannerPage != BannerPageBackground.Theme)
+        {
+            var under = d.BannerPage == BannerPageBackground.Solid
+                ? Color.Parse(d.BannerPageColor, x.Background).Hex
+                : $"linear-gradient({d.BannerPageAngle}deg, {Color.Parse(d.BannerPageFrom, x.Background).Hex} 0%, {Color.Parse(d.BannerPageTo, x.Accent.Darken(0.55)).Hex} 100%)";
+            var page = $"{x.P}html.jellycanvas-banner-page";
+            sb.AppendLine($"{page} .backgroundContainer, {page} .backgroundContainer.withBackdrop {{ opacity: 1 !important; background: {under} !important; }}");
+            sb.AppendLine($"{page} .backgroundContainer::before, {page} .backgroundContainer::after, {page} .backgroundContainer > .jellycanvas-backdrop, {page} .backdropContainer {{ display: none !important; }}");
+        }
+
         // The script marks the layer while it shows an item's own picture:
         // the banner's dim and position are for that, not for the random
         // pictures elsewhere (a background of its own has its own dim).

@@ -1209,6 +1209,7 @@
     }
 
     function bannerRemoveAll() {
+        document.documentElement.classList.remove('jellycanvas-banner-page');
         var all = document.querySelectorAll('.jellycanvas-banner');
         for (var i = 0; i < all.length; i++) {
             all[i].parentNode.removeChild(all[i]);
@@ -1238,6 +1239,8 @@
             }
             el.style.backgroundImage = 'url("' + url + '")';
             bannerLift(el);
+            // The page under the strip may have a background of the banner's own.
+            document.documentElement.classList.add('jellycanvas-banner-page');
             requestAnimationFrame(function () { el.classList.add('is-on'); });
         });
     }

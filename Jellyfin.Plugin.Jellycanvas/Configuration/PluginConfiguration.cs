@@ -959,6 +959,19 @@ public class DashboardSettings
     public bool HideHelp { get; set; } = false;
 }
 
+/// <summary>What the item page shows under its banner strip.</summary>
+public enum BannerPageBackground
+{
+    /// <summary>Whatever the background settings give the page (a rotating backdrop pauses there).</summary>
+    Theme,
+
+    /// <summary>One colour.</summary>
+    Solid,
+
+    /// <summary>A gradient between two colours.</summary>
+    Gradient,
+}
+
 /// <summary>The picture the item page's banner uses.</summary>
 public enum BannerImage
 {
@@ -1254,6 +1267,21 @@ public class DetailSettings
 
     /// <summary>The colour the banner fades into; empty = the page background.</summary>
     public string BannerFadeColor { get; set; } = string.Empty;
+
+    /// <summary>What the item page shows under the banner strip.</summary>
+    public BannerPageBackground BannerPage { get; set; } = BannerPageBackground.Theme;
+
+    /// <summary>The colour under the banner (<see cref="BannerPageBackground.Solid"/>); empty = the page background.</summary>
+    public string BannerPageColor { get; set; } = string.Empty;
+
+    /// <summary>Gradient start under the banner; empty = the page background.</summary>
+    public string BannerPageFrom { get; set; } = string.Empty;
+
+    /// <summary>Gradient end under the banner; empty = a dark accent.</summary>
+    public string BannerPageTo { get; set; } = string.Empty;
+
+    /// <summary>Gradient direction in degrees (180 = top to bottom).</summary>
+    public int BannerPageAngle { get; set; } = 180;
 
     /// <summary>Transparent "ribbon" with the title and buttons under the backdrop.</summary>
     /// <summary>Kept for themes saved before the ribbon got a style of its own; true means "Transparent".</summary>

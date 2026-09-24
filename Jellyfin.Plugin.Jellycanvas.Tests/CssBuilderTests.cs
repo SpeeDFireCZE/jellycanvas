@@ -786,6 +786,13 @@ public class CssBuilderTests
         cfg.Detail.BannerFadeColor = "#123456";
         var faded = CssBuilder.Build(cfg);
         Assert.Contains("linear-gradient(to bottom, rgba(18, 52, 86, 0) 60%, #123456 100%)", faded, StringComparison.Ordinal);
+
+        // The page under the strip gets a background of the banner's own.
+        cfg.Detail.BannerPage = BannerPageBackground.Gradient;
+        cfg.Detail.BannerPageFrom = "#101010";
+        cfg.Detail.BannerPageTo = "#300040";
+        var under = CssBuilder.Build(cfg);
+        Assert.Contains("html.jellycanvas-banner-page .backgroundContainer, html.jellycanvas-banner-page .backgroundContainer.withBackdrop { opacity: 1 !important; background: linear-gradient(180deg, #101010 0%, #300040 100%) !important; }", under, StringComparison.Ordinal);
     }
 
     [Fact]

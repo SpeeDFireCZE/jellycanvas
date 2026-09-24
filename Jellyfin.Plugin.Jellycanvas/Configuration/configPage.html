@@ -810,6 +810,18 @@
                                 <div class="checkboxContainer jc-needs-script" data-when="Detail.Banner=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Detail.BannerTop"><span data-i18n="bannerTop">Keep the top of the picture in view</span></label></div>
                                 <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-slider="Detail.BannerFade" data-min="0" data-max="100" data-unit="%" data-i18n-label="bannerFade" hidden>Fade at the bottom (how far up it reaches, 0 = a hard edge)</div>
                                 <div class="jc-color jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-color="Detail.BannerFadeColor" data-optional="1" data-i18n-label="bannerFadeColor" hidden>Fade colour (empty = the page background)</div>
+                                <div class="selectContainer jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" hidden>
+                                    <label class="selectLabel" for="jcBannerPage" data-i18n="bannerPage">Background under the banner</label>
+                                    <select is="emby-select" id="jcBannerPage" data-path="Detail.BannerPage" class="emby-select-withcolor emby-select">
+                                        <option value="Theme" data-i18n="bannerPageTheme">The page's own (the background settings)</option>
+                                        <option value="Solid" data-i18n="bannerPageSolid">One colour</option>
+                                        <option value="Gradient" data-i18n="bannerPageGradient">Gradient</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-when3="Detail.BannerPage=Solid" data-color="Detail.BannerPageColor" data-optional="1" data-i18n-label="backdropColor" hidden>Color (empty = background color)</div>
+                                <div class="jc-color jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-when3="Detail.BannerPage=Gradient" data-color="Detail.BannerPageFrom" data-optional="1" data-i18n-label="gradientFrom" hidden>Gradient from (empty = background color)</div>
+                                <div class="jc-color jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-when3="Detail.BannerPage=Gradient" data-color="Detail.BannerPageTo" data-optional="1" data-i18n-label="gradientTo" hidden>Gradient to (empty = dark accent)</div>
+                                <div class="jc-row jc-needs-script" data-when="Detail.Banner=true" data-when2="Detail.BannerImage=Banner|Thumb" data-when3="Detail.BannerPage=Gradient" data-slider="Detail.BannerPageAngle" data-min="0" data-max="360" data-step="5" data-unit="°" data-i18n-label="gradientAngle" hidden>Gradient angle</div>
                                 <h4 class="jc-sub" data-i18n="peopleHeading">Cast &amp; crew</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcPeople" data-i18n="peopleShape">Photo shape</label>
