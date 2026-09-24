@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Ctrl+click in the preview: the watched tick and the progress bar open "Watched & progress" instead of the card's look (like the badges, they let clicks through to the poster, so they are found by their place), and the login page's heading and buttons open the Login section rather than the font - their text is a setting there. A second click on the same row keeps its highlight for the full time.
 - Fixed: a font chosen for the TV, the phone or the admin pages alone was never fetched - the Google Fonts import was built from the defaults only, so that scope asked for a font the page had not loaded and fell back to another. Every scope's font is imported now, at the top of the stylesheet where imports are allowed.
 - Fixed: inside one device's scope the theme also wrote the other device's rules, which could never match (a phone's rule under `html.layout-tv`), and the TV / phone palette variables were written unscoped - so a value set for the admin pages reached every TV. Each scope now carries its own device's rules only, and names its layout once instead of twice.
 - The bar's corner radius is offered where it does something: with an islands bar the corners come from the island radius, so the row is hidden there.

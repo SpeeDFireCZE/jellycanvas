@@ -1430,7 +1430,10 @@
         // Plain text (a title, a card caption, a description) belongs
         // to typography even when it sits inside a card or the header;
         // text on a button or link still belongs to that control.
-        if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a, #jellycanvasSlideshow, .jellycanvas-row')) {
+        // #loginPage: its heading and its links are settings of the login
+        // section (the text itself can be set there), so they do not fall
+        // through to the font like other plain text.
+        if (isTextOnly(target) && !target.closest('button, .emby-button, .MuiButtonBase-root, header a, #jellycanvasSlideshow, .jellycanvas-row, #loginPage')) {
             section = 'typography';
         } else {
             for (var i = 0; i < CLICK_MAP.length; i++) {
@@ -1545,6 +1548,16 @@
                 var r = boxes[i].getBoundingClientRect();
                 if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
                     return { section: 'badges', anchor: 'badgesCornersHeading', rect: r };
+                }
+            }
+            // Jellyfin's own marks - the watched tick and the progress bar -
+            // let clicks through to the poster, so they are found by place
+            // like the badges; they are a setting of their own.
+            var marks = card.querySelectorAll('.playedIndicator, .cardIndicators, .itemProgressBar, .itemLinearProgress, .MuiLinearProgress-root');
+            for (var k = 0; k < marks.length; k++) {
+                var mr = marks[k].getBoundingClientRect();
+                if (mr.width && mr.height && x >= mr.left && x <= mr.right && y >= mr.top && y <= mr.bottom) {
+                    return { section: 'cards', anchor: 'playedHeading', rect: mr };
                 }
             }
         }
@@ -1761,7 +1774,8 @@
         var flash = spot || details;
         (spot || details).scrollIntoView({ behavior: 'smooth', block: spot ? 'center' : 'start' });
         flash.classList.add('jc-flash');
-        setTimeout(function () { flash.classList.remove('jc-flash'); }, 1500);
+        clearTimeout(flash.jcFlashTimer); // clicked again: the highlight starts over
+        flash.jcFlashTimer = setTimeout(function () { flash.classList.remove('jc-flash'); }, 1500);
     }
 
     function injectCss() {
