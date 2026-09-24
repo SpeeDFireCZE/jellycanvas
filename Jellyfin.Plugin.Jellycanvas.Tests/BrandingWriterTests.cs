@@ -58,6 +58,14 @@ public class BrandingWriterTests
     }
 
     [Fact]
+    public void A_release_lists_three_parts_and_a_test_build_four()
+    {
+        Assert.Equal("1.2.4", Plugin.DisplayVersion(new Version(1, 2, 4, 0)).ToString());
+        Assert.Equal("1.2.4.8", Plugin.DisplayVersion(new Version(1, 2, 4, 8)).ToString());
+        Assert.Equal("1.2.0", Plugin.DisplayVersion(new Version(1, 2)).ToString());
+    }
+
+    [Fact]
     public void Empty_input_gives_empty_output()
     {
         Assert.Equal(string.Empty, BrandingWriter.StripBlock(string.Empty));

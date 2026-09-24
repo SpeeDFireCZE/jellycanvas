@@ -62,6 +62,26 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override string Name => "Jellycanvas";
 
     /// <summary>
+    /// The Dashboard lists the version the DLL carries, and a .NET assembly
+    /// version always has four parts: a release 1.2.4 would read 1.2.4.0.
+    /// Releases are three parts; only a test build has a fourth number
+    /// (built with -p:Version=1.2.4.8), and only then is it shown.
+    /// </summary>
+    public override PluginInfo GetPluginInfo()
+    {
+        var info = base.GetPluginInfo();
+        info.Version = DisplayVersion(Version);
+        return info;
+    }
+
+    /// <summary>Three parts for a release, four for a test build.</summary>
+    public static Version DisplayVersion(Version version)
+    {
+        ArgumentNullException.ThrowIfNull(version);
+        return version.Revision > 0 ? version : new Version(version.Major, version.Minor, Math.Max(0, version.Build));
+    }
+
+    /// <summary>
     /// The plugin's permanent identifier. Must match build.yaml and
     /// configPage.js - the Dashboard loads and saves the configuration by it.
     /// Never change it, or Jellyfin will see a "different" plugin.

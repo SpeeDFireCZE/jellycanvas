@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- The Dashboard's plugin list shows a release as three numbers (1.2.4, not 1.2.4.0). Jellyfin lists the version the DLL carries, and a .NET assembly version always has four parts; the plugin now reports three unless the fourth is set - which only a test build does.
 - Item page banner: "Banner" is a strip now, not the page - the item's banner, or else its thumb (or its backdrop), fills the top of the page from behind the top bar down to the bottom of the title bar and scrolls with the page, the way Jellyfin's own details banner sits; the page below keeps its background and a rotating backdrop pauses there. Only "Backdrop" covers the whole page. The separate "Thumb" choice is gone (the thumb is the banner's own fallback); a saved theme with it gets the strip.
 - Dashboard tab: "Jellyfin's own Dashboard" keeps the theme off the admin pages altogether, whatever the tab says; the tab's settings grey out meanwhile and the preview shows the stock admin pages.
 - Buttons: "Mark the selected button" (on by default) - under glass, glow and the other looks the stock "selected" fill was painted over, so a row of tabs (the designer's own Default / TV / Mobile / Dashboard among them) no longer said which one was open. The selected one gets the accented look and an outline. The designer's own tabs are marked that way whatever the setting.
