@@ -1069,8 +1069,10 @@ public static class CssBuilder
         {
             sb.AppendLine($"{dash} .backgroundContainer {{ background-color: var(--jf-palette-background-default) !important; }}");
         }
-        // The picture a device card falls back to is Jellyfin blue.
-        sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; background-image: none !important; }}");
+        // The picture a device card falls back to is Jellyfin blue. Only the
+        // color: the class stays on a card that shows what is playing, with
+        // the item's picture set inline over it.
+        sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; }}");
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)
         {
             return;

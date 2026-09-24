@@ -746,6 +746,18 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_now_playing_card_keeps_its_picture_on_the_dashboard()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        // Jellyfin keeps .defaultCardBackground on a session card and sets the
+        // playing item's picture inline: only the fallback color may change.
+        var line = Array.Find(css.Split('\n'), l => l.Contains(".MuiCardMedia-root.defaultCardBackground", StringComparison.Ordinal)) ?? string.Empty;
+        Assert.NotEmpty(line);
+        Assert.DoesNotContain("background-image", line, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void The_selected_button_stays_visible_under_a_custom_look()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.Glow } });
