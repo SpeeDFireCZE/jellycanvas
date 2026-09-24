@@ -266,7 +266,9 @@
     var FLAGS = {
         EN: { h: ['#012169'], gb: true },
         CS: { h: ['#fff', '#d7141a'], tri: '#11457e' },
-        SK: { h: ['#fff', '#0b4ea2', '#ee1c25'] },
+        // Three tricolours are only told apart by their arms: without them
+        // Slovakia and Slovenia are Russia, and Croatia is the Netherlands.
+        SK: { h: ['#fff', '#0b4ea2', '#ee1c25'], arms: 'sk' },
         DE: { h: ['#000', '#dd0000', '#ffce00'] },
         FR: { v: ['#0055a4', '#fff', '#ef4135'] },
         ES: { h: ['#aa151b', '#f1bf00', '#f1bf00', '#aa151b'] },
@@ -290,9 +292,9 @@
         EL: { h: ['#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf', '#fff', '#0d5eaf'], canton: '#0d5eaf' },
         RO: { v: ['#002b7f', '#fcd116', '#ce1126'] },
         BG: { h: ['#fff', '#00966e', '#d62612'] },
-        HR: { h: ['#ff0000', '#fff', '#171796'] },
+        HR: { h: ['#ff0000', '#fff', '#171796'], arms: 'hr' },
         SR: { h: ['#c6363c', '#0c4076', '#fff'] },
-        SL: { h: ['#fff', '#005da4', '#ed1c24'] },
+        SL: { h: ['#fff', '#005da4', '#ed1c24'], arms: 'si' },
         TH: { h: ['#a51931', '#f4f5f8', '#2d2a4a', '#2d2a4a', '#f4f5f8', '#a51931'] },
         VI: { h: ['#da251d'], star: '#ffff00', sx: 0.5, sy: 0.5 },
         ID: { h: ['#ff0000', '#fff'] },
@@ -325,6 +327,36 @@
         return svg;
     }
 
+    /**
+     * The coat of arms that tells a tricolour from its neighbour, simplified
+     * to what reads at badge size (30 x 20 units).
+     */
+    function flagArms(svg, kind) {
+        if (kind === 'sk') {
+            // A red shield edged in white, the white double cross on blue hills, at the hoist.
+            svg.appendChild(svgEl('path', { d: 'M6 4.5 H13.2 V10.6 Q13.2 14.6 9.6 16 Q6 14.6 6 10.6 Z', fill: '#ee1c25', stroke: '#fff', 'stroke-width': 0.7 }));
+            svg.appendChild(svgEl('path', { d: 'M6.4 12.4 Q7.6 11.2 8.6 12 Q9.6 10.8 10.6 12 Q11.6 11.2 12.8 12.4 Q12.2 14.6 9.6 15.5 Q7 14.6 6.4 12.4 Z', fill: '#0b4ea2' }));
+            svg.appendChild(svgEl('path', { d: 'M9.6 6 V11.8 M8.3 7.7 H10.9 M7.7 9.6 H11.5', stroke: '#fff', 'stroke-width': 0.95 }));
+        } else if (kind === 'si') {
+            // A blue shield edged in red with white Triglav and three stars, top of the hoist.
+            svg.appendChild(svgEl('path', { d: 'M5.5 2.8 H11.3 V7.2 Q11.3 10 8.4 11 Q5.5 10 5.5 7.2 Z', fill: '#005da4', stroke: '#ed1c24', 'stroke-width': 0.6 }));
+            svg.appendChild(svgEl('path', { d: 'M6.2 8.6 L7.3 6.9 L8.4 5.3 L9.5 6.9 L10.6 8.6 Z', fill: '#fff' }));
+            [[7.4, 4.3], [8.4, 3.8], [9.4, 4.3]].forEach(function (p) {
+                svg.appendChild(svgEl('circle', { cx: p[0], cy: p[1], r: 0.38, fill: '#ffdd00' }));
+            });
+        } else if (kind === 'hr') {
+            // The red and white chequy shield in the middle.
+            svg.appendChild(svgEl('path', { d: 'M12.2 5 H17.8 V11 Q17.8 14.8 15 15.8 Q12.2 14.8 12.2 11 Z', fill: '#fff', stroke: '#fff', 'stroke-width': 0.5 }));
+            for (var r = 0; r < 6; r++) {
+                for (var c = 0; c < 5; c++) {
+                    if ((r + c) % 2 === 0 && !(r === 5 && (c === 0 || c === 4))) {
+                        svg.appendChild(svgEl('rect', { x: (12.2 + c * 1.12).toFixed(2), y: (5 + r * 1.55).toFixed(2), width: 1.12, height: 1.55, fill: '#ff0000' }));
+                    }
+                }
+            }
+        }
+    }
+
     function flagSvg(code) {
         var f = FLAGS[code];
         if (!f) {
@@ -340,6 +372,9 @@
                 ? svgEl('rect', { x: 0, y: (H * i / n).toFixed(2), width: W, height: (H / n + 0.3).toFixed(2), fill: color })
                 : svgEl('rect', { x: (W * i / n).toFixed(2), y: 0, width: (W / n + 0.3).toFixed(2), height: H, fill: color }));
         });
+        if (f.arms) {
+            flagArms(svg, f.arms);
+        }
         if (f.gb) {
             svg.appendChild(svgEl('path', { d: 'M0 0 L30 20 M30 0 L0 20', stroke: '#fff', 'stroke-width': 5 }));
             svg.appendChild(svgEl('path', { d: 'M0 0 L30 20 M30 0 L0 20', stroke: '#c8102e', 'stroke-width': 2 }));
@@ -1168,26 +1203,37 @@
                 var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
                 return owner ? show(owner, 'Backdrop', tag) : undefined;
             };
-            if (kind === 'Banner' && tags.Banner) {
-                return show(item.Id, 'Banner', tags.Banner);
+            // The thumb ("Náhled" in a Czech Jellyfin) is the wide picture
+            // with the title on it - the closest thing to a banner, and the
+            // one films actually have: a banner is mostly a series' thing.
+            var thumb = function () {
+                if (tags.Thumb) {
+                    return show(item.Id, 'Thumb', tags.Thumb);
+                }
+                if (item.ParentThumbItemId && item.ParentThumbImageTag) {
+                    return show(item.ParentThumbItemId, 'Thumb', item.ParentThumbImageTag); // an episode: its series'
+                }
+                return backdrop();
+            };
+            if (kind === 'Thumb') {
+                return thumb();
             }
-            if (kind === 'Thumb' && tags.Thumb) {
-                return show(item.Id, 'Thumb', tags.Thumb);
-            }
-            if (kind === 'Thumb' && item.ParentThumbItemId && item.ParentThumbImageTag) {
-                return show(item.ParentThumbItemId, 'Thumb', item.ParentThumbImageTag); // an episode: its series' thumb
-            }
-            if (kind === 'Banner' && item.SeriesId) {
+            if (kind === 'Banner') {
+                if (tags.Banner) {
+                    return show(item.Id, 'Banner', tags.Banner);
+                }
+                if (!item.SeriesId) {
+                    return thumb();
+                }
                 // An episode or a season has no banner of its own; the series may.
                 return api.getItem(api.getCurrentUserId(), item.SeriesId).then(function (series) {
                     if (bdDetailId !== id) {
                         return undefined;
                     }
                     var st = series && series.ImageTags && series.ImageTags.Banner;
-                    return st ? show(series.Id, 'Banner', st) : backdrop();
+                    return st ? show(series.Id, 'Banner', st) : thumb();
                 });
             }
-            // No such picture (a film rarely has a banner): its backdrop.
             return backdrop();
         }).catch(function () { /* no backdrop for this item - keep what is there */ });
     }
