@@ -3,6 +3,10 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- The designer's device views show only what that scope can use: a setting that belongs to one device (the phone's card radius, the TV's focus ring) stays out of the other's view, "hide this on the TV / on phones" is offered in Defaults alone - inside a device's own view the setting already is that device's - and the hover rows (hover effect, hover buttons on a poster, lift on hover, a hover color) are gone from the TV and the phone, which have no pointer. The rows are marked by their setting path, so one added later lands in the right view by itself.
+
 ## 1.2.4 - 2026-09-23
 
 **The admin pages get the theme, and a designer tab of their own.** Jellyfin 12

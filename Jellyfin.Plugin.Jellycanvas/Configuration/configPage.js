@@ -69,7 +69,7 @@
             colors: 'Barvy', accent: 'Zvýraznění', background: 'Pozadí', surface: 'Plochy (lišty, dialogy)', text: 'Text', outline: 'Rámeček a tvrdý stín neo-brutalismu (prázdné = černá)', secondaryText: 'Krytí vedlejšího textu',
             header: 'Lišta', style: 'Styl', solid: 'Plná', glass: 'Sklo', gradient: 'Přechod', transparent: 'Průhledná', neoBrutalism: 'Neo-brutalismus', glowmorphism: 'Glowmorfismus', claymorphism: 'Claymorfismus', neumorphism: 'Neumorfismus',
             styleHint: 'Neo-brutalismus vyplní lištu zvýrazňovací barvou (změníš ji barvou lišty), odsadí ji od okrajů okna, aby byl vidět rámeček i stín, a nejlépe vypadá se zaoblením 0; glow, clay a neumorfismus vyniknou na ostrůvcích nebo plovoucí liště se zaoblením; neumorfismus bere barvu pozadí stránky, pokud není nastavená barva lišty.', barColor: 'Barva lišty (prázdné = barva ploch)', opacity: 'Krytí', blur: 'Rozmazání pozadí (vidět při krytí pod 100)', radius: 'Zaoblení rohů',
-            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
+            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', cardsTextHeading: 'Název a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
             drawer: 'Boční menu (mobil / úzké okno)', menuColor: 'Barva menu (prázdné = barva pozadí)', itemRadius: 'Zaoblení položek', width: 'Šířka (0 = výchozí)',
             playButtonHeading: 'Tlačítko přehrát na plakátech', playButtonHint: 'Tlačítko, které spustí přehrávání z plakátu: na webu se objeví při najetí, mobily a tablety ho mají na každém plakátu pořád. Na TV není.', playDefault: 'Jellyfin (tmavý kotouč)', playDark: 'Tmavé', playColor: 'Barva (prázdné = podle stylu)', playHoverColor: 'Barva při najetí (prázdné = lehce zesvětlit, ikona ve zvýrazňovací barvě)', playOpacity: 'Krytí výplně (sklo škáluje svou tenkou výplň)', playPosition: 'Umístění', playPosDefault: 'Jellyfin (uprostřed na webu, vpravo dole na mobilu)', playPosCenter: 'Uprostřed', playRadius: 'Zaoblení rohů (-1 = jako ikonová tlačítka, 999 = kulaté)', playHideMobile: 'Bez tlačítka přehrát na mobilu',
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
@@ -2552,11 +2552,36 @@
     // (the background source stays: an admin page may want a flat color of
     // its own while the client keeps its backdrops)
     ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Backdrop.RotateSeconds', 'Backdrop.ItemDetail', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
+        mark(prefix, 'data-nodash');
+    });
+    // The same idea for the device views, so every view offers what that
+    // scope can actually use:
+    //  - a device's own settings belong to its view and to the defaults
+    //    (the TV view has nothing to do with the phone's card radius),
+    //  - "hide this on the TV / on phones" is a decision *about* a device
+    //    and is made once, in the defaults: inside a device's own view the
+    //    setting already is that device's,
+    //  - hover needs a pointer, which a remote and a finger are not.
+    ['Tv.'].forEach(function (prefix) { mark(prefix, 'data-device', 'Tv'); });
+    ['Mobile.'].forEach(function (prefix) { mark(prefix, 'data-device', 'Mobile'); });
+    ['Tv.StaticBackdrop', 'Cards.PlayHideOnMobile'].forEach(function (prefix) { mark(prefix, 'data-nodevice'); });
+    page.querySelectorAll('[data-path$="HideOnTv"], [data-path$="HideOnMobile"], [data-path$="HideOnPhones"]').forEach(function (el) {
+        var box = el.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer') || el;
+        if (!box.closest('.jc-btn')) { // the toolbar buttons' own rows are rendered per button
+            box.setAttribute('data-nodevice', '1');
+        }
+    });
+    ['Cards.Hover', 'Cards.HideOverlayButtons', 'Cards.PlayHoverColor', 'Buttons.HoverLift'].forEach(function (prefix) {
+        mark(prefix, 'data-nohover');
+    });
+
+    /** Marks every control under a path prefix (the attribute goes on its row). */
+    function mark(prefix, attr, value) {
         page.querySelectorAll('[data-path^="' + prefix + '"], [data-slider^="' + prefix + '"], [data-color^="' + prefix + '"]').forEach(function (el) {
             var box = el.closest('.jc-row, .jc-color, .selectContainer, .inputContainer, .checkboxContainer') || el;
-            box.setAttribute('data-nodash', '1');
+            box.setAttribute(attr, value || '1');
         });
-    });
+    }
 
     bindInputs(page);
 

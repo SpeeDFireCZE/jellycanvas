@@ -60,6 +60,11 @@
                 .jc-device-mode.jc-edit-tv [data-device="Mobile"], .jc-device-mode.jc-edit-tv [data-device="MobileDash"],
                 .jc-device-mode.jc-edit-mobile [data-device="Tv"] { display: none !important; }
                 .jc-device-mode.jc-edit-dashboard [data-device="Tv"], .jc-device-mode.jc-edit-dashboard [data-device="Mobile"] { display: none !important; }
+                /* Hover needs a pointer: a TV is driven by a remote, a phone by a finger. */
+                .jc-device-mode.jc-edit-tv [data-nohover], .jc-device-mode.jc-edit-mobile [data-nohover] { display: none !important; }
+                /* ... and what is left of such a block gets a heading of its own there. */
+                [data-touch-only] { display: none; }
+                .jc-device-mode.jc-edit-tv [data-touch-only], .jc-device-mode.jc-edit-mobile [data-touch-only] { display: block; }
                 /* The admin pages have no posters, no player, no item page and no login form. */
                 .jc-device-mode.jc-edit-dashboard .jc-section[data-nodash] { display: none; }
                 .jc-device-mode.jc-edit-dashboard [data-nodash]:not(.jc-section) { display: none !important; }
@@ -542,7 +547,8 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.Shadow"><span data-i18n="shadow">Shadow</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.Border"><span data-i18n="border">Thin border</span></label></div>
                                 <div class="jc-row" data-slider="Cards.Spacing" data-min="40" data-max="200" data-unit="%" data-i18n-label="spacing">Spacing</div>
-                                <h4 class="jc-sub" data-i18n="cardsHoverHeading">Hover &amp; text</h4>
+                                <h4 class="jc-sub" data-nohover="1" data-i18n="cardsHoverHeading">Hover &amp; text</h4>
+                                <h4 class="jc-sub" data-touch-only="1" data-i18n="cardsTextHeading">Title &amp; text</h4>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="jcCardHover" data-i18n="hover">Hover effect</label>
                                     <select is="emby-select" id="jcCardHover" data-path="Cards.Hover" class="emby-select-withcolor emby-select">
