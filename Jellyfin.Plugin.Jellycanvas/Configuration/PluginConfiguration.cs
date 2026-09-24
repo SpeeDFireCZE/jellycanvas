@@ -1246,6 +1246,15 @@ public class DetailSettings
     /// <summary>Keep the top of the picture in view (Jellyfin anchors it there); off = centred.</summary>
     public bool BannerTop { get; set; } = true;
 
+    /// <summary>
+    /// The banner strip fades out at its bottom: how far up the fade reaches,
+    /// in percent of the strip's height (0 = a hard edge).
+    /// </summary>
+    public int BannerFade { get; set; } = 0;
+
+    /// <summary>The colour the banner fades into; empty = the page background.</summary>
+    public string BannerFadeColor { get; set; } = string.Empty;
+
     /// <summary>Transparent "ribbon" with the title and buttons under the backdrop.</summary>
     /// <summary>Kept for themes saved before the ribbon got a style of its own; true means "Transparent".</summary>
     public bool TransparentRibbon { get; set; } = false;

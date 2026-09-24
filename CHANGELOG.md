@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Item page banner: a fade at the bottom of the strip - how far up it reaches (0 = a hard edge, as before) and the colour it fades into (empty = the page background). Shown for the banner strip only; the full-page backdrop has its own dimming.
 - Fixed: with the theme on the Dashboard, a device card showed an empty box where the picture of what is playing belongs. The rule that recolours the Jellyfin-blue placeholder behind device cards also cleared their background image - and Jellyfin keeps that placeholder class on a playing session's card, with the item's picture set over it. Only the colour changes now.
 - The Dashboard's plugin list shows a release as three numbers (1.2.4, not 1.2.4.0). Jellyfin lists the version the DLL carries, and a .NET assembly version always has four parts; the plugin now reports three unless the fourth is set - which only a test build does.
 - Item page banner: "Banner" is a strip now, not the page - the item's banner, or else its thumb (or its backdrop), fills the top of the page from behind the top bar down to the bottom of the title bar and scrolls with the page, the way Jellyfin's own details banner sits; the page below keeps its background and a rotating backdrop pauses there. Only "Backdrop" covers the whole page. The separate "Thumb" choice is gone (the thumb is the banner's own fallback); a saved theme with it gets the strip.

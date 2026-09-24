@@ -780,6 +780,12 @@ public class CssBuilderTests
 
         Assert.Contains("html .itemBackdrop > .jellycanvas-banner { position: absolute; left: 0; right: 0; bottom: 0;", css, StringComparison.Ordinal);
         Assert.Contains("background-position: center top;", css, StringComparison.Ordinal);
+
+        // A fade at the bottom, into a colour of one's own.
+        cfg.Detail.BannerFade = 40;
+        cfg.Detail.BannerFadeColor = "#123456";
+        var faded = CssBuilder.Build(cfg);
+        Assert.Contains("linear-gradient(to bottom, rgba(18, 52, 86, 0) 60%, #123456 100%)", faded, StringComparison.Ordinal);
     }
 
     [Fact]

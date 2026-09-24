@@ -1013,7 +1013,15 @@ public static class CssBuilder
         sb.AppendLine($"{x.P}html .itemDetailPage .itemBackdrop {{ position: relative; }}");
         sb.AppendLine($"{strip} {{ position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none; background-size: cover; background-repeat: no-repeat; background-position: center {(d.BannerTop ? "top" : "center")}; opacity: 0; transition: opacity 0.6s ease; }}");
         sb.AppendLine($"{strip}.is-on {{ opacity: 1; }}");
-        sb.AppendLine($"{strip}::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0)}; }}");
+        // The dim over the whole picture, and on top of it the fade at the
+        // bottom (from clear to the chosen colour, up to the set height).
+        var dim = x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0);
+        var fade = Math.Clamp(d.BannerFade, 0, 100);
+        var fadeTo = Color.Parse(d.BannerFadeColor, x.Background);
+        var layers = fade > 0
+            ? $"linear-gradient(to bottom, {fadeTo.Rgba(0)} {100 - fade}%, {fadeTo.Hex} 100%), linear-gradient({dim}, {dim})"
+            : dim;
+        sb.AppendLine($"{strip}::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {layers}; }}");
 
         // The script marks the layer while it shows an item's own picture:
         // the banner's dim and position are for that, not for the random
