@@ -61,15 +61,33 @@ public static class CssBuilder
         sb.AppendLine(StartMarker);
         sb.AppendLine("/* Jellycanvas theme " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC */");
 
-        // @import has to be the very first thing in a stylesheet, hence fonts first.
-        AppendFontImport(sb, c.Typography);
-
         // A device with changes of its own gets the whole theme again, built
         // from the merged settings and scoped to its layout class - and the
         // defaults are kept OFF that device (":not(.layout-tv)"): a rule the
         // device's settings do not produce (islands on a bar the TV wants
         // full) must not leak in from the defaults, and CSS can only add.
         var own = DeviceOverrides.Devices.Where(d => d.Name != "Web" && DeviceOverrides.HasContent(DeviceOverrides.For(c, d.Name))).ToList();
+
+        // @import has to be the very first thing in a stylesheet, hence fonts
+        // first - and a device with a font of its own needs its import here
+        // as well, where imports are still allowed. Otherwise that device
+        // asks for a font the page never loads and falls back to another.
+        var imports = new List<string>();
+        foreach (var settings in own
+            .Select(d => DeviceOverrides.Merge(c, DeviceOverrides.For(c, d.Name)).Typography)
+            .Prepend(c.Typography))
+        {
+            var import = FontImport(settings);
+            if (import is not null && !imports.Contains(import, StringComparer.Ordinal))
+            {
+                imports.Add(import);
+            }
+        }
+
+        foreach (var import in imports)
+        {
+            sb.AppendLine(import);
+        }
         var defaultScope = own.Count == 0 ? null : "html" + string.Concat(own.Select(d => ":not(" + d.Scope.Substring(4) + ")"));
         sb.Append(BuildScoped(c, defaultScope));
         foreach (var (name, scope) in DeviceOverrides.Devices)
@@ -134,8 +152,19 @@ public static class CssBuilder
         AppendDetail(sb, ctx);
         AppendLogin(sb, ctx);
         AppendMisc(sb, ctx);
-        AppendTv(sb, ctx);
-        AppendMobile(sb, ctx);
+        // A client is a TV or a phone, never both: inside one device's scope
+        // the other one's section could not match anything, and its palette
+        // variables (which name the layout themselves) would even reach that
+        // other device.
+        if (!ctx.IsMobile)
+        {
+            AppendTv(sb, ctx);
+        }
+
+        if (!ctx.IsTv)
+        {
+            AppendMobile(sb, ctx);
+        }
 
         var css = sb.ToString();
         if (ctx.P.Length > 0)
@@ -155,11 +184,12 @@ public static class CssBuilder
     // already computed, and appends its lines. Their order is the CSS order.
     // ------------------------------------------------------------------
 
-    private static void AppendFontImport(StringBuilder sb, TypographySettings t)
+    /// <summary>The Google Fonts import one typography setting needs, or null.</summary>
+    private static string? FontImport(TypographySettings t)
     {
         if (!t.LoadFromGoogle)
         {
-            return;
+            return null;
         }
 
         // For the known fonts ask for the bold weights too; for a custom name
@@ -175,10 +205,9 @@ public static class CssBuilder
             _ => null,
         };
 
-        if (family is not null)
-        {
-            sb.AppendLine($"@import url('https://fonts.googleapis.com/css2?family={family}&display=swap');");
-        }
+        return family is null
+            ? null
+            : $"@import url('https://fonts.googleapis.com/css2?family={family}&display=swap');";
     }
 
     private static void AppendPalette(StringBuilder sb, Context x)
@@ -356,7 +385,7 @@ public static class CssBuilder
             // margins are enough there.
             sb.AppendLine($"{headers} {{ left: 12px !important; right: 12px !important; top: 8px !important; width: auto !important; border-radius: {radius} !important; box-shadow: {shadow} !important; border-bottom: {border}; overflow: hidden; }}");
             // (overflow: visible again - the TV info strip hangs below the bar.)
-            sb.AppendLine($"{x.P}html.layout-tv .skinHeader {{ left: auto !important; right: auto !important; top: auto !important; margin: 8px 12px 0; overflow: visible; }}");
+            sb.AppendLine($"{x.TvScope} .skinHeader {{ left: auto !important; right: auto !important; top: auto !important; margin: 8px 12px 0; overflow: visible; }}");
         }
         else
         {
@@ -371,11 +400,11 @@ public static class CssBuilder
         // Phones: everything has to fit one row - tighter icons, no wrapping
         // (with islands and a couple of custom buttons the user icon used to
         // drop to a second line).
-        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child {{ flex-wrap: nowrap !important; gap: 4px !important; padding-left: 8px !important; padding-right: 8px !important; }}");
-        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child .MuiIconButton-root {{ padding: 6px !important; }}");
+        sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root .MuiToolbar-root:first-child {{ flex-wrap: nowrap !important; gap: 4px !important; padding-left: 8px !important; padding-right: 8px !important; }}");
+        sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root .MuiToolbar-root:first-child .MuiIconButton-root {{ padding: 6px !important; }}");
         if (h.Layout == HeaderLayout.Sections)
         {
-            sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiStack-root, {x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiBox-root {{ padding: 2px 3px !important; }}");
+            sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiStack-root, {x.MobileScope} header.MuiAppBar-root .MuiToolbar-root:first-child > .MuiBox-root {{ padding: 2px 3px !important; }}");
         }
 
         if (x.HeaderFloating && h.Layout != HeaderLayout.Sidebar)
@@ -528,7 +557,7 @@ public static class CssBuilder
         // phone variant where the sidebar falls back to a top bar. Under a
         // top bar the row is the header's second toolbar.
         var row = sidebar
-            ? $"{SidebarScope(x)} header.MuiAppBar-root .MuiToolbar-root:nth-child(2), {x.P}html.layout-mobile header.MuiAppBar-root .MuiToolbar-root:nth-child(2)"
+            ? $"{SidebarScope(x)} header.MuiAppBar-root .MuiToolbar-root:nth-child(2), {x.MobileScope} header.MuiAppBar-root .MuiToolbar-root:nth-child(2)"
             : $"{x.P}{AppBar} .MuiToolbar-root:nth-child(2)";
         // The row's parts: the library name button, the count chip, and in
         // the stack the Play / Shuffle box, the filter-sort-view group and
@@ -818,7 +847,7 @@ public static class CssBuilder
             // so the space it takes is that much taller.
             var floatingSidebar = x.Config.Header.Layout == HeaderLayout.Sidebar && x.HeaderFloating;
             sb.AppendLine($"{scope} {{ --jellycanvas-info: {(floatingSidebar ? $"calc({reserveDesktop} + 12px)" : reserveDesktop)}; }}");
-            sb.AppendLine($"{scope}.layout-mobile {{ --jellycanvas-info: {reserveMobile}; }}");
+            sb.AppendLine($"{(i.HideOnMobile ? scope + ".layout-mobile" : x.MobileScope)} {{ --jellycanvas-info: {reserveMobile}; }}");
         }
 
         sb.AppendLine($"{x.P}html.jellycanvas-infobar-closed {{ --jellycanvas-info: 0px; }}");
@@ -841,8 +870,8 @@ public static class CssBuilder
             // Phones keep the top bar even in the Sidebar layout - give them the normal variant.
             if (!i.HideOnMobile)
             {
-                sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root::after {{ {look} }}");
-                sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root ~ main .mainAnimatedPage {{ top: var(--jellycanvas-info, 0px) !important; }}");
+                sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root::after {{ {look} }}");
+                sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root ~ main .mainAnimatedPage {{ top: var(--jellycanvas-info, 0px) !important; }}");
             }
 
             return;
@@ -853,7 +882,7 @@ public static class CssBuilder
         sb.AppendLine($"{scope} header.MuiAppBar-root ~ main .mainAnimatedPage {{ top: var(--jellycanvas-info, 0px) !important; }}");
         // Phones: smaller text, cut with an ellipsis rather than squeezed
         // into two overlapping lines.
-        sb.AppendLine($"{x.P}html.layout-mobile header.MuiAppBar-root::after {{ font-size: 0.78em; padding-left: 0.7em; padding-right: {(i.Closable ? "2.6em" : "0.7em")}; }}");
+        sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root::after {{ font-size: 0.78em; padding-left: 0.7em; padding-right: {(i.Closable ? "2.6em" : "0.7em")}; }}");
     }
 
     /// <summary>A CSS string literal for content: - quoted, with backslashes, quotes and line breaks escaped.</summary>
@@ -1077,7 +1106,7 @@ public static class CssBuilder
 
         sb.AppendLine("/* --- the play button on posters --- */");
         var web = $"{x.P}.card .cardOverlayContainer > button[data-action=\"play\"], {x.P}.card .cardOverlayContainer > button[data-action=\"resume\"]";
-        var group = $"{x.P}html.layout-mobile .card .cardScalable > a > .MuiButtonGroup-root";
+        var group = $"{x.MobileScope} .card .cardScalable > a > .MuiButtonGroup-root";
         var grouped = $"{group} > button[data-action=\"play\"], {group} > button[data-action=\"resume\"]";
         var legacy = $"{x.P}.card .cardScalable > button.cardOverlayButton-br[data-action=\"play\"], {x.P}.card .cardScalable > button.cardOverlayButton-br[data-action=\"resume\"]";
         var legacyIcon = $"{x.P}.card .cardScalable > button.cardOverlayButton-br[data-action=\"play\"] > .cardOverlayButtonIcon, {x.P}.card .cardScalable > button.cardOverlayButton-br[data-action=\"resume\"] > .cardOverlayButtonIcon";
@@ -1244,7 +1273,7 @@ public static class CssBuilder
 
         if (k.PlayHideOnMobile)
         {
-            sb.AppendLine($"{group}, {x.P}html.layout-mobile .card .cardScalable > button.cardOverlayButton-br {{ display: none !important; }}");
+            sb.AppendLine($"{group}, {x.MobileScope} .card .cardScalable > button.cardOverlayButton-br {{ display: none !important; }}");
         }
     }
 
@@ -1535,7 +1564,7 @@ public static class CssBuilder
             sb.AppendLine($"{detail}::after {{ content: attr(title); margin-left: 0.45em; font-weight: 600; white-space: nowrap; }}");
             // A phone's row has room for one label (the play button); the
             // rest stay icons, or the row runs off the screen.
-            sb.AppendLine($"{x.P}html.layout-mobile .detailButton:not(.btnPlay)::after {{ content: none; }}");
+            sb.AppendLine($"{x.MobileScope} .detailButton:not(.btnPlay)::after {{ content: none; }}");
         }
         else if (b.PlayLabel)
         {
@@ -1546,7 +1575,7 @@ public static class CssBuilder
         {
             // And should it still be too much (a long localized name, a
             // big scale), the row wraps rather than overflows.
-            sb.AppendLine($"{x.P}html.layout-mobile .mainDetailButtons {{ flex-wrap: wrap; row-gap: 0.4em; }}");
+            sb.AppendLine($"{x.MobileScope} .mainDetailButtons {{ flex-wrap: wrap; row-gap: 0.4em; }}");
         }
 
         if (b.HoverLift)
@@ -1736,7 +1765,7 @@ public static class CssBuilder
             return;
         }
 
-        var tv = $"{x.P}html.layout-tv";
+        var tv = $"{x.TvScope}";
         sb.AppendLine($"{tv} .backgroundContainer::before, {tv} .backgroundContainer::after {{ display: none !important; animation: none !important; }}");
         sb.AppendLine($"{tv} .backgroundContainer {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; animation: none !important; }}");
         sb.AppendLine($"{tv} .backgroundContainer > .jellycanvas-backdrop > div, {tv} .backdropImage {{ animation: none !important; background-size: cover !important; }}");
@@ -2250,7 +2279,7 @@ public static class CssBuilder
     private static void AppendTvHeader(StringBuilder sb, Context x)
     {
         var h = x.Config.Header;
-        var tv = $"{x.P}html.layout-tv";
+        var tv = $"{x.TvScope}";
         var bar = $"{tv} .skinHeader";
         var color = x.HeaderColor;
         var radius = Px(h.Radius);
@@ -2546,11 +2575,11 @@ public static class CssBuilder
 
         AppendTvHeader(sb, x);
 
-        sb.AppendLine($"{x.P}html.layout-tv .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {{ border-width: {Px(tv.FocusWidth)} !important; }}");
+        sb.AppendLine($"{x.TvScope} .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {{ border-width: {Px(tv.FocusWidth)} !important; }}");
         if (tv.FocusScale != 100)
         {
-            sb.AppendLine($"{x.P}html.layout-tv .card:focus .cardBox:not(.visualCardBox) .cardScalable {{ transform: scale({Dec(tv.FocusScale / 100.0)}); transition: transform 0.15s ease; }}");
-            sb.AppendLine($"{x.P}html.layout-tv .card {{ contain: none !important; }}");
+            sb.AppendLine($"{x.TvScope} .card:focus .cardBox:not(.visualCardBox) .cardScalable {{ transform: scale({Dec(tv.FocusScale / 100.0)}); transition: transform 0.15s ease; }}");
+            sb.AppendLine($"{x.TvScope} .card {{ contain: none !important; }}");
         }
     }
 
@@ -2567,14 +2596,14 @@ public static class CssBuilder
         {
             // The variable and, like the card section, the elements themselves
             // (the variable alone reaches only a current theme.css).
-            var mob = $"{x.P}html.layout-mobile";
+            var mob = $"{x.MobileScope}";
             sb.AppendLine($"{x.RootMobile} {{ --jf-card-borderRadius: {Px(m.CardRadius)} !important; }}");
             sb.AppendLine($"{mob} .blurhash-canvas, {mob} .cardBox, {mob} .cardBox:not(.visualCardBox) .cardPadder, {mob} .cardContent, {mob} .cardImageContainer, {mob} .cardOverlayContainer, {mob} .visualCardBox, {mob} .card:focus .cardBox:not(.visualCardBox) .cardScalable {{ border-radius: {Px(m.CardRadius)} !important; }}");
         }
 
         if (m.FontScale > 0)
         {
-            sb.AppendLine($"{x.P}html.layout-mobile body {{ font-size: {m.FontScale}% !important; }}");
+            sb.AppendLine($"{x.MobileScope} body {{ font-size: {m.FontScale}% !important; }}");
         }
     }
 
@@ -2746,6 +2775,8 @@ public static class CssBuilder
         {
             Config = config;
             IsDashboard = scope is not null && scope.Contains("dashboardDocument", StringComparison.Ordinal);
+            IsTv = scope is not null && scope.Contains(".layout-tv", StringComparison.Ordinal) && !scope.Contains(":not(.layout-tv)", StringComparison.Ordinal);
+            IsMobile = scope is not null && scope.Contains(".layout-mobile", StringComparison.Ordinal) && !scope.Contains(":not(.layout-mobile)", StringComparison.Ordinal);
             Accent = Color.Parse(config.Colors.Accent, "#00a4dc");
             Background = Color.Parse(config.Colors.Background, "#101010");
             Surface = Color.Parse(config.Colors.Surface, "#202020");
@@ -2785,8 +2816,19 @@ public static class CssBuilder
                 : darkOnly
                     ? "html[data-theme]:not([data-theme=\"light\"])"
                     : ":root, html[data-theme]";
-            RootTv = darkOnly ? "html.layout-tv[data-theme]:not([data-theme=\"light\"])" : "html.layout-tv, html.layout-tv[data-theme]";
-            RootMobile = darkOnly ? "html.layout-mobile[data-theme]:not([data-theme=\"light\"])" : "html.layout-mobile, html.layout-mobile[data-theme]";
+            // The same for the variables a device's own section writes: inside
+            // a scope they have to stay in it, or a value set for (say) the
+            // admin pages would reach every TV.
+            string DeviceRoot(string layout)
+            {
+                var own = device.Contains(layout, StringComparison.Ordinal) ? string.Empty : layout;
+                return darkOnly
+                    ? "html" + device + own + "[data-theme]:not([data-theme=\"light\"])"
+                    : "html" + device + own + ", html" + device + own + "[data-theme]";
+            }
+
+            RootTv = DeviceRoot(".layout-tv");
+            RootMobile = DeviceRoot(".layout-mobile");
         }
 
         public PluginConfiguration Config { get; }
@@ -2834,6 +2876,23 @@ public static class CssBuilder
         /// </summary>
         /// <summary>The admin pages dock their bar next to the menu; floating it would leave it nowhere.</summary>
         public bool IsDashboard { get; }
+
+        /// <summary>This scope is the TV's own.</summary>
+        public bool IsTv { get; }
+
+        /// <summary>This scope is the phone's own.</summary>
+        public bool IsMobile { get; }
+
+        /// <summary>
+        /// The TV layout as this scope spells it. Inside the TV's own scope
+        /// that is the scope itself - writing ".layout-tv" again would only
+        /// double the class - and everywhere else it is the class on top of
+        /// the prefix.
+        /// </summary>
+        public string TvScope => IsTv ? P.TrimEnd() : P + "html.layout-tv";
+
+        /// <summary>The phone layout as this scope spells it.</summary>
+        public string MobileScope => IsMobile ? P.TrimEnd() : P + "html.layout-mobile";
 
         public bool HeaderFloating => !IsDashboard && (Config.Header.Floating || Config.Header.Style == SurfaceStyle.NeoBrutalism);
 

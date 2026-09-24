@@ -5,6 +5,9 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Fixed: a font chosen for the TV, the phone or the admin pages alone was never fetched - the Google Fonts import was built from the defaults only, so that scope asked for a font the page had not loaded and fell back to another. Every scope's font is imported now, at the top of the stylesheet where imports are allowed.
+- Fixed: inside one device's scope the theme also wrote the other device's rules, which could never match (a phone's rule under `html.layout-tv`), and the TV / phone palette variables were written unscoped - so a value set for the admin pages reached every TV. Each scope now carries its own device's rules only, and names its layout once instead of twice.
+- The bar's corner radius is offered where it does something: with an islands bar the corners come from the island radius, so the row is hidden there.
 - The designer's device views show only what that scope can use: a setting that belongs to one device (the phone's card radius, the TV's focus ring) stays out of the other's view, "hide this on the TV / on phones" is offered in Defaults alone - inside a device's own view the setting already is that device's - and the hover rows (hover effect, hover buttons on a poster, lift on hover, a hover color) are gone from the TV and the phone, which have no pointer. The rows are marked by their setting path, so one added later lands in the right view by itself.
 
 ## 1.2.4 - 2026-09-23

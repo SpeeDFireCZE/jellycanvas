@@ -743,6 +743,48 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_scope_carries_only_its_own_devices_rules()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Tv.FocusScale = 120;
+        cfg.Tv.FocusColor = "#ff0000";
+        cfg.Mobile.FontScale = 125;
+        cfg.Overrides.Tv = "{\"Cards\":{\"Radius\":9}}";
+        cfg.Overrides.Mobile = "{\"Cards\":{\"Radius\":7}}";
+
+        var css = CssBuilder.Build(cfg);
+        var tv = css.Split("===== Tv")[1].Split("===== Mobile")[0];
+        var mobile = css.Split("===== Mobile")[1];
+
+        // The TV's scope says layout-tv once, not twice, and knows nothing
+        // of the phone (whose rules could not match there anyway).
+        Assert.Contains("html.layout-tv .card:focus", tv, StringComparison.Ordinal);
+        Assert.DoesNotContain("html.layout-tv.layout-tv", tv, StringComparison.Ordinal);
+        Assert.DoesNotContain("layout-mobile body { font-size", tv, StringComparison.Ordinal);
+        Assert.Contains("html.layout-mobile body { font-size: 125% !important; }", mobile, StringComparison.Ordinal);
+        // the TV focus color names the TV layout itself, so it must not be
+        // written inside the phone's block at all
+        Assert.Contains("html.layout-tv, html.layout-tv[data-theme] { --jf-palette-secondary-main: #ff0000", tv, StringComparison.Ordinal);
+        Assert.DoesNotContain("html.layout-tv, html.layout-tv[data-theme]", mobile, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_font_chosen_for_one_device_is_imported_too()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Typography.Family = FontFamily.Inter;
+        cfg.Typography.LoadFromGoogle = true;
+        cfg.Overrides.Tv = "{\"Typography\":{\"Family\":\"Poppins\"}}";
+
+        var css = CssBuilder.Build(cfg);
+
+        // Both imports, and both before any rule - that is where @import works.
+        Assert.Contains("family=Inter", css, StringComparison.Ordinal);
+        Assert.Contains("family=Poppins", css, StringComparison.Ordinal);
+        Assert.True(css.IndexOf("family=Poppins", StringComparison.Ordinal) < css.IndexOf("{", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Buttons_wear_the_looks_the_bars_have()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.NeoBrutalism } });
