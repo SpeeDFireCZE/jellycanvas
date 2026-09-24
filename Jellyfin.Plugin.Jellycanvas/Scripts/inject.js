@@ -1095,14 +1095,22 @@
         return q ? q[1] : null;
     }
 
-    // Loads the picture, then cross-fades to it on the other layer.
-    function backdropShow(url) {
+    // Loads the picture, then cross-fades to it on the other layer. Only
+    // the picture asked for last is shown: a random one still loading when
+    // an item's page opens would otherwise land on top of the item's own.
+    var bdAsk = 0;
+
+    function backdropShow(url, isItem) {
+        var ask = ++bdAsk;
         return new Promise(function (resolve, reject) {
             var img = new Image();
             img.onload = function () { resolve(url); };
             img.onerror = reject;
             img.src = url;
         }).then(function (finalUrl) {
+            if (ask !== bdAsk) {
+                return; // something newer was asked for meanwhile
+            }
             // The pair in use is captured: the rotation may be stopped
             // (and the layers dropped) while the image loads or between
             // the two frames below.
@@ -1122,6 +1130,8 @@
                     layers[next].classList.add('is-on');
                     layers[bdCurrent].classList.remove('is-on');
                     host.classList.add('is-active');
+                    // The banner has a dim and a position of its own.
+                    host.classList.toggle('is-item', !!isItem);
                     bdCurrent = next;
                 });
             });
@@ -1130,9 +1140,10 @@
 
     // Both layers off: whatever the CSS paints underneath shows again.
     function backdropClear() {
+        bdAsk++; // nothing still loading may come back
         bdLayers.forEach(function (l) { l.classList.remove('is-on'); });
         if (bdHost) {
-            bdHost.classList.remove('is-active');
+            bdHost.classList.remove('is-active', 'is-item');
         }
     }
 
@@ -1148,19 +1159,36 @@
             }
             var kind = banner && banner.image;
             var tags = item.ImageTags || {};
+            var show = function (owner, type, tag) {
+                return backdropShow(api.getScaledImageUrl(owner, { type: type, maxWidth: 1920, tag: tag }), true);
+            };
+            var backdrop = function () {
+                var own = item.BackdropImageTags && item.BackdropImageTags.length;
+                var owner = own ? item.Id : item.ParentBackdropItemId;
+                var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
+                return owner ? show(owner, 'Backdrop', tag) : undefined;
+            };
             if (kind === 'Banner' && tags.Banner) {
-                return backdropShow(api.getScaledImageUrl(item.Id, { type: 'Banner', maxWidth: 1920, tag: tags.Banner }));
+                return show(item.Id, 'Banner', tags.Banner);
             }
             if (kind === 'Thumb' && tags.Thumb) {
-                return backdropShow(api.getScaledImageUrl(item.Id, { type: 'Thumb', maxWidth: 1920, tag: tags.Thumb }));
+                return show(item.Id, 'Thumb', tags.Thumb);
             }
-            var own = item.BackdropImageTags && item.BackdropImageTags.length;
-            var owner = own ? item.Id : item.ParentBackdropItemId;
-            var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
-            if (!owner) {
-                return;
+            if (kind === 'Thumb' && item.ParentThumbItemId && item.ParentThumbImageTag) {
+                return show(item.ParentThumbItemId, 'Thumb', item.ParentThumbImageTag); // an episode: its series' thumb
             }
-            return backdropShow(api.getScaledImageUrl(owner, { type: 'Backdrop', maxWidth: 1920, tag: tag }));
+            if (kind === 'Banner' && item.SeriesId) {
+                // An episode or a season has no banner of its own; the series may.
+                return api.getItem(api.getCurrentUserId(), item.SeriesId).then(function (series) {
+                    if (bdDetailId !== id) {
+                        return undefined;
+                    }
+                    var st = series && series.ImageTags && series.ImageTags.Banner;
+                    return st ? show(series.Id, 'Banner', st) : backdrop();
+                });
+            }
+            // No such picture (a film rarely has a banner): its backdrop.
+            return backdrop();
         }).catch(function () { /* no backdrop for this item - keep what is there */ });
     }
 
@@ -1251,7 +1279,11 @@
                 }
                 return res.url;
             })
-            .then(backdropShow)
+            .then(function (url) {
+                if (!bdDetailId) {
+                    return backdropShow(url);
+                }
+            })
             .catch(function () { /* no backdrop right now - keep the current one */ })
             .then(function () { bdBusy = false; });
     }

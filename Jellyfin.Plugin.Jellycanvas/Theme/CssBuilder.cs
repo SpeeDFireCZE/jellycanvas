@@ -1005,9 +1005,18 @@ public static class CssBuilder
             AppendBackdropLayers(sb, x, x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0), false);
         }
 
+        // The script marks the layer while it shows an item's own picture:
+        // the banner's dim and position are for that, not for the random
+        // pictures elsewhere (a background of its own has its own dim).
+        var host = $"{x.P}html .backgroundContainer > .jellycanvas-backdrop.is-item";
+        if (carries)
+        {
+            sb.AppendLine($"{host}::after {{ background: {x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0)}; }}");
+        }
+
         if (d.BannerTop)
         {
-            sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ background-position: center top; }}");
+            sb.AppendLine($"{host} > div {{ background-position: center top; }}");
         }
     }
 
