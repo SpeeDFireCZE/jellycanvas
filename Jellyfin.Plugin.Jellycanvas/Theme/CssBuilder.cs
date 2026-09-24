@@ -1071,7 +1071,9 @@ public static class CssBuilder
         // of plain lists (the activity feed, the devices) and cards.
         var panel = string.Join(", ", new[]
         {
-            $"{dash} .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper):not(.MuiAppBar-root)",
+            // A dialog is a paper as well, but it scrolls: the panel's
+            // clipping would take its scrolling away.
+            $"{dash} .MuiPaper-root:not(.MuiDrawer-paper):not(.MuiMenu-paper):not(.MuiPopover-paper):not(.MuiAppBar-root):not(.MuiDialog-paper)",
             $"{dash} .MuiList-root:not(.MuiMenu-list):not(.MuiDrawer-paper .MuiList-root)",
             $"{dash} .MuiCard-root",
         });
@@ -1632,6 +1634,9 @@ public static class CssBuilder
         var color = d.Style == SurfaceStyle.Neumorphism ? x.Background : x.Surface;
         sb.AppendLine($"{boxes} {{ {Surface(d.Style, color, d.Opacity, d.Blur, x, "160deg")} border-radius: {Px(d.Radius)} !important; }}");
         sb.AppendLine($"{x.P}html .dialog:not(.dialog-fullscreen) {{ overflow: hidden; }}");
+        // Some of Jellyfin's dialogs scroll themselves (image search, the
+        // image editor): the rounded corners still clip, only sideways.
+        sb.AppendLine($"{x.P}html .dialog.scrollY:not(.dialog-fullscreen), {x.P}html .dialog.smoothScrollY:not(.dialog-fullscreen) {{ overflow-x: hidden; overflow-y: auto; }}");
         sb.AppendLine($"{x.P}html .toast {{ border-radius: {Px(d.Radius)} !important; }}");
         if (d.UpNext)
         {

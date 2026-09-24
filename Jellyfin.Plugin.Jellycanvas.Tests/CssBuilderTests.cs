@@ -746,6 +746,17 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Dialogs_that_scroll_themselves_keep_scrolling()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        // Rounded dialogs are clipped, but the image search (and the other
+        // dialogs Jellyfin scrolls on the dialog itself) must still scroll.
+        Assert.Contains("html .dialog:not(.dialog-fullscreen) { overflow: hidden; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .dialog.smoothScrollY:not(.dialog-fullscreen) { overflow-x: hidden; overflow-y: auto; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void A_scope_carries_only_its_own_devices_rules()
     {
         var cfg = new PluginConfiguration();
