@@ -758,6 +758,46 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void Css_only_leaves_the_admin_pages_out_and_keeps_the_devices()
+    {
+        var cfg = new PluginConfiguration { CssOnly = true };
+        cfg.Overrides.Tv = "{\"Cards\":{\"Radius\":9}}";
+        cfg.Overrides.Dashboard = "{\"Dashboard\":{\"PanelRadius\":12}}";
+
+        var css = CssBuilder.Build(cfg);
+
+        // The TV scope is plain CSS and stays; the Dashboard one could never
+        // be reached without the script, so it is not written at all.
+        Assert.Contains("===== Tv:", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("===== Dashboard:", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("jc-dashboard", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_tint_over_the_poster_needs_no_has()
+    {
+        var css = CssBuilder.Build(new PluginConfiguration { Cards = new CardSettings { Progress = ProgressStyle.Fill } });
+
+        // An older TV browser drops a rule with :has() in it - the tint stayed
+        // a thin line there.
+        Assert.Contains("html .innerCardFooterClear.fullInnerCardFooter {", css, StringComparison.Ordinal);
+        Assert.DoesNotContain(":has(.itemProgressBar)", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_veil_over_a_playing_session_can_be_lighter()
+    {
+        var stock = CssBuilder.Build(new PluginConfiguration());
+        Assert.DoesNotContain(".MuiCardMedia-root .MuiStack-root", stock, StringComparison.Ordinal);
+
+        var cfg = new PluginConfiguration();
+        cfg.Dashboard.NowPlayingDim = 30;
+        var css = CssBuilder.Build(cfg);
+        Assert.Contains(".MuiCardMedia-root .MuiStack-root { background-color: rgba(0, 0, 0, 0.3) !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("text-shadow: 0 1px 3px", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void The_selected_button_stays_visible_under_a_custom_look()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Buttons = new ButtonSettings { Style = ButtonStyle.Glow } });

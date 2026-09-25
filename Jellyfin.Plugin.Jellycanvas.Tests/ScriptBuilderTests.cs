@@ -177,6 +177,10 @@ public class ScriptBuilderTests
         // Jellyfin's own Dashboard wins over everything the tab says.
         only.Misc.StockDashboard = true;
         Assert.Contains("\"dashboard\":false", ScriptBuilder.Build(only), StringComparison.Ordinal);
+
+        // CSS only: there is no script at all.
+        only.CssOnly = true;
+        Assert.Equal(string.Empty, ScriptBuilder.Build(only));
     }
 
     [Fact]

@@ -98,6 +98,12 @@ public static class FileTransformation
             return contents;
         }
 
+        // CSS only: index.html is served exactly as Jellyfin has it.
+        if (Plugin.Instance?.Configuration.CssOnly == true)
+        {
+            return contents;
+        }
+
         // Base URL for installs behind a reverse proxy path (/jellyfin/...).
         var root = string.Empty;
         var config = Plugin.Instance?.ConfigurationManager;

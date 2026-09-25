@@ -66,7 +66,7 @@ public static class CssBuilder
         // defaults are kept OFF that device (":not(.layout-tv)"): a rule the
         // device's settings do not produce (islands on a bar the TV wants
         // full) must not leak in from the defaults, and CSS can only add.
-        var own = DeviceOverrides.Devices.Where(d => d.Name != "Web" && DeviceOverrides.HasContent(DeviceOverrides.For(c, d.Name))).ToList();
+        var own = DeviceOverrides.Devices.Where(d => d.Name != "Web" && !(c.CssOnly && d.Name == "Dashboard") && DeviceOverrides.HasContent(DeviceOverrides.For(c, d.Name))).ToList();
 
         // @import has to be the very first thing in a stylesheet, hence fonts
         // first - and a device with a font of its own needs its import here
@@ -93,9 +93,9 @@ public static class CssBuilder
         foreach (var (name, scope) in DeviceOverrides.Devices)
         {
             var json = DeviceOverrides.For(c, name);
-            if (!DeviceOverrides.HasContent(json))
+            if (!DeviceOverrides.HasContent(json) || (c.CssOnly && name == "Dashboard"))
             {
-                continue;
+                continue; // (the admin pages get the theme through the script only)
             }
 
             var merged = DeviceOverrides.Merge(c, json);
@@ -1095,6 +1095,17 @@ public static class CssBuilder
         // color: the class stays on a card that shows what is playing, with
         // the item's picture set inline over it.
         sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; }}");
+        // A playing session's card lays Jellyfin's 70 % black over the
+        // picture for its white text. It can be lighter (the text then gets
+        // a shadow to stay readable) or darker.
+        if (d.NowPlayingDim != 70)
+        {
+            sb.AppendLine($"{dash} .MuiCardMedia-root .MuiStack-root {{ background-color: rgba(0, 0, 0, {Dec(Math.Clamp(d.NowPlayingDim, 0, 100) / 100.0)}) !important; }}");
+            if (d.NowPlayingDim < 70)
+            {
+                sb.AppendLine($"{dash} .MuiCardMedia-root .MuiStack-root * {{ text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }}");
+            }
+        }
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)
         {
             return;
@@ -1536,7 +1547,11 @@ public static class CssBuilder
                 // The track grows to the whole image and the bar, at the
                 // watched percentage, becomes a translucent tint over it.
                 var tint = color.RgbaPercent(Math.Clamp(k.ProgressFillOpacity, 0, 100));
-                sb.AppendLine($"{x.P}html .innerCardFooterClear:has(.itemProgressBar) {{ top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }}");
+                // Jellyfin marks the footer that holds a progress bar
+                // (fullInnerCardFooter); ":has(.itemProgressBar)" said the
+                // same, but a TV browser older than Chromium 105 cannot read
+                // it and dropped the rule - the tint stayed a thin line there.
+                sb.AppendLine($"{x.P}html .innerCardFooterClear.fullInnerCardFooter {{ top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; pointer-events: none; }}");
                 sb.AppendLine($"{legacyTrack} {{ height: 100% !important; margin: 0 !important; border-radius: 0 !important; background: transparent !important; }}");
                 sb.AppendLine($"{legacyBar} {{ height: 100% !important; background: {tint} !important; border-radius: 0 !important; }}");
                 sb.AppendLine($"{muiTrack} {{ position: absolute !important; top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; height: auto !important; margin: 0 !important; border-radius: 0 !important; background: transparent !important; }}");

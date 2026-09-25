@@ -957,6 +957,12 @@ public class DashboardSettings
 
     /// <summary>Hide the help links under the settings headings.</summary>
     public bool HideHelp { get; set; } = false;
+
+    /// <summary>
+    /// How dark the veil over a playing session's picture is, in percent.
+    /// Jellyfin lays 70 % black over it for the white text.
+    /// </summary>
+    public int NowPlayingDim { get; set; } = 70;
 }
 
 /// <summary>What the item page shows under its banner strip.</summary>
@@ -1753,6 +1759,15 @@ public class PluginConfiguration : BasePluginConfiguration
     /// re-enabled unchanged.
     /// </summary>
     public bool Enabled { get; set; } = false;
+
+    /// <summary>
+    /// The theme is CSS alone: no client script is put into index.html
+    /// (File Transformation is not used), the features that need the script
+    /// are off, and the Dashboard - which only the script can reach - keeps
+    /// Jellyfin's own look. The per-device settings still work: they are
+    /// CSS scoped to the layout Jellyfin itself marks.
+    /// </summary>
+    public bool CssOnly { get; set; } = false;
 
     public ApplyTo ApplyTo { get; set; } = ApplyTo.All;
 

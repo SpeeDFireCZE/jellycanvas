@@ -54,6 +54,8 @@
                 .jc-edit-device .emby-button.jc-active { background: var(--jf-palette-primary-main, #00a4dc) !important; color: var(--jf-palette-primary-contrastText, #000) !important; outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 2px; }
                 /* The Dashboard switched to Jellyfin's own: this tab's settings say nothing. */
                 .jc-controls.jc-edit-dashboard.jc-stock-dash .jc-section { opacity: .45; pointer-events: none; }
+                /* CSS only: nothing that needs the client script, and no Dashboard. */
+                .jc-css-only .jc-edit-btn[data-edit="Dashboard"], .jc-css-only #jcPage option[value^="dashboard"] { display: none !important; }
                 .jc-edit-hint { margin: 0 0 1em; }
                 .jc-device-mode .jc-section[data-nodevice] { display: none; }
                 /* Rows that say "on TV" / "on phones": they belong to the defaults - in a device view the setting itself is the device's. */
@@ -183,6 +185,9 @@
                 .jc-devices select { width: auto; min-width: 11em; }
                 .jc-devices .jc-follow { width: auto; margin: 0 0 0 .4em; font-size: .9em; }
                 [data-when][hidden] { display: none !important; }
+                /* Jellyfin's rows (.checkboxContainer is display: flex) beat the browser's
+                   own [hidden] rule: a row the designer hides must stay hidden. */
+                .jc-controls [hidden], .jc-needs-script[hidden] { display: none !important; }
                 .jc-actions { display: flex; gap: .5em; flex-wrap: wrap; margin: .4em 0 .8em; }
                 .jc-plugins { display: flex; flex-direction: column; gap: .5em; }
                 .jc-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .2em .8em; margin: .3em 0 .6em; }
@@ -249,6 +254,8 @@
                             <summary><span class="material-icons" aria-hidden="true">extension</span><span data-i18n="plugins">Companion plugins</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
                                 <div class="jc-hint" data-i18n="pluginsHint">Everything in the theme is plain CSS and needs nothing else. A few features need JavaScript in the web client; their sections appear only while one of these plugins is installed.</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="CssOnly" data-global="1"><span data-i18n="cssOnly">CSS only - no client script (File Transformation is not used)</span></label></div>
+                                <div class="jc-hint" data-i18n="cssOnlyHint">Only what plain CSS can do stays on offer: the sections and rows that need the script go, and so does the Dashboard tab (the admin pages are reached through the script alone). TV and Mobile keep working - they are CSS scoped to the layout Jellyfin marks.</div>
                                 <div class="jc-plugins" id="jcPlugins"></div>
                             </div>
                         </details>
@@ -1311,6 +1318,7 @@
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dashboard.PanelShadow"><span data-i18n="dashPanelShadow">Shadow under a panel</span></label></div>
                                 <div class="jc-row" data-slider="Dashboard.Blur" data-min="0" data-max="30" data-unit="px" data-i18n-label="blur">Glass blur behind a panel</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Dashboard.HideHelp"><span data-i18n="dashHideHelp">Hide the help links under the settings headings</span></label></div>
+                                <div class="jc-row" data-slider="Dashboard.NowPlayingDim" data-min="0" data-max="100" data-unit="%" data-i18n-label="dashNowPlayingDim">Darkening over a playing session's picture (70 = Jellyfin's)</div>
                             </div>
                         </details>
                         <details class="jc-section jc-off-device" data-section="tv" data-device="Tv" data-device-only="1">

@@ -69,7 +69,7 @@
             colors: 'Barvy', accent: 'Zvýraznění', background: 'Pozadí', surface: 'Plochy (lišty, dialogy)', text: 'Text', outline: 'Rámeček a tvrdý stín neo-brutalismu (prázdné = černá)', secondaryText: 'Krytí vedlejšího textu',
             header: 'Lišta', style: 'Styl', solid: 'Plná', glass: 'Sklo', gradient: 'Přechod', transparent: 'Průhledná', neoBrutalism: 'Neo-brutalismus', glowmorphism: 'Glowmorfismus', claymorphism: 'Claymorfismus', neumorphism: 'Neumorfismus',
             styleHint: 'Neo-brutalismus vyplní lištu zvýrazňovací barvou (změníš ji barvou lišty), odsadí ji od okrajů okna, aby byl vidět rámeček i stín, a nejlépe vypadá se zaoblením 0; glow, clay a neumorfismus vyniknou na ostrůvcích nebo plovoucí liště se zaoblením; neumorfismus bere barvu pozadí stránky, pokud není nastavená barva lišty.', barColor: 'Barva lišty (prázdné = barva ploch)', opacity: 'Krytí', blur: 'Rozmazání pozadí (vidět při krytí pod 100)', radius: 'Zaoblení rohů',
-            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', cardsTextHeading: 'Název a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', bannerFallbackHint: 'Banner vyplní horní část stránky až ke spodní hraně lišty s názvem a jezdí se stránkou; bez banneru se stejně vykreslí Náhled (co položka má, ukáže „Editovat obrázky“). Přes celou stránku jde jen Pozadí. Epizoda si půjčí obrázek seriálu.', bannerBackdrop: 'Pozadí – přes celou stránku', bannerBanner: 'Banner (jinak Náhled) – pruh až k liště s názvem', bannerFade: 'Přechod na spodku (jak vysoko sahá, 0 = ostrá hrana)', bannerFadeColor: 'Barva přechodu (prázdné = barva pozadí stránky)', bannerPage: 'Pozadí pod bannerem', bannerPageTheme: 'Pozadí stránky (podle nastavení pozadí)', bannerPageSolid: 'Jedna barva', bannerPageGradient: 'Přechod', stockDashboard: 'Výchozí Nástěnka Jellyfinu (motiv se na admin stránky nedostane)', highlightSelected: 'Zvýraznit vybrané tlačítko (otevřená záložka, zapnutý přepínač) akcentním vzhledem a obrysem – sklo, záře a další styly jinak přebijí zvýraznění Jellyfinu', bannerDimLabel: 'Ztmavení obrázku', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
+            floating: 'Plovoucí (odsazená od okrajů)', topBarHeading: 'Horní lišta', sidebarHeading: 'Boční lišta', infobarTextHeading: 'Text a umístění', behaviourHeading: 'Chování', cardsHoverHeading: 'Najetí a text', cardsTextHeading: 'Název a text', buttonsAllHeading: 'Všechna tlačítka', buttonsDetailHeading: 'Tlačítka na stránce položky', sourceHeading: 'Zdroj', backdropRotationHeading: 'Střídání', bannerFallbackHint: 'Banner vyplní horní část stránky až ke spodní hraně lišty s názvem a jezdí se stránkou; bez banneru se stejně vykreslí Náhled (co položka má, ukáže „Editovat obrázky“). Přes celou stránku jde jen Pozadí. Epizoda si půjčí obrázek seriálu.', bannerBackdrop: 'Pozadí – přes celou stránku', bannerBanner: 'Banner (jinak Náhled) – pruh až k liště s názvem', bannerFade: 'Přechod na spodku (jak vysoko sahá, 0 = ostrá hrana)', bannerFadeColor: 'Barva přechodu (prázdné = barva pozadí stránky)', bannerPage: 'Pozadí pod bannerem', bannerPageTheme: 'Pozadí stránky (podle nastavení pozadí)', bannerPageSolid: 'Jedna barva', bannerPageGradient: 'Přechod', cssOnly: 'Jen CSS – bez klientského skriptu (File Transformation se nepoužije)', cssOnlyHint: 'Zůstane jen to, co zvládne samotné CSS: sekce a řádky, které potřebují skript, zmizí, stejně jako záložka Nástěnka (na admin stránky se téma dostane jen skriptem). TV a Mobil fungují dál – jsou to CSS pravidla pro rozložení, které označuje sám Jellyfin.', dashNowPlayingDim: 'Ztmavení obrázku u právě přehrávaného (70 = jako Jellyfin)', stockDashboard: 'Výchozí Nástěnka Jellyfinu (motiv se na admin stránky nedostane)', highlightSelected: 'Zvýraznit vybrané tlačítko (otevřená záložka, zapnutý přepínač) akcentním vzhledem a obrysem – sklo, záře a další styly jinak přebijí zvýraznění Jellyfinu', bannerDimLabel: 'Ztmavení obrázku', tvStillHint: 'Rotace a panning jsou na TV vypnuté – v Defaults je zapnuté „Statické pozadí na TV“. Detail položky si vlastní backdrop ukáže dál.', contentHeading: 'Obsah', devicesHeading: 'Zařízení', backgroundHeading: 'Pozadí', loginFormHeading: 'Formulář', loginTextsHeading: 'Texty a další tlačítka', shapeHeading: 'Tvar', logoTextHeading: 'Název serveru', logoImageHeading: 'Obrázek', libraryRowHeading: 'Lišta knihovny (název knihovny, počet, přehrát, filtr, řazení, zobrazení, stránkování)', libraryRowIslands: 'Ostrovy: plocha kolem každé skupiny, ne přes celý řádek (pod lištou z ostrovů s „stejně jako lišta“ vždy)', libraryRowBorder: 'Tenký rámeček', libraryRowHideHint: 'Schovat části řádku:', libraryRowHideTitle: 'Název knihovny', libraryRowHideCount: 'Počet položek', libraryRowHidePlay: 'Přehrát vše / Náhodně', libraryRowHideFilter: 'Filtr', libraryRowHideSort: 'Řazení', libraryRowHideView: 'Nastavení zobrazení', libraryRowHidePaging: 'Stránkování (předchozí / další)', libraryRowSame: 'Stejná jako horní/boční lišta', libraryRowColor: 'Barva řádku (prázdné = barva ploch; u neo-brutalismu zvýraznění)', libraryRowHidden: 'Schovaný', libraryRowHeight: 'Výška řádku (52 = výchozí Jellyfin, 44 = minimum, do kterého se vejde ovládání)', libraryRowRadius: 'Zaoblení řádku (při zaoblení odsazený od okrajů)', shadow: 'Stín', bottomBorder: 'Tenká linka dole', hideLogo: 'Schovat logo i název serveru',
             drawer: 'Boční menu (mobil / úzké okno)', menuColor: 'Barva menu (prázdné = barva pozadí)', itemRadius: 'Zaoblení položek', width: 'Šířka (0 = výchozí)',
             playButtonHeading: 'Tlačítko přehrát na plakátech', playButtonHint: 'Tlačítko, které spustí přehrávání z plakátu: na webu se objeví při najetí, mobily a tablety ho mají na každém plakátu pořád. Na TV není.', playDefault: 'Jellyfin (tmavý kotouč)', playDark: 'Tmavé', playColor: 'Barva (prázdné = podle stylu)', playHoverColor: 'Barva při najetí (prázdné = lehce zesvětlit, ikona ve zvýrazňovací barvě)', playOpacity: 'Krytí výplně (sklo škáluje svou tenkou výplň)', playPosition: 'Umístění', playPosDefault: 'Jellyfin (uprostřed na webu, vpravo dole na mobilu)', playPosCenter: 'Uprostřed', playRadius: 'Zaoblení rohů (-1 = jako ikonová tlačítka, 999 = kulaté)', playHideMobile: 'Bez tlačítka přehrát na mobilu',
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
@@ -423,7 +423,7 @@
         page.querySelector('#jcEditHint').hidden = d === 'All';
         // "Theme the Dashboard" is one switch for the whole server, so it
         // lives on the Dashboard tab rather than among the default settings.
-        page.querySelector('#jcDashToggle').hidden = d !== 'Dashboard' || !(status && (status.FileTransformation || status.JsInjector));
+        page.querySelector('#jcDashToggle').hidden = d !== 'Dashboard' || !scriptOk();
         stockDashboardView();
         refreshControls();
         // The switch also turns the preview to the device being edited
@@ -638,6 +638,10 @@
                 if (path === 'Misc.ThemeDashboard' && el.checked) {
                     resetDashboardScope();
                 }
+                if (path === 'CssOnly') {
+                    cssOnlyView();
+                    schedulePreview();
+                }
                 if (path === 'Misc.StockDashboard') {
                     stockDashboardView();
                     schedulePreview();
@@ -673,7 +677,7 @@
             var parts = cond.split('=');
             return parts[1].split('|').indexOf(String(getPath(view(), parts[0]))) >= 0;
         };
-        var scriptAvailable = !!(status && (status.FileTransformation || status.JsInjector));
+        var scriptAvailable = scriptOk();
         page.querySelectorAll('[data-when]').forEach(function (el) {
             // data-when2: a second condition that must hold as well; a row
             // that also needs the client script stays hidden without one.
@@ -1225,8 +1229,34 @@
         });
     }
 
+    /**
+     * The client script can run: a plugin can put it into the page, and the
+     * theme is not set to CSS only.
+     */
+    function scriptOk() {
+        return !!(status && (status.FileTransformation || status.JsInjector)) && !(state && state.CssOnly);
+    }
+
+    /** CSS only: the script's sections go, and so does the Dashboard tab. */
+    function cssOnlyView() {
+        var css = !!(state && state.CssOnly);
+        page.classList.toggle('jc-css-only', css);
+        if (css && editDevice === 'Dashboard') {
+            setEditDevice('All');
+        }
+        var pageSelect = page.querySelector('#jcPage');
+        if (css && /^dashboard/.test(pageSelect.value)) {
+            pageSelect.value = 'home';
+            pageSelect.dispatchEvent(new Event('change'));
+        }
+        if (status) {
+            refreshScriptSection();
+        }
+        injectScript(); // takes the running copy out of the preview
+    }
+
     function refreshScriptSection() {
-        var available = !!(status && (status.FileTransformation || status.JsInjector));
+        var available = scriptOk();
         renderPlugins();
         page.querySelector('#jcScriptsSection').hidden = !available;
         page.querySelector('#jcSlideshowSection').hidden = !available;
@@ -1234,7 +1264,8 @@
         page.querySelector('#jcBadgesSection').hidden = !available;
         page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
         refreshConditions();
-        page.querySelector('#jcScriptsMissing').hidden = available;
+        // (CSS only is a choice, not a missing plugin: no warning then)
+        page.querySelector('#jcScriptsMissing').hidden = available || !!(state && state.CssOnly);
         page.querySelector('#jcDashToggle').hidden = editDevice !== 'Dashboard' || !available;
         if (!available) {
             page.querySelector('#jcScriptsMissing').textContent = t('scriptsNone');
@@ -1272,7 +1303,15 @@
      * the server cannot deliver.
      */
     function injectScript() {
-        if (!lastScript || !(status && (status.FileTransformation || status.JsInjector))) {
+        if (!scriptOk()) {
+            // CSS only (or nothing to run it): the copy the client loaded goes too.
+            var gone = frame.contentDocument && frame.contentDocument.defaultView && frame.contentDocument.defaultView.__jellycanvasScript;
+            if (gone && typeof gone.dispose === 'function') {
+                gone.dispose();
+            }
+            return;
+        }
+        if (!lastScript) {
             return;
         }
         var doc;
@@ -2360,6 +2399,11 @@
         // languages are the admin's own - a theme from abroad should not
         // arrive filtering for Czech.
         delete copy.Seerr;
+        // ...nor how this server runs the theme (CSS only, the stock Dashboard).
+        delete copy.CssOnly;
+        if (copy.Misc) {
+            delete copy.Misc.StockDashboard;
+        }
         if (copy.Scripts && copy.Scripts.CardBadges) {
             copy.Scripts.CardBadges.AudioPreferred = '';
             copy.Scripts.CardBadges.SubtitlePreferred = '';
@@ -2439,10 +2483,14 @@
             toast(t('importBad'));
             return false;
         }
-        var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl };
+        var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl, CssOnly: state.CssOnly, StockDashboard: state.Misc && state.Misc.StockDashboard };
         mergeKnown(state, data);
         overridesFromState();
         state.Enabled = keep.Enabled;
+        state.CssOnly = keep.CssOnly;
+        if (state.Misc) {
+            state.Misc.StockDashboard = keep.StockDashboard;
+        }
         if (!data.Header || !data.Header.LogoUrl) {
             state.Header.LogoUrl = keep.LogoUrl;
         }
@@ -2637,6 +2685,7 @@
             if (state.Detail && state.Detail.BannerImage === 'Thumb') {
                 state.Detail.BannerImage = 'Banner'; // the thumb is the banner's own fallback now
             }
+            page.classList.toggle('jc-css-only', !!state.CssOnly);
             overridesFromState();
             renderPresets();
             refreshControls();
@@ -2644,7 +2693,7 @@
             loadPreview();
             requestPreview();
             scheduleScriptPreview();
-            return refreshStatus().then(openStartSections);
+            return refreshStatus().then(openStartSections).then(cssOnlyView);
         }).catch(fail).finally(Dashboard.hideLoadingMsg);
     }
 

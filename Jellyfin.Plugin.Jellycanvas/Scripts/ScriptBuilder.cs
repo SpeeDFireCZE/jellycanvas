@@ -91,7 +91,7 @@ public static class ScriptBuilder
                 })
                 .ToArray();
         var hasRows = rows.Length > 0;
-        if (!s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows))
+        if (c.CssOnly || !s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows))
         {
             return string.Empty;
         }

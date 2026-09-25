@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- "CSS only" (Companion plugins): the theme runs without the client script - nothing is put into index.html, so File Transformation is not used - and the designer offers only what plain CSS can do: the sections and rows that need the script go, and so does the Dashboard tab (the admin pages are reached through the script alone). TV and Mobile keep working: they are CSS scoped to the layout Jellyfin itself marks. A shared theme does not carry the choice, and an imported one does not change it.
+- Fixed: "Translucent tint over the poster" (Watched & progress) was a thin line on older TVs. The rule that stretches the footer holding the progress bar used `:has()`, which a browser before Chromium 105 cannot read; it goes by Jellyfin's own mark for that footer now.
+- Dashboard: the veil Jellyfin lays over a playing session's picture (70 % black) can be set (Admin pages -> "Darkening over a playing session's picture"); below Jellyfin's the text gets a shadow to stay readable.
+- Designer: a row hidden for want of the client script stayed on screen when it was a checkbox (Jellyfin's rows are display: flex, which beats the browser's own [hidden] rule) - the item page's banner switch among them.
 - Item page banner: a background of its own for the page under the strip - the page's own (the background settings, as before), one colour, or a gradient (from / to / direction). It applies while an item page shows the strip; every other page keeps its background.
 - Item page banner: a fade at the bottom of the strip - how far up it reaches (0 = a hard edge, as before) and the colour it fades into (empty = the page background). Shown for the banner strip only; the full-page backdrop has its own dimming.
 - Fixed: with the theme on the Dashboard, a device card showed an empty box where the picture of what is playing belongs. The rule that recolours the Jellyfin-blue placeholder behind device cards also cleared their background image - and Jellyfin keeps that placeholder class on a playing session's card, with the item's picture set over it. Only the colour changes now.
