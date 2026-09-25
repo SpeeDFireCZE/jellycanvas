@@ -987,21 +987,23 @@ public static class CssBuilder
     private static void AppendDetailBanner(StringBuilder sb, Context x)
     {
         var d = x.Config.Detail;
-        var bd = x.Config.Backdrop;
-        if (!d.Banner)
+        var banner = ItemBanner.Of(x.Config);
+        if (!banner.On)
         {
             return;
         }
 
         sb.AppendLine("/* --- the item page's banner --- */");
-        // With a background of its own the layer is already styled; a plain
-        // Jellyfin background needs the layer (and its container) set up.
-        var carries = bd.Mode != BackdropMode.Default || bd.ItemDetail;
+        // With a background of its own the layer comes with it (AppendBackdrop
+        // sets it up for the banner); a plain Jellyfin background needs the
+        // layer (and its container) set up here.
+        var dim = x.Background.Rgba(Math.Clamp(banner.Dim, 0, 100) / 100.0);
+        var carries = x.Config.Backdrop.Mode != BackdropMode.Default;
         if (!carries)
         {
             sb.AppendLine($"{x.P}html .backdropContainer {{ display: none !important; }}");
             sb.AppendLine($"{x.P}html .backgroundContainer {{ opacity: 1 !important; }}");
-            AppendBackdropLayers(sb, x, x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0), false);
+            AppendBackdropLayers(sb, x, dim, false);
         }
 
         // "Banner" is a strip, not the page: the script puts the picture into
@@ -1014,7 +1016,6 @@ public static class CssBuilder
         sb.AppendLine($"{strip}.is-on {{ opacity: 1; }}");
         // The dim over the whole picture, and on top of it the fade at the
         // bottom (from clear to the chosen colour, up to the set height).
-        var dim = x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0);
         var fade = Math.Clamp(d.BannerFade, 0, 100);
         var fadeTo = Color.Parse(d.BannerFadeColor, x.Background);
         var layers = fade > 0
@@ -1042,7 +1043,7 @@ public static class CssBuilder
         var host = $"{x.P}html .backgroundContainer > .jellycanvas-backdrop.is-item";
         if (carries)
         {
-            sb.AppendLine($"{host}::after {{ background: {x.Background.Rgba(Math.Clamp(d.BannerDim, 0, 100) / 100.0)}; }}");
+            sb.AppendLine($"{host}::after {{ background: {dim}; }}");
         }
 
         if (d.BannerTop)
@@ -1745,7 +1746,14 @@ public static class CssBuilder
         //     url() inside a variable against the file where the variable is
         //     *used* (themes/dark/theme.css), so "../Jellycanvas" would point
         //     into /web/themes/. In our own stylesheet it resolves to the root.
-        sb.AppendLine($"{x.P}html .backgroundContainer.withBackdrop {{ opacity: {Dec(bd.Dim / 100.0)} !important; }}");
+        // The dim of (1) is that layer's opacity - and only (1) has it: with
+        // a background of the theme's own, or the item page's banner, Jellyfin's
+        // backdrop is hidden, and the class (which Jellyfin still sets on an
+        // item's page) would fade the whole background there, pictures and all.
+        if (bd.Mode == BackdropMode.Default && !ItemBanner.Of(x.Config).On)
+        {
+            sb.AppendLine($"{x.P}html .backgroundContainer.withBackdrop {{ opacity: {Dec(bd.Dim / 100.0)} !important; }}");
+        }
 
         var url = bd.Mode switch
         {
@@ -1758,8 +1766,8 @@ public static class CssBuilder
         {
             // A flat background: one color, or a gradient like the login
             // page's. Jellyfin's own backdrop goes (it would sit on top);
-            // an item page's backdrop can still come in on the script's
-            // layer (it lies over the container's paint) with the dim over it.
+            // the item page's banner can still bring the item's backdrop in
+            // on the script's layer (it lies over the container's paint).
             var flat = bd.Mode == BackdropMode.Solid
                 ? Color.Parse(bd.Color, x.Background).Hex
                 : $"linear-gradient({bd.GradientAngle}deg, {Color.Parse(bd.GradientFrom, x.Background).Hex} 0%, {Color.Parse(bd.GradientTo, x.Accent.Darken(0.55)).Hex} 100%)";
@@ -1767,7 +1775,7 @@ public static class CssBuilder
             sb.AppendLine($"{x.P}html {{ background-image: none !important; }}");
             sb.AppendLine($"{x.P}html .backgroundContainer, {x.P}html .backgroundContainer.withBackdrop {{ opacity: 1 !important; background: {flat} !important; }}");
             sb.AppendLine($"{x.P}html .backgroundContainer::before, {x.P}html .backgroundContainer::after {{ display: none !important; }}");
-            if (bd.ItemDetail)
+            if (ItemBanner.Of(x.Config).On)
             {
                 AppendBackdropLayers(sb, x, x.Background.Rgba(bd.Dim / 100.0), false);
             }
@@ -1839,9 +1847,10 @@ public static class CssBuilder
         {
             sb.AppendLine($"{container} {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; }}");
         }
-        if (bd.ItemDetail)
+        if (ItemBanner.Of(x.Config).On)
         {
-            // The item's backdrop goes on the script's layer over the image.
+            // The item page's banner puts the item's backdrop on the
+            // script's layer over the image, drifting like the background.
             AppendBackdropLayers(sb, x, dim, bd.Animate);
         }
 

@@ -110,7 +110,7 @@
             detail: 'Stránka detailu', transparentRibbon: 'Průhledná stuha s názvem pod backdropem', posterRadius: 'Zaoblení plakátu (-1 = jako karty)', posterShadow: 'Stín plakátu', hideTitleLogo: 'Schovat obrázkové logo titulu', peopleHeading: 'Herci a tvůrci', peopleShape: 'Tvar fotky', peopleDefault: 'Karty na výšku (výchozí)', peopleCircle: 'Kruhy, jméno na střed', peopleSquare: 'Čtverce', peopleRounded: 'Na výšku s velkým zaoblením', peopleScale: 'Velikost karet', peopleRing: 'Kroužek ve zvýrazňovací barvě kolem fotky', peopleGray: 'Černobíle, barevně při najetí', hideCastSection: 'Schovat sekci Herci a tvůrci', detailBlocksHeading: 'Popis a informační bloky', chipColor: 'Barva štítků (prázdné = automaticky)', detailBlockSurfacesHeading: 'Pozadí bloků', detailBlockSurfacesHint: 'Dej kterékoli části stránky vlastní pozadí – kartu, sklo nebo jeden ze stylů – každé s vlastní barvou.', blockNone: 'Žádné (přímo na stránce)', blockColor: 'Barva bloku (prázdné = plochy; u neo-brutalismu zvýraznění)', blockOpacity: 'Krytí bloků', blockRadius: 'Zaoblení bloků', blockSelectors: 'Výběr Verze / Video / Zvuk / Titulky', blockOverview: 'Popis (tagline + text)', blockGenres: 'Žánry', blockTags: 'Štítky', blockLinks: 'Externí odkazy', trackSelections: 'Výběr Verze / Video / Zvuk / Titulky', genresRow: 'Žánry', tagsRow: 'Štítky', externalLinksRow: 'Externí odkazy (IMDb, TMDB…)', blockDefault: 'Výchozí', blockChips: 'Štítky (chips)', blockAccentChips: 'Štítky ve zvýrazňovací barvě', overviewScale: 'Velikost textu popisu', overviewMaxWidth: 'Max. šířka popisu (0 = bez limitu)', hideTagline: 'Schovat tagline', detailSectionsHeading: 'Sekce níže', sectionTitles: 'Nadpisy sekcí', titleUppercase: 'Malé verzálky', titleAccentLine: 'Barevná linka pod nadpisem', titleAccentBar: 'Barevný proužek vlevo', hideSimilar: 'Schovat „Podobné položky“',
             backdropSolid: 'Jedna barva (backdropy jen na stránkách položek, pokud jsou níže zapnuté)', backdropGradient: 'Přechod mezi dvěma barvami (jako na přihlášení)', backdropColor: 'Barva (prázdné = barva pozadí)', loginSolid: 'Jedna barva (má přednost před přechodem; adresa obrázku před obojím)',
             backdropMode: 'Zdroj', backdropDefault: 'Výchozí Jellyfin (nastavení uživatele „Zobrazit pozadí“)', backdropRandom: 'Náhodný backdrop z knihovny, na každé stránce', backdropCustom: 'Vlastní adresa obrázku',
-            backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)', backdropItemDetail: 'Na stránce položky ukázat její vlastní backdrop (klientský skript)',
+            backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
             shareSite: 'Témata k prohlížení, náhledu a stažení – a místo, kam dát vlastní (prohlížení a stahování je otevřené všem, nahrávání vyžaduje účet na stránce):',
             share: 'Sdílení / import', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, řádky ze Seerru i s adresou a klíčem, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Preferované jazyky zvuku a titulků se vyprazdňují taky – jsou tvoje, ne tématu. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
@@ -235,6 +235,46 @@
                 overrides[d] = {};
             }
         });
+    }
+
+    // Settings that moved since a theme was saved go where the designer
+    // shows them now, so the next save writes them there:
+    //  - the thumb became the banner's own fallback,
+    //  - the background's "the item's own backdrop on its page" became the
+    //    item page's banner with the backdrop, dimmed as the background was
+    //    (it only ever worked over a background of the theme's own).
+    function upgradeSaved() {
+        var moved = false; // the defaults' switch became the banner
+        var bannerWas = state.Detail.Banner; // before any of this
+        [state].concat(['Web', 'Tv', 'Mobile', 'Dashboard'].map(function (d) { return overrides[d]; })).forEach(function (s, i) {
+            if (s.Detail && s.Detail.BannerImage === 'Thumb') {
+                s.Detail.BannerImage = 'Banner';
+            }
+            if (!s.Backdrop || !('ItemDetail' in s.Backdrop)) {
+                return;
+            }
+            var mode = s.Backdrop.Mode || state.Backdrop.Mode;
+            var bannerOn = s.Detail && 'Banner' in s.Detail ? s.Detail.Banner : bannerWas;
+            if (s.Backdrop.ItemDetail && mode !== 'Default' && !bannerOn) {
+                s.Detail = s.Detail || {};
+                s.Detail.Banner = true;
+                s.Detail.BannerImage = 'Backdrop';
+                s.Detail.BannerDim = 'Dim' in s.Backdrop ? s.Backdrop.Dim : state.Backdrop.Dim;
+                moved = moved || i === 0;
+            } else if (!s.Backdrop.ItemDetail && moved && !(s.Detail && 'Banner' in s.Detail)) {
+                s.Detail = s.Detail || {};
+                s.Detail.Banner = false; // a device that had it off keeps it off
+            }
+            if (i === 0) {
+                s.Backdrop.ItemDetail = false;
+            } else {
+                delete s.Backdrop.ItemDetail;
+                if (!Object.keys(s.Backdrop).length) {
+                    delete s.Backdrop;
+                }
+            }
+        });
+        overridesIntoState();
     }
 
     function overridesIntoState() {
@@ -2486,6 +2526,7 @@
         var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl, CssOnly: state.CssOnly, StockDashboard: state.Misc && state.Misc.StockDashboard };
         mergeKnown(state, data);
         overridesFromState();
+        upgradeSaved();
         state.Enabled = keep.Enabled;
         state.CssOnly = keep.CssOnly;
         if (state.Misc) {
@@ -2640,7 +2681,7 @@
     // markup, because a control sits inside a container of its own.
     // (the background source stays: an admin page may want a flat color of
     // its own while the client keeps its backdrops)
-    ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Backdrop.RotateSeconds', 'Backdrop.ItemDetail', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
+    ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Backdrop.RotateSeconds', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
         mark(prefix, 'data-nodash');
     });
     // The same idea for the device views, so every view offers what that
@@ -2682,11 +2723,9 @@
         ]).then(function (r) {
             state = r[0];
             presets = r[1];
-            if (state.Detail && state.Detail.BannerImage === 'Thumb') {
-                state.Detail.BannerImage = 'Banner'; // the thumb is the banner's own fallback now
-            }
             page.classList.toggle('jc-css-only', !!state.CssOnly);
             overridesFromState();
+            upgradeSaved();
             renderPresets();
             refreshControls();
             selectDevice('web');

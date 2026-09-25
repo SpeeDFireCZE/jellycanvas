@@ -1624,7 +1624,10 @@ public class BackdropSettings
     /// </summary>
     public int RotateSeconds { get; set; } = 0;
 
-    /// <summary>On an item's page show that item's own backdrop instead (client script; random and custom modes).</summary>
+    /// <summary>
+    /// Kept for themes saved before the item page's banner took this over:
+    /// true reads as that banner with the backdrop (see <see cref="ItemBanner"/>).
+    /// </summary>
     public bool ItemDetail { get; set; } = false;
 }
 

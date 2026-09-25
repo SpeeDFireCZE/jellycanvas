@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Background: "On an item's page show that item's own backdrop" is gone - it did the same as the item page's "The item's picture behind its page" with Backdrop, which stays (with its own dimming and "keep the top in view", and over any background). A theme saved with the old switch gets that banner, dimmed as the background was; the designer moves it over when a theme is loaded or imported, device views included.
+- Fixed: the item page's banner with Backdrop showed nothing over a background of the theme's own that does not rotate (a custom picture, a colour, a gradient, a random picture without rotation). The layer the item's picture lies on was set up only by the rotation or by the switch above.
+- Fixed: on an item's page a background of the theme's own was faded to the background's dimming - a random or custom picture, and the item's own backdrop the banner brings, all came out much darker than on the other pages. Jellyfin marks the background on an item's page (`withBackdrop`), and the theme faded that mark to dim Jellyfin's own backdrop; it does so only when Jellyfin's own backdrop is what shows.
+
 - Security: the random background picks only items every enabled account may see. Its address is anonymous (the login page uses it, and a CSS `url()` cannot carry a token), so it cannot tell who is looking - and until now it could put a backdrop from a library a child's account is kept out of, or one rated above that account's limit, on the login page or behind that child's home screen. Library access, the parental rating and blocked tags of every account are respected now.
 - Security: text the theme writes into a CSS string (the `content:` of a label) loses every control character, not just line breaks - a form feed also ends a CSS string and would let the rest of the text be read as rules.
 - Security: the settings baked into the client script escape `<`, `>`, `&` and `'` (before, only `</` was defused), so the script stays whole even when pasted inline into an HTML page by an injector plugin. Letters of every language stay readable.

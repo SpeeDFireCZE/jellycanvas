@@ -202,6 +202,12 @@ public class ScriptBuilderTests
         // backdrop layer for the item's own picture
         Assert.Contains("\"backdrop\":{\"seconds\":0,\"detail\":true", js, StringComparison.Ordinal);
         Assert.Equal(string.Empty, ScriptBuilder.Build(new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true } }));
+
+        // A theme saved with the background's old "the item's own backdrop" switch gets the banner with the backdrop.
+        var old = new PluginConfiguration { Scripts = new ScriptSettings { Enabled = true }, Backdrop = new BackdropSettings { Mode = BackdropMode.Solid, ItemDetail = true } };
+        var oldJs = ScriptBuilder.Build(old);
+        Assert.Contains("\"banner\":{\"image\":\"Backdrop\"}", oldJs, StringComparison.Ordinal);
+        Assert.Contains("\"backdrop\":{\"seconds\":0,\"detail\":true", oldJs, StringComparison.Ordinal);
     }
 
     [Fact]

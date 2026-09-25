@@ -835,6 +835,68 @@ public class CssBuilderTests
         Assert.Contains("html.jellycanvas-banner-page .backgroundContainer, html.jellycanvas-banner-page .backgroundContainer.withBackdrop { opacity: 1 !important; background: linear-gradient(180deg, #101010 0%, #300040 100%) !important; }", under, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(BackdropMode.Custom)]
+    [InlineData(BackdropMode.Solid)]
+    [InlineData(BackdropMode.Gradient)]
+    [InlineData(BackdropMode.RandomLibrary)]
+    public void The_banner_gets_its_layer_over_any_background_of_the_themes_own(BackdropMode mode)
+    {
+        // The item's backdrop lies on the script's layer. Without a rotation
+        // nothing else sets that layer up - the picture came in unsized.
+        var cfg = new PluginConfiguration();
+        cfg.Backdrop.Mode = mode;
+        cfg.Backdrop.Url = "https://example.org/a.jpg";
+        cfg.Detail.Banner = true;
+        cfg.Detail.BannerImage = BannerImage.Backdrop;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .backgroundContainer > .jellycanvas-backdrop { position: absolute;", css, StringComparison.Ordinal);
+        Assert.Contains("html .backgroundContainer > .jellycanvas-backdrop.is-item::after { background: rgba(", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Only_jellyfins_own_backdrop_is_dimmed_by_fading_the_background()
+    {
+        // Jellyfin marks the background on an item's page; the fade is the
+        // dim of its own backdrop, and would fade a picture of the theme's own.
+        const string Fade = "html .backgroundContainer.withBackdrop { opacity: 0.3 !important; }";
+        var cfg = new PluginConfiguration();
+        cfg.Backdrop.Dim = 30;
+        Assert.Contains(Fade, CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        cfg.Backdrop.Mode = BackdropMode.RandomLibrary;
+        Assert.DoesNotContain(".withBackdrop { opacity: 0.3", CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        cfg.Backdrop.Mode = BackdropMode.Default;
+        cfg.Detail.Banner = true;
+        Assert.DoesNotContain(".withBackdrop { opacity: 0.3", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_backgrounds_old_item_backdrop_switch_reads_as_the_banner()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Backdrop.Mode = BackdropMode.Custom;
+        cfg.Backdrop.Url = "https://example.org/a.jpg";
+        cfg.Backdrop.Dim = 60;
+        cfg.Backdrop.ItemDetail = true;
+
+        Assert.Equal(new ItemBanner(true, BannerImage.Backdrop, 60), ItemBanner.Of(cfg));
+        Assert.Contains("/* --- the item page's banner --- */", CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        // It never did anything over Jellyfin's own background, and still does not.
+        cfg.Backdrop.Mode = BackdropMode.Default;
+        Assert.False(ItemBanner.Of(cfg).On);
+
+        // The banner's own switch wins.
+        cfg.Backdrop.Mode = BackdropMode.Custom;
+        cfg.Detail.Banner = true;
+        cfg.Detail.BannerImage = BannerImage.Banner;
+        Assert.Equal(new ItemBanner(true, BannerImage.Banner, cfg.Detail.BannerDim), ItemBanner.Of(cfg));
+    }
+
     [Fact]
     public void Dialogs_that_scroll_themselves_keep_scrolling()
     {

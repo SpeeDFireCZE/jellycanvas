@@ -60,7 +60,8 @@ public static class ScriptBuilder
         // as good a reason to carry the theme there.
         var dashboard = c.Enabled && !c.Misc.StockDashboard && (c.Misc.ThemeDashboard || !string.IsNullOrWhiteSpace(c.Overrides.Dashboard));
         var backdrop = BackdropFor(c);
-        var banner = c.Detail.Banner ? new { image = c.Detail.BannerImage.ToString() } : null;
+        var itemBanner = ItemBanner.Of(c);
+        var banner = itemBanner.On ? new { image = itemBanner.Image.ToString() } : null;
         var devices = new Dictionary<string, object?>();
         var hasBackdrop = backdrop is not null || banner is not null || dashboard;
         foreach (var (name, _) in DeviceOverrides.Devices)
@@ -182,8 +183,8 @@ public static class ScriptBuilder
         var rotation = bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0;
         // The item page's banner is the same layer with the item's picture,
         // so it carries the script even where the background itself is Jellyfin's.
-        var detail = bd.ItemDetail || c.Detail.Banner;
-        var has = rotation || (detail && (bd.Mode != BackdropMode.Default || c.Detail.Banner));
+        var detail = ItemBanner.Of(c).On;
+        var has = rotation || detail;
         return has ? new { seconds = rotation ? Math.Max(3, bd.RotateSeconds) : 0, detail, tvStatic = c.Tv.StaticBackdrop } : null;
     }
 
