@@ -1266,24 +1266,13 @@
                 var tag = own ? item.BackdropImageTags[0] : (item.ParentBackdropImageTags || [])[0];
                 return owner ? show(owner, 'Backdrop', tag) : undefined;
             };
-            // The thumb ("Náhled" in a Czech Jellyfin) is the wide picture
-            // with the title on it - the closest thing to a banner, and the
-            // one films actually have: a banner is mostly a series' thing.
-            var thumb = function () {
-                if (tags.Thumb) {
-                    return show(item.Id, 'Thumb', tags.Thumb);
-                }
-                if (item.ParentThumbItemId && item.ParentThumbImageTag) {
-                    return show(item.ParentThumbItemId, 'Thumb', item.ParentThumbImageTag); // an episode: its series'
-                }
-                return backdrop();
-            };
             if (kind !== 'Banner' && kind !== 'Thumb') {
                 return backdrop(); // the backdrop, across the whole page
             }
             // A banner is a strip at the top of the page, not the page: the
-            // banner, or else the thumb (the wide picture with the title,
-            // which films have and banners they rarely do), or else the
+            // banner, or else the thumb ("Náhled" in a Czech Jellyfin: the
+            // wide picture with the title, which films have and banners
+            // they rarely do; an episode borrows its series'), or else the
             // backdrop - all drawn the same way. ("Thumb" was a choice of
             // its own once; a saved theme with it gets the same strip.)
             var strip = function (owner, type, tag) {

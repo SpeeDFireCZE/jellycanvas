@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
@@ -59,8 +60,12 @@ public class JellycanvasController : ControllerBase
     /// <summary>Two uploads at once would fight over the same file; let them through one at a time.</summary>
     private static readonly SemaphoreSlim LogoLock = new(1, 1);
 
+    private static readonly object PruneLock = new();
+    private static DateTime _lastPrune;
+
     private readonly IServerConfigurationManager _config;
     private readonly ILibraryManager _library;
+    private readonly IUserManager _users;
     private readonly IApplicationPaths _paths;
     private readonly IPluginManager _plugins;
     private readonly ILogger<JellycanvasController> _logger;
@@ -71,7 +76,8 @@ public class JellycanvasController : ControllerBase
     /// for them in the constructor is enough. IServerConfigurationManager is
     /// the key to Branding, ILibraryManager to library items (random
     /// backdrop), IApplicationPaths says where the plugin may store files,
-    /// IPluginManager lists the other installed plugins.
+    /// IPluginManager lists the other installed plugins, IUserManager the
+    /// accounts whose access the random backdrop respects.
     /// </summary>
     public JellycanvasController(
         IServerConfigurationManager config,
@@ -79,10 +85,12 @@ public class JellycanvasController : ControllerBase
         IApplicationPaths paths,
         IPluginManager plugins,
         ILogger<JellycanvasController> logger,
-        IHttpClientFactory http)
+        IHttpClientFactory http,
+        IUserManager users)
     {
         _config = config;
         _library = library;
+        _users = users;
         _paths = paths;
         _plugins = plugins;
         _logger = logger;
@@ -318,34 +326,83 @@ public class JellycanvasController : ControllerBase
         var dir = Path.Combine(DataDir, "seerr-images");
         Directory.CreateDirectory(dir);
         var file = Path.Combine(dir, p.TrimStart('/'));
-        if (!System.IO.File.Exists(file) || DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
-        {
-            // Only posters that came up in a Seerr answer are fetched: the
-            // address is open, and it must not be a way to make this server
-            // pull and store arbitrary TMDB files.
-            if (!SeerrClient.IsKnownPoster(p))
-            {
-                return NotFound();
-            }
 
+        // Only posters that came up in a Seerr answer are fetched: the
+        // address is open, and it must not be a way to make this server
+        // pull and store arbitrary TMDB files. One already on disk is
+        // served even when stale and not (yet) known again - after a
+        // restart nothing is known until Seerr has answered.
+        if ((!System.IO.File.Exists(file) || DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(file) > TimeSpan.FromDays(7))
+            && SeerrClient.IsKnownPoster(p))
+        {
+            var part = file + "." + Guid.NewGuid().ToString("N") + ".part";
             try
             {
                 using var client = _http.CreateClient("Jellycanvas.Tmdb");
                 client.Timeout = TimeSpan.FromSeconds(15);
+                client.MaxResponseContentBufferSize = 4 * 1024 * 1024; // a w342 poster is some 30 KB
                 var bytes = await client.GetByteArrayAsync("https://image.tmdb.org/t/p/w342" + p, ct).ConfigureAwait(false);
-                await System.IO.File.WriteAllBytesAsync(file, bytes, ct).ConfigureAwait(false);
+
+                // Written aside and moved in whole: a second request for the
+                // same poster never reads a half-written file.
+                await System.IO.File.WriteAllBytesAsync(part, bytes, ct).ConfigureAwait(false);
+                System.IO.File.Move(part, file, overwrite: true);
+                PruneSeerrImages(dir);
             }
-            catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
+            catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException or UnauthorizedAccessException)
             {
                 _logger.LogDebug(e, "Jellycanvas: poster {Path} not fetched", p);
-                return NotFound();
+                TryDelete(part);
             }
+        }
+
+        if (!System.IO.File.Exists(file))
+        {
+            return NotFound();
         }
 
         var type = p.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : p.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" : "image/jpeg";
         Response.Headers.CacheControl = "public, max-age=604800";
         Response.Headers.XContentTypeOptions = "nosniff";
         return PhysicalFile(file, type);
+    }
+
+    /// <summary>
+    /// At most once a day, the posters nobody asked for in a month go: one
+    /// in use is fetched again every week, so its file never gets that old,
+    /// and without this the folder would keep every poster a row ever had.
+    /// </summary>
+    private static void PruneSeerrImages(string dir)
+    {
+        lock (PruneLock)
+        {
+            if (DateTime.UtcNow - _lastPrune < TimeSpan.FromDays(1))
+            {
+                return;
+            }
+
+            _lastPrune = DateTime.UtcNow;
+        }
+
+        foreach (var f in Directory.EnumerateFiles(dir))
+        {
+            if (DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(f) > TimeSpan.FromDays(30))
+            {
+                TryDelete(f);
+            }
+        }
+    }
+
+    private static void TryDelete(string file)
+    {
+        try
+        {
+            System.IO.File.Delete(file);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // in use or not ours to delete - the next pruning tries again
+        }
     }
 
     /// <summary>Tries the address and key from the body (unsaved settings) against Seerr. Admin only.</summary>
@@ -502,6 +559,10 @@ public class JellycanvasController : ControllerBase
         return PhysicalFile(path, LogoTypes[Path.GetExtension(path)]);
     }
 
+    /// <summary>An item every enabled account may see (library access, parental rating, blocked tags).</summary>
+    private bool VisibleToEveryone(BaseItem item)
+        => _users.GetUsers().Where(u => !u.HasPermission(PermissionKind.IsDisabled)).All(u => item.IsVisibleStandalone(u));
+
     private string? FindLogo()
         => Directory.Exists(DataDir) ? Directory.EnumerateFiles(DataDir, "logo.*").FirstOrDefault() : null;
 
@@ -518,7 +579,10 @@ public class JellycanvasController : ControllerBase
     /// different one (and a rotation asks for ?n=1, ?n=2... to get several).
     /// Anonymous, because url() in CSS cannot carry a token - which also
     /// means an unauthenticated visitor of the login page sees a random
-    /// backdrop.
+    /// backdrop. Since nobody can be told apart here, only an item every
+    /// enabled account may see is picked: a library a child's account is
+    /// kept out of, or a rating above its limit, never shows up on the
+    /// login page or behind that child's home screen.
     /// </summary>
     [HttpGet("Backdrop")]
     [AllowAnonymous]
@@ -531,10 +595,10 @@ public class JellycanvasController : ControllerBase
             IncludeItemTypes = [BaseItemKind.Movie, BaseItemKind.Series],
             ImageTypes = [ImageType.Backdrop],
             OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
-            Limit = 1,
+            Limit = 25,
             Recursive = true,
             IsVirtualItem = false,
-        }).FirstOrDefault();
+        }).FirstOrDefault(VisibleToEveryone);
 
         if (item is null)
         {

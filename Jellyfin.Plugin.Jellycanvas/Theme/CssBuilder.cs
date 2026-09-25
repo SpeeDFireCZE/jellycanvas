@@ -885,9 +885,17 @@ public static class CssBuilder
         sb.AppendLine($"{x.MobileScope} header.MuiAppBar-root::after {{ font-size: 0.78em; padding-left: 0.7em; padding-right: {(i.Closable ? "2.6em" : "0.7em")}; }}");
     }
 
-    /// <summary>A CSS string literal for content: - quoted, with backslashes, quotes and line breaks escaped.</summary>
+    /// <summary>
+    /// A CSS string literal for content: - quoted, with backslashes and
+    /// quotes escaped. Control characters go: a line break (a form feed
+    /// counts as one in CSS) would end the string and let the rest of the
+    /// text be read as rules.
+    /// </summary>
     private static string CssString(string text)
-        => "\"" + text.Trim().Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal).Replace("\r", string.Empty, StringComparison.Ordinal).Replace("\n", " ", StringComparison.Ordinal) + "\"";
+    {
+        var clean = new string(text.Trim().Select(ch => char.IsControl(ch) ? ' ' : ch).ToArray());
+        return "\"" + clean.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
+    }
 
     private static void AppendLogo(StringBuilder sb, Context x)
     {
@@ -970,15 +978,6 @@ public static class CssBuilder
         }
     }
 
-    /// <summary>
-    /// The play button on a poster. Jellyfin 12 draws it three ways: on the
-    /// web a button in the middle of the hover overlay (data-action play,
-    /// or resume on an item with progress); on touch clients a fixed one -
-    /// in a button group inside the card link on the new (library) cards,
-    /// and as a legacy .cardOverlayButton-br whose icon span carries the
-    /// disc on the old (home page) cards. The TV has none of them, so
-    /// nothing here is scoped to it.
-    /// </summary>
     /// <summary>
     /// The item page's banner: the item's own picture behind its page (the
     /// script paints it on the backdrop layer, as it does for an item's
@@ -1150,6 +1149,15 @@ public static class CssBuilder
         }
     }
 
+    /// <summary>
+    /// The play button on a poster. Jellyfin 12 draws it three ways: on the
+    /// web a button in the middle of the hover overlay (data-action play,
+    /// or resume on an item with progress); on touch clients a fixed one -
+    /// in a button group inside the card link on the new (library) cards,
+    /// and as a legacy .cardOverlayButton-br whose icon span carries the
+    /// disc on the old (home page) cards. The TV has none of them, so
+    /// nothing here is scoped to it.
+    /// </summary>
     private static void AppendPlayButton(StringBuilder sb, Context x)
     {
         var k = x.Config.Cards;
@@ -1774,9 +1782,9 @@ public static class CssBuilder
             {
                 // The image is a bit larger than the screen and drifts slowly
                 // from side to side. Blur composes with the same rule.
-                sb.AppendLine($"{x.P}.backdropImage {{ background-size: 115% !important; animation: jellycanvas-pan 60s ease-in-out infinite alternate; {filter} }}");
-                sb.AppendLine("@keyframes jellycanvas-pan { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }");
-                sb.AppendLine(PortraitCover);
+                sb.AppendLine($"{x.P}.backdropImage {{ {PanLayer} animation: jellycanvas-pan 60s ease-in-out infinite alternate; {filter} }}");
+                sb.AppendLine($"{x.P}html .backdropContainer {{ overflow: hidden; }}");
+                sb.AppendLine(PanKeyframes);
             }
             else if (bd.Blur > 0)
             {
@@ -1808,11 +1816,9 @@ public static class CssBuilder
             sb.AppendLine($"{container} {{ filter: blur({Px(bd.Blur)}); transform: scale(1.06); }}");
         }
 
-        var pan = bd.Animate ? "background-size: 115% auto !important; animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : "background-size: cover !important;";
         if (bd.Animate)
         {
-            sb.AppendLine("@keyframes jellycanvas-pan { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }");
-            sb.AppendLine(PortraitCover);
+            sb.AppendLine(PanKeyframes);
         }
 
         if (bd.Mode == BackdropMode.RandomLibrary && bd.RotateSeconds > 0)
@@ -1822,7 +1828,17 @@ public static class CssBuilder
             return;
         }
 
-        sb.AppendLine($"{container} {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; {pan} }}");
+        if (bd.Animate)
+        {
+            // The container holds the script's layers and must not move:
+            // the drifting picture is its ::before, the container clips it.
+            sb.AppendLine($"{container} {{ background-image: none !important; overflow: hidden; }}");
+            sb.AppendLine($"{container}::before {{ content: ''; position: absolute; top: 0; bottom: 0; {PanLayer} background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}); background-position: center; background-repeat: no-repeat; animation: jellycanvas-pan 60s ease-in-out infinite alternate; }}");
+        }
+        else
+        {
+            sb.AppendLine($"{container} {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; }}");
+        }
         if (bd.ItemDetail)
         {
             // The item's backdrop goes on the script's layer over the image.
@@ -1847,7 +1863,7 @@ public static class CssBuilder
         var tv = $"{x.TvScope}";
         sb.AppendLine($"{tv} .backgroundContainer::before, {tv} .backgroundContainer::after {{ display: none !important; animation: none !important; }}");
         sb.AppendLine($"{tv} .backgroundContainer {{ background-image: linear-gradient({dim}, {dim}), url({CssUrl(url)}) !important; background-size: cover !important; animation: none !important; }}");
-        sb.AppendLine($"{tv} .backgroundContainer > .jellycanvas-backdrop > div, {tv} .backdropImage {{ animation: none !important; background-size: cover !important; }}");
+        sb.AppendLine($"{tv} .backgroundContainer > .jellycanvas-backdrop > div, {tv} .backdropImage {{ animation: none !important; transform: none !important; width: auto !important; right: 0 !important; background-size: cover !important; }}");
         // While a video plays the still must go like every other backdrop
         // (the general rule loses to this one's specificity, so it is said
         // again with the TV scope).
@@ -1862,21 +1878,30 @@ public static class CssBuilder
     /// </summary>
     private static void AppendBackdropLayers(StringBuilder sb, Context x, string dim, bool animate)
     {
-        var size = animate ? "background-size: 115% auto;" : "background-size: cover;";
+        var box = animate ? $"top: 0; bottom: 0; {PanLayer}" : "top: 0; right: 0; bottom: 0; left: 0; background-size: cover;";
         sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }}");
-        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size} opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
+        sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div {{ position: absolute; {box} background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 1.6s ease-in-out; {(animate ? "animation: jellycanvas-pan 60s ease-in-out infinite alternate;" : string.Empty)} }}");
         sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop > div.is-on {{ opacity: 1; }}");
         sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop::after {{ content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: {dim}; opacity: 0; transition: opacity 1.6s ease-in-out; }}");
         sb.AppendLine($"{x.P}html .backgroundContainer > .jellycanvas-backdrop.is-active::after {{ opacity: 1; }}");
     }
 
     /// <summary>
-    /// The panning picture is 115% of the screen's width - on a phone held
-    /// upright that is a short band across the middle. Portrait screens
-    /// cover the height instead; a landscape picture is then wider than
-    /// the screen, so the pan still has room to move.
+    /// The slow drift of a panning backdrop. It moves the layer, not the
+    /// picture inside it: a transform runs on the compositor, while the
+    /// background-position it animated before made the browser restyle and
+    /// repaint a full-screen picture every frame - most of what a page at
+    /// rest cost, and on a weak TV most of its time. The layer is 115% of
+    /// the screen wide and slides by the extra 15% (15 / 115 of itself).
     /// </summary>
-    private const string PortraitCover = "@media (orientation: portrait) { html .backdropImage, html .backgroundContainer, html .backgroundContainer::before, html .backgroundContainer::after, html .backgroundContainer > .jellycanvas-backdrop > div { background-size: cover !important; } }";
+    private const string PanKeyframes = "@keyframes jellycanvas-pan { from { transform: translateX(0); } to { transform: translateX(-13.0435%); } }";
+
+    /// <summary>
+    /// A panning layer: 115% wide from the left edge, the picture covering
+    /// it - on a phone held upright too, where the picture then fills the
+    /// height and still has room to drift.
+    /// </summary>
+    private const string PanLayer = "left: 0 !important; right: auto !important; width: 115% !important; background-size: cover !important;";
 
     /// <summary>
     /// A random backdrop that changes every few seconds - in pure CSS.
@@ -1891,11 +1916,11 @@ public static class CssBuilder
     {
         var n = RotationImages;
         var total = n * seconds;
-        var size = animate ? "background-size: 115% auto;" : "background-size: cover;";
         var pan = animate ? ", jellycanvas-pan 60s ease-in-out infinite alternate" : string.Empty;
-        var layer = $"content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-position: center; background-repeat: no-repeat; {size}";
+        var box = animate ? $"top: 0; bottom: 0; {PanLayer}" : "top: 0; right: 0; bottom: 0; left: 0; background-size: cover;";
+        var layer = $"content: ''; position: absolute; {box} background-position: center; background-repeat: no-repeat;";
 
-        sb.AppendLine($"{container} {{ background-image: none !important; }}");
+        sb.AppendLine($"{container} {{ background-image: none !important;{(animate ? " overflow: hidden;" : string.Empty)} }}");
         // Layer A shows images 1, 3, 5...; layer B shows 2, 4, 6... When the
         // client script is present it rotates instead (preloaded images, a
         // real cross-fade) and marks <html>; the CSS layers then stay off.
@@ -2953,11 +2978,6 @@ public static class CssBuilder
 
         public Color HeaderColor { get; }
 
-        /// <summary>
-        /// Whether the bar sits away from the window edges. Neo-brutalism
-        /// forces it: its frame and offset shadow are the whole point, and a
-        /// bar glued to the edges would show a single stripe of them.
-        /// </summary>
         /// <summary>The admin pages dock their bar next to the menu; floating it would leave it nowhere.</summary>
         public bool IsDashboard { get; }
 
@@ -2978,6 +2998,12 @@ public static class CssBuilder
         /// <summary>The phone layout as this scope spells it.</summary>
         public string MobileScope => IsMobile ? P.TrimEnd() : P + "html.layout-mobile";
 
+        /// <summary>
+        /// Whether the bar sits away from the window edges. The admin pages never float it
+        /// (their bar docks next to the menu). Neo-brutalism
+        /// forces it: its frame and offset shadow are the whole point, and a
+        /// bar glued to the edges would show a single stripe of them.
+        /// </summary>
         public bool HeaderFloating => !IsDashboard && (Config.Header.Floating || Config.Header.Style == SurfaceStyle.NeoBrutalism);
 
         public Color Focus { get; }

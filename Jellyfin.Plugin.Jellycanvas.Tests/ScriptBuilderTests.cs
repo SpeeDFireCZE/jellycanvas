@@ -90,7 +90,16 @@ public class ScriptBuilderTests
         var js = ScriptBuilder.Build(WithButton("https://x/</script><script>alert(1)"));
 
         Assert.DoesNotContain("</script>", js, StringComparison.Ordinal);
-        Assert.Contains("<\\/script>", js, StringComparison.Ordinal);
+        Assert.Contains("\\u003C/script\\u003E", js, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Labels_keep_their_letters()
+    {
+        var config = WithButton("https://x/");
+        config.Scripts.ToolbarButtons[0].Label = "Žádosti";
+
+        Assert.Contains("\"Žádosti\"", ScriptBuilder.Build(config), StringComparison.Ordinal);
     }
 
     [Fact]

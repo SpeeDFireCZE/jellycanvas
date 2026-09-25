@@ -22,7 +22,11 @@ public static class ScriptBuilder
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        // Readable letters of every script (a Czech label stays Czech), but
+        // < > & ' escaped: pasted into an injector plugin the script lands
+        // inside an HTML <script>, where a label with "</script>" in it
+        // would close the element.
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All),
     };
 
     private static readonly Lazy<string> Template = new(LoadTemplate);
@@ -167,10 +171,6 @@ public static class ScriptBuilder
         var seerrOpen = viaButton ? openWith : 0;
 
         var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, seerrOpen, devices }, JsonOptions);
-
-        // "</script>" inside a string would end the <script> element early if
-        // the script were ever inlined; harmless to neutralise it always.
-        json = json.Replace("</", "<\\/", StringComparison.Ordinal);
 
         return Template.Value.Replace(Placeholder, json, StringComparison.Ordinal);
     }

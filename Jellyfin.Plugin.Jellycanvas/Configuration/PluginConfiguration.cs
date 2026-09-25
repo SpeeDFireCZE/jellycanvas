@@ -520,7 +520,6 @@ public class ScriptSettings
     public CardBadgeSettings CardBadges { get; set; } = new();
 }
 
-/// <summary>Look of the badges the client script draws on cards.</summary>
 /// <summary>The color range of the Colorful badge style.</summary>
 public enum BadgePalette
 {
@@ -1289,10 +1288,10 @@ public class DetailSettings
     /// <summary>Gradient direction in degrees (180 = top to bottom).</summary>
     public int BannerPageAngle { get; set; } = 180;
 
-    /// <summary>Transparent "ribbon" with the title and buttons under the backdrop.</summary>
     /// <summary>Kept for themes saved before the ribbon got a style of its own; true means "Transparent".</summary>
     public bool TransparentRibbon { get; set; } = false;
 
+    /// <summary>Look of the ribbon with the title and buttons under the backdrop.</summary>
     public RibbonStyle Ribbon { get; set; } = RibbonStyle.SameAsBar;
 
     /// <summary>Ribbon color; empty = the bar color.</summary>
@@ -1692,7 +1691,6 @@ public class LoginSettings
     public LoginFormStyle Form { get; set; } = LoginFormStyle.Plain;
 }
 
-/// <summary>Tweaks for the TV layout (<c>html.layout-tv</c>) - remote-control navigation.</summary>
 /// <summary>How a focused tab in the TV top bar shows.</summary>
 public enum TabFocusStyle
 {
@@ -1709,6 +1707,7 @@ public enum TabFocusStyle
     Glow,
 }
 
+/// <summary>Tweaks for the TV layout (<c>html.layout-tv</c>) - remote-control navigation.</summary>
 public class TvSettings
 {
     /// <summary>Color of the ring around the focused element; empty = accent color.</summary>
