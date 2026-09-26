@@ -9,7 +9,8 @@
 A theme designer for **Jellyfin 12**, delivered as a server plugin. Pick
 colors, bar layouts and styles, card effects, fonts and dozens of other
 options in the Dashboard, watch a live preview of the real web client for
-the web, TV and mobile layouts, and apply with one click.
+the web, TV and mobile layouts and for the admin pages, and apply with one
+click.
 
 The output is **plain CSS** written to *Dashboard → General → Branding →
 Custom CSS* - the same place you would paste a hand-written theme. Nothing
@@ -45,6 +46,8 @@ requests and users, and a stand-in Seerr - no real server behind it.
 ![TV layout](images/screens/designer-tv.jpg)
 
 ![Phone layout](images/screens/designer-mobile.jpg)
+
+![The admin pages with a look of their own](images/screens/designer-dashboard.jpg)
 
 ![Seerr rows](images/screens/designer-seerr.jpg)
 
@@ -93,13 +96,18 @@ Updates appear in the catalog like any other plugin.
 ### Optional: script features
 
 Custom toolbar buttons, the home slideshow, card badges (resolution,
-languages) and the info bar's close button need JavaScript in the web
-client. Install the **File Transformation** plugin (available in its own
-repository, see its README) and the script is injected automatically once
-you apply the theme. The sections that need it stay hidden in Jellycanvas
+languages), the info bar's close button and the theme on the admin pages
+(Jellyfin 12 renders the Branding CSS on the user-facing pages only) need
+JavaScript in the web client. Install the **File Transformation** plugin
+(available in its own repository, see its README) and the script is
+injected automatically once you apply the theme. The sections that need it stay hidden in Jellycanvas
 until such a plugin is present. One caveat that applies to every File
 Transformation based plugin: browsers cache `index.html`, so hard-refresh
 (Ctrl+F5) once after enabling the script features.
+
+Want nothing injected into the web client? *Companion plugins → CSS only*
+keeps the theme to plain CSS in Branding - File Transformation is not used
+even when installed, and the designer offers only what CSS can do.
 
 ## Using it
 
@@ -110,11 +118,17 @@ client with your theme injected.
 
 - **Presets** give a starting point (stock Jellyfin, frosted glass, soft
   & rounded, neon night, minimal).
+- **Default / TV / Mobile / Dashboard** - the tabs above the settings.
+  *Default* is the theme for everything; the TV layout, phones and the
+  admin pages can each get settings of their own on top of it, and what a
+  tab leaves alone follows the defaults. Each tab shows only what its
+  scope can use.
 - **Preview** - switch between web, TV and mobile, and between the pages
   where a setting shows (home, library, item detail, login, the player's
-  "Up next" and "Still watching?" prompts). *Follow settings* switches the
-  page automatically. **Ctrl+click** (Cmd+click) on anything in the
-  preview jumps to the setting that controls it.
+  "Up next" and "Still watching?" prompts, the admin dashboard and a
+  settings page). *Follow settings* switches the page automatically.
+  **Ctrl+click** (Cmd+click) on anything in the preview jumps to the
+  setting that controls it.
 - **Save draft** keeps your work in the plugin without touching the
   server; nobody else sees it. **Apply to server** writes the CSS to
   Branding for everyone. **Remove from server** takes it out again; your
@@ -195,6 +209,13 @@ so the way there and back is: export in the designer, upload on the site
   own top bar takes the bar settings, plus its height and icon size, the
   focused tab's look, focus ring, card zoom) and **mobile** tweaks, and a
   free-form extra CSS box.
+- **Admin pages** (script) - the Dashboard follows the theme, or gets a
+  look of its own on the *Dashboard* tab (colors, bar, background, buttons,
+  font) - handy for telling the admin side apart at a glance. The panels
+  it is built from have their own settings: opacity, color, corners,
+  border, shadow, glass blur, the darkening over a playing session's
+  picture, and hiding the help links. *Jellyfin's own Dashboard* keeps the
+  admin pages stock.
 
 ## Development
 
