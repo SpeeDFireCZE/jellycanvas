@@ -3,13 +3,37 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.3.1 - 2026-10-01
+
+**The loading ring gets a look of its own, and a season's episodes get
+their badges.** The ring Jellyfin shows while a stream starts can take one
+of six styles, a color, size, speed, a glow and a disc behind it - and even
+left alone it now follows the theme's accent instead of Jellyfin blue. The
+episodes on a season's page carry the card badges, the home slideshow's
+button picks its icon from a list, and the Dashboard's device cards lose
+the dark boxes a lighter now-playing veil left behind their text.
+
+Updating is enough - the plugin brings the CSS in Branding up to date at
+startup, and the client script's address carries the version, so a fresh
+page load picks the new one up (a browser holding the old page in its cache
+may need one Ctrl+F5).
+
+### The player
 
 - Player: the loading ring - the one Jellyfin shows while a stream starts (and, being the same element, while a page loads) - has settings of its own (Player -> Loading ring): Jellyfin's ring, a ring, a double ring, an orbiting dot, a pulse or three dots; its color (empty = the accent), size, line thickness and speed; a glow in its color; and a dark or frosted disc behind it. The player preview shows it in the middle, and Ctrl+click on it opens these settings. Jellyfin paints its ring blue by hard-coded value, so even untouched it now takes the theme's accent.
+
+### Home slideshow
+
 - Home slideshow: the button's icon is picked from a list - info, play, play in a circle, a screen with play, arrows, open, eye, film strip, cinema, compass, star, heart, three dots, or none - with the chosen icon shown next to the label. "Another one" brings back the name field for any Material icon, and a theme with an icon outside the list opens with that field.
 - Fixed: the home slideshow's button style did nothing in the designer's preview - the button kept the look it had when the slideshow first appeared. The slideshow writes its own stylesheet, and when the script started again with new settings (the preview restarts it on every change) it found the old sheet and left it alone. A real client loads the page afresh, so the applied style was right there. The sheet is rewritten now, and it goes with the rest of the script's leftovers when the script stops.
+
+### The admin pages
+
 - Fixed: on the Dashboard, a device card with nothing playing showed dark boxes behind its lines of text as soon as "Darkening over a playing session's picture" was changed. The darkening went on every stack inside the card - and an idle card is built of several, one per line - instead of the one that covers a playing card's picture; it now goes only there, and only on a card that has a picture.
 - Dashboard: the text on a device card without a picture follows the card's color - the theme's text where it reads well on it (4.5 : 1), otherwise white or near-black, whichever stands out more. The card is the accent laid over the panel; a light accent no longer leaves white text on yellow.
+
+### Card badges
+
 - Card badges on a season's episodes: the season's page lists them as rows, not cards, and they had none. A list row now gets badges on its picture like a card (a library shown as a list too); a small thumbnail - a queue, a playlist - stays bare.
 
 ## 1.3.0 - 2026-09-26
