@@ -163,6 +163,8 @@
                 .jc-icon-field { display: flex; align-items: center; gap: .5em; }
                 .jc-icon-field .emby-input { flex: 1; }
                 .jc-icon-preview { font-size: 1.6em; width: 1.2em; text-align: center; opacity: .9; }
+                .jc-ss-icon-preview { font-size: 1.3em; width: auto; vertical-align: middle; }
+                .jc-ss-icon-name.jc-off { display: none !important; }
                 .jc-picker { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; }
                 /* display: flex above would beat the browser's [hidden] rule, so hide explicitly. */
                 .jc-picker[hidden] { display: none; }
@@ -1203,8 +1205,29 @@
                                     <label class="inputLabel inputLabelUnfocused" for="jcSsButtonLabel" data-i18n="ssButtonLabel">Text (empty = the item's title)</label>
                                     <input is="emby-input" type="text" id="jcSsButtonLabel" data-path="Scripts.Slideshow.ButtonLabel" placeholder="More info">
                                 </div>
-                                <div class="inputContainer" data-when="Scripts.Slideshow.ShowButton=true">
-                                    <label class="inputLabel inputLabelUnfocused" for="jcSsButtonIcon" data-i18n="ssButtonIcon">Icon (Material icon name, empty = none)</label>
+                                <div class="selectContainer" data-when="Scripts.Slideshow.ShowButton=true">
+                                    <label class="selectLabel" for="jcSsButtonIconPick"><span data-i18n="ssButtonIcon">Icon</span> <span class="material-icons jc-icon-preview jc-ss-icon-preview" aria-hidden="true"></span></label>
+                                    <select is="emby-select" id="jcSsButtonIconPick" class="emby-select-withcolor emby-select">
+                                        <option value="" data-i18n="ssIconNone">No icon</option>
+                                        <option value="info" data-i18n="ssIconInfo">Info</option>
+                                        <option value="play_arrow" data-i18n="ssIconPlay">Play</option>
+                                        <option value="play_circle" data-i18n="ssIconPlayCircle">Play in a circle</option>
+                                        <option value="smart_display" data-i18n="ssIconScreen">Screen with play</option>
+                                        <option value="arrow_forward" data-i18n="ssIconArrow">Arrow</option>
+                                        <option value="chevron_right" data-i18n="ssIconChevron">Small arrow</option>
+                                        <option value="open_in_new" data-i18n="ssIconOpen">Open</option>
+                                        <option value="visibility" data-i18n="ssIconEye">Eye</option>
+                                        <option value="movie" data-i18n="ssIconMovie">Film strip</option>
+                                        <option value="theaters" data-i18n="ssIconTheaters">Cinema</option>
+                                        <option value="explore" data-i18n="ssIconExplore">Compass</option>
+                                        <option value="star" data-i18n="ssIconStar">Star</option>
+                                        <option value="favorite" data-i18n="ssIconHeart">Heart</option>
+                                        <option value="more_horiz" data-i18n="ssIconMore">Three dots</option>
+                                        <option value="*" data-i18n="ssIconOther">Another one (type its name)…</option>
+                                    </select>
+                                </div>
+                                <div class="inputContainer jc-ss-icon-name" data-when="Scripts.Slideshow.ShowButton=true">
+                                    <label class="inputLabel inputLabelUnfocused" for="jcSsButtonIcon" data-i18n="ssButtonIconName">Icon name (Material Icons, as on fonts.google.com/icons)</label>
                                     <input is="emby-input" type="text" id="jcSsButtonIcon" data-path="Scripts.Slideshow.ButtonIcon" placeholder="info">
                                 </div>
                                 <div class="selectContainer" data-when="Scripts.Slideshow.ShowButton=true">
