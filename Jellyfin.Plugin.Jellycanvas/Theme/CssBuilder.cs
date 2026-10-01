@@ -1095,15 +1095,26 @@ public static class CssBuilder
         // color: the class stays on a card that shows what is playing, with
         // the item's picture set inline over it.
         sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; }}");
+        // Jellyfin writes white on its blue; on the theme's color the text
+        // follows how light that color comes out - the accent laid over the
+        // panel, the panel over the page (its color; a picture behind a
+        // see-through panel cannot be known here).
+        var cardFill = x.Background.Mix(custom ? Color.Parse(d.PanelColor, x.Surface) : x.Surface, Math.Clamp(d.PanelOpacity, 0, 100) / 100.0).Mix(x.Accent, 0.45);
+        sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground:not([style*=\"url(\"]) .MuiTypography-root {{ color: {cardFill.ReadableText(x.Text)} !important; }}");
         // A playing session's card lays Jellyfin's 70 % black over the
-        // picture for its white text. It can be lighter (the text then gets
-        // a shadow to stay readable) or darker.
+        // picture for its white text - on the card's outer stack, the one
+        // that covers it. It can be lighter (the text then gets a shadow to
+        // stay readable) or darker. Only that stack, and only on a card with
+        // a picture: the stacks inside it hold the lines of text, and an
+        // idle card has no veil at all - painted, they became dark boxes
+        // behind every line.
         if (d.NowPlayingDim != 70)
         {
-            sb.AppendLine($"{dash} .MuiCardMedia-root .MuiStack-root {{ background-color: rgba(0, 0, 0, {Dec(Math.Clamp(d.NowPlayingDim, 0, 100) / 100.0)}) !important; }}");
+            var veil = $"{dash} .MuiCardMedia-root[style*=\"url(\"] > .MuiStack-root";
+            sb.AppendLine($"{veil} {{ background-color: rgba(0, 0, 0, {Dec(Math.Clamp(d.NowPlayingDim, 0, 100) / 100.0)}) !important; }}");
             if (d.NowPlayingDim < 70)
             {
-                sb.AppendLine($"{dash} .MuiCardMedia-root .MuiStack-root * {{ text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }}");
+                sb.AppendLine($"{veil} * {{ text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85); }}");
             }
         }
         if (d.PanelOpacity == 100 && d.PanelRadius < 0 && !custom && !d.PanelBorder && !d.PanelShadow && d.Blur == 0 && !d.HideHelp)

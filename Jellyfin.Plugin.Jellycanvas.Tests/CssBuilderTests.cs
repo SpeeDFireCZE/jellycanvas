@@ -788,13 +788,33 @@ public class CssBuilderTests
     public void The_veil_over_a_playing_session_can_be_lighter()
     {
         var stock = CssBuilder.Build(new PluginConfiguration());
-        Assert.DoesNotContain(".MuiCardMedia-root .MuiStack-root", stock, StringComparison.Ordinal);
+        Assert.DoesNotContain("> .MuiStack-root { background-color: rgba(0, 0, 0,", stock, StringComparison.Ordinal);
 
         var cfg = new PluginConfiguration();
         cfg.Dashboard.NowPlayingDim = 30;
         var css = CssBuilder.Build(cfg);
-        Assert.Contains(".MuiCardMedia-root .MuiStack-root { background-color: rgba(0, 0, 0, 0.3) !important; }", css, StringComparison.Ordinal);
+        // Only the stack that covers a card with a picture: the stacks inside
+        // it hold the lines of text, and an idle card has no veil.
+        Assert.Contains("html body.dashboardDocument .MuiCardMedia-root[style*=\"url(\"] > .MuiStack-root { background-color: rgba(0, 0, 0, 0.3) !important; }", css, StringComparison.Ordinal);
+        Assert.DoesNotContain(".MuiCardMedia-root .MuiStack-root", css, StringComparison.Ordinal);
         Assert.Contains("text-shadow: 0 1px 3px", css, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("#f59e0b", "#141210", "#f5f1ea", "#f5f1ea")] // amber over a dark page: the theme's light text
+    [InlineData("#fde047", "#f4f4f5", "#f5f1ea", "rgba(0, 0, 0, 0.87)")] // yellow over a light page: dark text
+    [InlineData("#1e3a8a", "#f4f4f5", "#18181b", "#18181b")] // navy over a light page, dark theme text: kept
+    public void An_idle_device_cards_text_follows_its_color(string accent, string background, string text, string expected)
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Colors.Accent = accent;
+        cfg.Colors.Background = background;
+        cfg.Colors.Surface = background;
+        cfg.Colors.Text = text;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains($".MuiCardMedia-root.defaultCardBackground:not([style*=\"url(\"]) .MuiTypography-root {{ color: {expected} !important; }}", css, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -3,6 +3,12 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- Fixed: on the Dashboard, a device card with nothing playing showed dark boxes behind its lines of text as soon as "Darkening over a playing session's picture" was changed. The darkening went on every stack inside the card - and an idle card is built of several, one per line - instead of the one that covers a playing card's picture; it now goes only there, and only on a card that has a picture.
+- Dashboard: the text on a device card without a picture follows the card's color - the theme's text where it reads well on it (4.5 : 1), otherwise white or near-black, whichever stands out more. The card is the accent laid over the panel; a light accent no longer leaves white text on yellow.
+- Card badges on a season's episodes: the season's page lists them as rows, not cards, and they had none. A list row now gets badges on its picture like a card (a library shown as a list too); a small thumbnail - a queue, a playlist - stays bare.
+
 ## 1.3.0 - 2026-09-26
 
 **Older TVs get the whole theme, the item page gets a real banner, and the

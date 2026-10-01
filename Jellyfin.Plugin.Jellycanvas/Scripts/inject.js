@@ -105,6 +105,20 @@
         bul: 'BG', hrv: 'HR', srp: 'SR', slv: 'SL', tha: 'TH', vie: 'VI', ind: 'ID', heb: 'HE', cat: 'CA', lit: 'LT', lav: 'LV', est: 'ET'
     };
     var BADGE_TYPES = /^(Movie|Episode|Video|MusicVideo|Trailer)$/;
+
+    // What gets badges: cards, and the rows of a list - a season's page
+    // lists its episodes that way, and so does a library in list view.
+    var BADGE_ITEMS = ['.card[data-id]', '.listItem[data-id]'];
+
+    /** The selector for every badge item, each narrowed by the same conditions. */
+    function badgeItems(more) {
+        return BADGE_ITEMS.map(function (s) { return s + more; }).join(', ');
+    }
+
+    /** The picture the badges lie on: a card's, or a list row's thumbnail. */
+    function badgeHost(item) {
+        return item.classList.contains('listItem') ? item.querySelector('.listItemImage') : item.querySelector('.cardScalable');
+    }
     // Languages by how many people speak them, for filling up the badge
     // when the preferred ones are missing (an item with EN, FR and JA and
     // room for two shows EN and FR).
@@ -175,7 +189,7 @@
         var rows = '.jellycanvas-badges.jellycanvas-badges-rows { flex-direction: row; flex-wrap: wrap; align-items: center; } .jellycanvas-badges-tr.jellycanvas-badges-rows, .jellycanvas-badges-br.jellycanvas-badges-rows { justify-content: flex-end; }';
         // Paddings and gaps in em: a badge shrunk for a small card shrinks
         // as a whole, not just its letters.
-        return '.card .cardOverlayContainer > button[data-action="play"], .card .cardOverlayContainer > button[data-action="resume"], .card .cardScalable > a > .MuiButtonGroup-root, .card .cardScalable > button.cardOverlayButton-br { z-index: 4; }' +
+        return '.card .cardOverlayContainer > button[data-action="play"], .card .cardOverlayContainer > button[data-action="resume"], .card .cardScalable > a > .MuiButtonGroup-root, .card .cardScalable > button.cardOverlayButton-br, .listItem .listItemImageButton { z-index: 4; }' +
             '.jellycanvas-badges { position: absolute; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
@@ -610,10 +624,11 @@
         if (!info) {
             return;
         }
-        var host = card.querySelector('.cardScalable');
+        var host = badgeHost(card);
         if (!host) {
             return;
         }
+        var row = card.classList.contains('listItem');
         // Rounded cards: a badge in the very corner would stick out past
         // the curve, so the inset grows with the radius (the curve gives
         // up about 0.3 r at 45 degrees).
@@ -629,15 +644,21 @@
             card.removeAttribute('data-jc-badges');
             return;
         }
-        card.setAttribute('data-jc-badges-w', String(Math.round(host.offsetWidth || hostRect.width)));
         var hostWidth = host.offsetWidth || hostRect.width; // the layout width - a hover zoom must not size the badges
+        if (row && hostWidth < 120) {
+            // A list's small thumbnail (a queue, a playlist): no room for badges.
+            card.setAttribute('data-jc-badges', 'skip');
+            return;
+        }
+        card.setAttribute('data-jc-badges-w', String(Math.round(hostWidth)));
         var inset = Math.round((hostWidth < 140 ? 3 : 5) + radius * 0.3);
         // Jellyfin's own indicators (played tick, unplayed count top right,
         // media source top left) keep their corner; badges there start
         // under them.
         var hostTop = hostRect.top;
         function under(selector) {
-            var ind = card.querySelector(selector);
+            // A list row's text sits beside the picture: only the picture's own indicators count.
+            var ind = (row ? host : card).querySelector(selector);
             if (!ind || !ind.offsetHeight) {
                 return 0;
             }
@@ -1012,14 +1033,14 @@
         if (!badges || disposed) {
             return;
         }
-        var done = document.querySelectorAll('.card[data-jc-badges="done"][data-jc-badges-w]');
+        var done = document.querySelectorAll(badgeItems('[data-jc-badges="done"][data-jc-badges-w]'));
         var again = false;
         for (var i = 0; i < done.length; i++) {
             var card = done[i];
             if (badgeIo && !card.jcNear) {
                 continue;
             }
-            var host = card.querySelector('.cardScalable');
+            var host = badgeHost(card);
             var w = host ? Math.round(host.offsetWidth) : 0; // layout width: a hover zoom (a transform) is no reason to place again
             if (w && Math.abs(w - parseInt(card.getAttribute('data-jc-badges-w'), 10)) > 2) {
                 var boxes = card.querySelectorAll('.jellycanvas-badges');
@@ -1054,7 +1075,7 @@
             badgeSyncMeasured();
             return;
         }
-        var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges]):not([data-jc-watched])');
+        var cards = document.querySelectorAll(badgeItems(':not([data-jc-badges]):not([data-jc-watched])'));
         for (var i = 0; i < cards.length; i++) {
             var card = cards[i];
             var type = card.getAttribute('data-type');
@@ -1070,7 +1091,7 @@
     /** The same work without an IntersectionObserver: measure, and come back for the rest. */
     function badgeSyncMeasured() {
         badgeRecheck();
-        var cards = document.querySelectorAll('.card[data-id]:not([data-jc-badges])');
+        var cards = document.querySelectorAll(badgeItems(':not([data-jc-badges])'));
         var queued = false;
         var budget = 14;
         var more = false;

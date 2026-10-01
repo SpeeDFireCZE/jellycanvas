@@ -95,4 +95,27 @@ public readonly record struct Color(int R, int G, int B)
 
     /// <summary>Text that stays readable on this color - the same rule as MUI's contrastText.</summary>
     public string ContrastText => IsLight ? "rgba(0, 0, 0, 0.87)" : "#ffffff";
+
+    /// <summary>The WCAG contrast ratio of the two colors, 1 (none) to 21 (black on white).</summary>
+    public double ContrastWith(Color other)
+    {
+        var a = Luminance;
+        var b = other.Luminance;
+        return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
+    }
+
+    /// <summary>
+    /// <paramref name="text"/> if it reads well on this color (4.5 : 1, the
+    /// WCAG level for body text), otherwise white or near-black, whichever
+    /// stands out more.
+    /// </summary>
+    public string ReadableText(Color text)
+    {
+        if (text.ContrastWith(this) >= 4.5)
+        {
+            return text.Hex;
+        }
+
+        return new Color(255, 255, 255).ContrastWith(this) >= new Color(0, 0, 0).ContrastWith(this) ? "#ffffff" : "rgba(0, 0, 0, 0.87)";
+    }
 }
