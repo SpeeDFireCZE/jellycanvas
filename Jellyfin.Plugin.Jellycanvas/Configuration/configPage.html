@@ -754,6 +754,32 @@
                                 </div>
                                 <div class="jc-row" data-slider="Player.SkipOffset" data-min="16" data-max="400" data-step="4" data-unit="px" data-i18n-label="skipOffset">Distance from the edge</div>
                                 <div class="jc-row" data-slider="Player.SkipScale" data-min="60" data-max="180" data-unit="%" data-i18n-label="skipScale">Size</div>
+                                <h4 class="jc-sub" data-i18n="spinnerHeading">Loading ring</h4>
+                                <div class="jc-hint" data-i18n="spinnerHint">The ring Jellyfin shows while a stream starts. The same one turns while a page loads, so it changes there too. The player preview shows it in the middle.</div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSpinnerStyle" data-i18n="style">Style</label>
+                                    <select is="emby-select" id="jcSpinnerStyle" data-path="Player.Spinner" class="emby-select-withcolor emby-select">
+                                        <option value="Default" data-i18n="spinnerDefault">Jellyfin's ring</option>
+                                        <option value="Ring" data-i18n="spinnerRing">Ring</option>
+                                        <option value="DualRing" data-i18n="spinnerDualRing">Double ring</option>
+                                        <option value="Orbit" data-i18n="spinnerOrbit">Orbiting dot</option>
+                                        <option value="Pulse" data-i18n="spinnerPulse">Pulse</option>
+                                        <option value="Dots" data-i18n="spinnerDots">Three dots</option>
+                                    </select>
+                                </div>
+                                <div class="jc-color" data-color="Player.SpinnerColor" data-optional="1" data-i18n-label="spinnerColor">Color (empty = accent)</div>
+                                <div class="jc-row" data-slider="Player.SpinnerSize" data-min="40" data-max="250" data-step="5" data-unit="%" data-i18n-label="spinnerSize">Size</div>
+                                <div class="jc-row" data-when="Player.Spinner=Default|Ring|DualRing|Orbit" data-slider="Player.SpinnerThickness" data-min="-1" data-max="16" data-unit="px" data-i18n-label="spinnerThickness">Line thickness (-1 = as the style has it)</div>
+                                <div class="jc-row" data-slider="Player.SpinnerSpeed" data-min="25" data-max="300" data-step="5" data-unit="%" data-i18n-label="spinnerSpeed">Speed</div>
+                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Player.SpinnerGlow"><span data-i18n="spinnerGlow">Glow in its color</span></label></div>
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcSpinnerBackdrop" data-i18n="spinnerBackdrop">Behind it</label>
+                                    <select is="emby-select" id="jcSpinnerBackdrop" data-path="Player.SpinnerBackdrop" class="emby-select-withcolor emby-select">
+                                        <option value="None" data-i18n="spinnerBackNone">Nothing</option>
+                                        <option value="Dim" data-i18n="spinnerBackDim">A dark disc</option>
+                                        <option value="Glass" data-i18n="spinnerBackGlass">A frosted disc</option>
+                                    </select>
+                                </div>
                             </div>
                         </details>
                         <details class="jc-section" data-section="dialogs">

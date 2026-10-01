@@ -1037,6 +1037,65 @@ public class PlayerSettings
 
     /// <summary>Size of the skip button in percent (100 = default).</summary>
     public int SkipScale { get; set; } = 100;
+
+    /// <summary>
+    /// Look of the loading ring - the one Jellyfin shows while a stream
+    /// starts, and (the same element) while a page loads.
+    /// </summary>
+    public SpinnerStyle Spinner { get; set; } = SpinnerStyle.Default;
+
+    /// <summary>Color of the loading ring; empty = the accent.</summary>
+    public string SpinnerColor { get; set; } = string.Empty;
+
+    /// <summary>Size of the loading ring in percent of Jellyfin's (a tenth of the window's height).</summary>
+    public int SpinnerSize { get; set; } = 100;
+
+    /// <summary>Line thickness of the ring styles in pixels; -1 = as the style has it.</summary>
+    public int SpinnerThickness { get; set; } = -1;
+
+    /// <summary>Speed of the loading ring in percent (200 = twice as fast).</summary>
+    public int SpinnerSpeed { get; set; } = 100;
+
+    /// <summary>A glow around the loading ring in its own color.</summary>
+    public bool SpinnerGlow { get; set; } = false;
+
+    /// <summary>What lies behind the loading ring.</summary>
+    public SpinnerBackdrop SpinnerBackdrop { get; set; } = SpinnerBackdrop.None;
+}
+
+/// <summary>How the loading ring looks.</summary>
+public enum SpinnerStyle
+{
+    /// <summary>Jellyfin's own ring (an arc that grows and shrinks), in the chosen color.</summary>
+    Default,
+
+    /// <summary>An arc running round a faint full ring.</summary>
+    Ring,
+
+    /// <summary>Two arcs outside, two inside, turning the other way.</summary>
+    DualRing,
+
+    /// <summary>A dot going round a faint ring.</summary>
+    Orbit,
+
+    /// <summary>Discs growing out of the middle and fading.</summary>
+    Pulse,
+
+    /// <summary>Three dots swelling one after another.</summary>
+    Dots,
+}
+
+/// <summary>What lies behind the loading ring.</summary>
+public enum SpinnerBackdrop
+{
+    /// <summary>Nothing - the ring alone.</summary>
+    None,
+
+    /// <summary>A dark disc.</summary>
+    Dim,
+
+    /// <summary>A frosted disc.</summary>
+    Glass,
 }
 
 /// <summary>Look of the player's bottom bar.</summary>

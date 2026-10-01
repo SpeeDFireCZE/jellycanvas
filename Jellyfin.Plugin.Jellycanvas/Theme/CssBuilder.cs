@@ -148,6 +148,7 @@ public static class CssBuilder
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
         AppendPlayer(sb, ctx);
+        AppendSpinner(sb, ctx);
         AppendBackdrop(sb, ctx);
         AppendDetail(sb, ctx);
         AppendLogin(sb, ctx);
@@ -2592,6 +2593,121 @@ public static class CssBuilder
     /// the control buttons, and the media-segment "Skip intro / credits"
     /// button (.skip-button-container > .skip-button).
     /// </summary>
+    /// <summary>
+    /// The loading ring. Jellyfin builds one element for it (.docspinner, the
+    /// old Material spinner: four layers of two half-circle arcs, Jellyfin
+    /// blue by hard-coded value) and shows it while a stream starts and while
+    /// a page loads. Jellyfin's own ring takes the color (the accent unless
+    /// set), thickness and speed; the other styles hide its layers and draw
+    /// on the element's ::before / ::after - the dots on three of the layers.
+    /// Only transforms and opacity are animated: the keyframes are the same
+    /// in every scope, and a weak TV can run them.
+    /// </summary>
+    private static void AppendSpinner(StringBuilder sb, Context x)
+    {
+        var p = x.Config.Player;
+        var s = $"{x.P}html .docspinner";
+        var c = Color.Parse(p.SpinnerColor, x.Accent);
+        var speed = Math.Clamp(p.SpinnerSpeed, 25, 300) / 100.0;
+        string Time(double ms) => Dec(Math.Round(ms / speed) / 1000.0) + "s";
+        var size = Math.Clamp(p.SpinnerSize, 40, 250) / 100.0;
+        var line = p.SpinnerThickness > 0 ? Math.Min(p.SpinnerThickness, 16) : 4;
+        sb.AppendLine("/* --- loading ring --- */");
+
+        if (size != 1)
+        {
+            sb.AppendLine($"{s} {{ width: {Dec(10 * size)}vh !important; height: {Dec(10 * size)}vh !important; margin-left: -{Dec(5 * size)}vh !important; margin-top: -{Dec(5 * size)}vh !important; }}");
+        }
+
+        var pseudo = $"content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; box-sizing: border-box; border-radius: 50%;";
+        string glow;
+        switch (p.Spinner)
+        {
+            case SpinnerStyle.Ring:
+            case SpinnerStyle.DualRing:
+            case SpinnerStyle.Orbit:
+            case SpinnerStyle.Pulse:
+                sb.AppendLine($"{s} .mdl-spinner__layer {{ display: none !important; }}");
+                sb.AppendLine("@keyframes jellycanvas-spin { to { transform: rotate(360deg); } }");
+                glow = $"{s}::before, {s}::after";
+                if (p.Spinner == SpinnerStyle.Orbit)
+                {
+                    // The ring is round: the whole element can turn, carrying the dot.
+                    var dot = Math.Max(10, line * 3);
+                    sb.AppendLine($"{s}.mdlSpinnerActive {{ animation: jellycanvas-spin {Time(1200)} linear infinite !important; }}");
+                    sb.AppendLine($"{s}::before {{ {pseudo} border: {line}px solid {c.Rgba(0.22)}; }}");
+                    sb.AppendLine($"{s}::after {{ content: ''; position: absolute; left: 50%; top: {Dec(line / 2.0 - dot / 2.0)}px; width: {dot}px; height: {dot}px; margin-left: -{Dec(dot / 2.0)}px; border-radius: 50%; background: {c.Hex}; }}");
+                    break;
+                }
+
+                sb.AppendLine($"{s}.mdlSpinnerActive {{ animation: none !important; }}");
+                if (p.Spinner == SpinnerStyle.Ring)
+                {
+                    sb.AppendLine($"{s}::before {{ {pseudo} border: {line}px solid {c.Rgba(0.2)}; border-top-color: {c.Hex}; animation: jellycanvas-spin {Time(900)} linear infinite; }}");
+                }
+                else if (p.Spinner == SpinnerStyle.DualRing)
+                {
+                    sb.AppendLine("@keyframes jellycanvas-spin-back { to { transform: rotate(-360deg); } }");
+                    sb.AppendLine($"{s}::before {{ {pseudo} border: {line}px solid transparent; border-top-color: {c.Hex}; border-bottom-color: {c.Hex}; animation: jellycanvas-spin {Time(1100)} linear infinite; }}");
+                    sb.AppendLine($"{s}::after {{ {pseudo} top: 22%; right: 22%; bottom: 22%; left: 22%; border: {line}px solid transparent; border-left-color: {c.Rgba(0.7)}; border-right-color: {c.Rgba(0.7)}; animation: jellycanvas-spin-back {Time(800)} linear infinite; }}");
+                }
+                else
+                {
+                    sb.AppendLine("@keyframes jellycanvas-pulse { 0% { transform: scale(0); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }");
+                    sb.AppendLine($"{s}::before, {s}::after {{ {pseudo} background: {c.Hex}; animation: jellycanvas-pulse {Time(1600)} ease-out infinite both; }}");
+                    sb.AppendLine($"{s}::after {{ animation-delay: {Time(800)}; }}");
+                }
+
+                break;
+            case SpinnerStyle.Dots:
+                // Three of Jellyfin's four layers stand still and carry a dot each.
+                var dots = $"{s} .mdl-spinner__layer::before";
+                sb.AppendLine("@keyframes jellycanvas-dot { 0%, 80%, 100% { transform: scale(0.45); opacity: 0.45; } 40% { transform: scale(1); opacity: 1; } }");
+                sb.AppendLine($"{s}.mdlSpinnerActive {{ animation: none !important; }}");
+                sb.AppendLine($"{s} .mdl-spinner__layer-4, {s} .mdl-spinner__circle-clipper {{ display: none !important; }}");
+                sb.AppendLine($"{s} .mdl-spinner__layer {{ opacity: 1 !important; animation: none !important; transform: none !important; }}");
+                sb.AppendLine($"{dots} {{ content: ''; position: absolute; top: 50%; left: 6%; width: 22%; height: 22%; margin-top: -11%; border-radius: 50%; background: {c.Hex}; animation: jellycanvas-dot {Time(1200)} ease-in-out infinite both; }}");
+                sb.AppendLine($"{s} .mdl-spinner__layer-2::before {{ left: 39%; animation-delay: {Time(160)}; }}");
+                sb.AppendLine($"{s} .mdl-spinner__layer-3::before {{ left: 72%; animation-delay: {Time(320)}; }}");
+                glow = dots;
+                break;
+            default:
+                // Jellyfin's ring: its color, line and speed (its three
+                // animations keep their proportions).
+                sb.AppendLine($"{s} .mdl-spinner__layer {{ border-color: {c.Hex} !important; }}");
+                if (p.SpinnerThickness > 0)
+                {
+                    sb.AppendLine($"{s} .mdl-spinner__circle {{ border-width: {line}px !important; }}");
+                }
+
+                if (p.SpinnerSpeed != 100)
+                {
+                    sb.AppendLine($"{s}.mdlSpinnerActive {{ animation-duration: {Time(1568)} !important; }}");
+                    sb.AppendLine($"{s}.mdlSpinnerActive .mdl-spinner__layer {{ animation-duration: {Time(5332)} !important; }}");
+                    sb.AppendLine($"{s}.mdlSpinnerActive .mdl-spinner__circle {{ animation-duration: {Time(1333)} !important; }}");
+                }
+
+                glow = $"{s} .mdl-spinner__layer";
+                break;
+        }
+
+        if (p.SpinnerGlow)
+        {
+            sb.AppendLine($"{glow} {{ filter: drop-shadow(0 0 4px {c.Rgba(0.9)}) drop-shadow(0 0 12px {c.Rgba(0.55)}); }}");
+        }
+
+        // A disc behind it: the element's own background, carried a little
+        // past its edge by a shadow of the same color.
+        if (p.SpinnerBackdrop == SpinnerBackdrop.Dim)
+        {
+            sb.AppendLine($"{s} {{ background: rgba(0, 0, 0, 0.5); border-radius: 50%; box-shadow: 0 0 0 0.9em rgba(0, 0, 0, 0.5); }}");
+        }
+        else if (p.SpinnerBackdrop == SpinnerBackdrop.Glass)
+        {
+            sb.AppendLine($"{s} {{ background: rgba(255, 255, 255, 0.1); border-radius: 50%; box-shadow: 0 0 0 0.9em rgba(255, 255, 255, 0.1), 0 0 0 calc(0.9em + 1px) rgba(255, 255, 255, 0.2); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }}");
+        }
+    }
+
     private static void AppendPlayer(StringBuilder sb, Context x)
     {
         var p = x.Config.Player;

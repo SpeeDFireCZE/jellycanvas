@@ -800,6 +800,54 @@ public class CssBuilderTests
         Assert.Contains("text-shadow: 0 1px 3px", css, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void The_loading_ring_takes_the_accent_unless_it_has_a_color_of_its_own()
+    {
+        // Jellyfin paints its ring blue by hard-coded value.
+        var cfg = new PluginConfiguration();
+        cfg.Colors.Accent = "#f59e0b";
+        Assert.Contains("html .docspinner .mdl-spinner__layer { border-color: #f59e0b !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        cfg.Player.SpinnerColor = "#22d3ee";
+        Assert.Contains("html .docspinner .mdl-spinner__layer { border-color: #22d3ee !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Jellyfins_ring_keeps_its_proportions_at_another_speed_and_size()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Player.SpinnerSpeed = 200;
+        cfg.Player.SpinnerSize = 150;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html .docspinner.mdlSpinnerActive { animation-duration: 0.784s !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .docspinner.mdlSpinnerActive .mdl-spinner__layer { animation-duration: 2.666s !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("width: 15vh !important; height: 15vh !important; margin-left: -7.5vh !important;", css, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(SpinnerStyle.Ring, "html .docspinner::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; box-sizing: border-box; border-radius: 50%; border: 6px solid rgba(34, 211, 238, 0.2); border-top-color: #22d3ee;")]
+    [InlineData(SpinnerStyle.DualRing, "border-left-color: rgba(34, 211, 238, 0.7);")]
+    [InlineData(SpinnerStyle.Orbit, "html .docspinner.mdlSpinnerActive { animation: jellycanvas-spin 1.2s linear infinite !important; }")]
+    [InlineData(SpinnerStyle.Pulse, "animation: jellycanvas-pulse 1.6s ease-out infinite both;")]
+    [InlineData(SpinnerStyle.Dots, "html .docspinner .mdl-spinner__layer-3::before { left: 72%;")]
+    public void Every_loading_ring_style_draws_in_its_color(SpinnerStyle style, string expected)
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Player.Spinner = style;
+        cfg.Player.SpinnerColor = "#22d3ee";
+        cfg.Player.SpinnerThickness = 6;
+        cfg.Player.SpinnerGlow = true;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains(expected, css, StringComparison.Ordinal);
+        Assert.Contains("filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.9))", css, StringComparison.Ordinal);
+        // Jellyfin's arcs give way to the style's own drawing.
+        Assert.Contains(style == SpinnerStyle.Dots ? ".mdl-spinner__circle-clipper { display: none !important; }" : ".mdl-spinner__layer { display: none !important; }", css, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("#f59e0b", "#141210", "#f5f1ea", "#f5f1ea")] // amber over a dark page: the theme's light text
     [InlineData("#fde047", "#f4f4f5", "#f5f1ea", "rgba(0, 0, 0, 0.87)")] // yellow over a light page: dark text

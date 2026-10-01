@@ -196,8 +196,9 @@ so the way there and back is: export in the designer, upload on the site
 - **Seerr rows** (script) - rows on the home page from Jellyseerr /
   Overseerr: coming soon (requested), recently requested, waiting for
   approval, now available, trending, popular movies and series.
-- **Player** - the control bar, the progress slider, button size and the
-  "Skip intro / credits" button.
+- **Player** - the control bar, the progress slider, button size, the
+  "Skip intro / credits" button and the loading ring (six styles, color,
+  size, speed, glow, a disc behind it).
 - **Buttons & inputs**, **dialogs & menus** (and the player's "Up next"
   prompt), **item detail page** (title ribbon, poster, cast & crew as
   circles or squares, selectors / genres / tags / links as chips, section
