@@ -77,7 +77,7 @@
         badgesRemoveAll();
         backdropStop();
         rowsRemoveAll();
-        ['jellycanvasSlideshow', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style', DASH_ID].forEach(function (id) {
+        ['jellycanvasSlideshow', 'jellycanvasSlideshow-style', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style', DASH_ID].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.remove();
@@ -2675,13 +2675,17 @@
         }
     }
 
+    // The slideshow's own stylesheet. Written over on every call: a script
+    // started again with other settings (the designer's preview does that
+    // on every change) found the old sheet and kept the old button look.
     function ssStyle() {
-        if (document.getElementById(SS_ID + '-style')) {
-            return;
+        var style = document.getElementById(SS_ID + '-style');
+        if (!style) {
+            style = document.createElement('style');
+            style.id = SS_ID + '-style';
+            document.head.appendChild(style);
         }
-        var style = document.createElement('style');
-        style.id = SS_ID + '-style';
-        style.textContent =
+        var css =
             '#' + SS_ID + ' { position: relative; height: ' + slideshow.height + 'vh; min-height: 260px; margin: 0 0 1.5em; border-radius: var(--jf-card-borderRadius, 0.2em); overflow: hidden; background: #000; contain: layout paint; }' +
             '#' + SS_ID + ' .jcs-slide { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; transition: opacity 0.9s ease; pointer-events: none; }' +
             '#' + SS_ID + ' .jcs-slide.is-active { opacity: 1; pointer-events: auto; }' +
@@ -2699,7 +2703,9 @@
             '#' + SS_ID + ' .jcs-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); border: 0; padding: 0; cursor: pointer; }' +
             '#' + SS_ID + ' .jcs-dot.is-active { background: var(--jf-palette-primary-main, #00a4dc); }' +
             '.layout-mobile #' + SS_ID + ' .jcs-text { right: 4%; bottom: 14%; } .layout-mobile #' + SS_ID + ' .jcs-title { font-size: 1.5em; } .layout-mobile #' + SS_ID + ' .jcs-overview { display: none; }';
-        document.head.appendChild(style);
+        if (style.textContent !== css) {
+            style.textContent = css;
+        }
     }
 
     function ssRender() {
