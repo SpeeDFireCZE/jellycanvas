@@ -3,13 +3,51 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.3.2 - 2026-10-02
 
-- Share: a theme exported in "CSS only" mode carries the CSS look only. The script's features were hidden from its author, yet the export took whatever they still held (from before the switch, or from an import) - so an import brought a slideshow, badges or an admin look nobody had seen with that theme. The admin pages are left out now (their panel settings, "Theme the Dashboard" and the Dashboard tab's document), and of the script's features only their switches go along, turned off (the slideshow, the badges, the item page's banner, the info bar's close button) - an import gives the same CSS version, and the theme site no longer lists such a theme as needing File Transformation or styling the admin pages. The importer's own "CSS only" choice, buttons and Seerr stay theirs, as before. The Share section says so while CSS only is on.
-- Fixed: with the Sidebar layout and the theme on the Dashboard, the admin pages fell apart - their top bar was turned into the sidebar column and went off the screen, and the content slid under the admin menu. The admin pages have a menu of their own on the left, so the sidebar now stays on the user-facing pages and the admin bar docks next to the menu as before. The Dashboard tab no longer offers a layout either; it shows the bar's own settings.
+**A theme applied shows at once, the music player follows the theme, and
+"CSS only" is CSS only everywhere.** Jellyfin's client held the branding
+CSS for a minute, so open pages kept the old theme after an Apply; the
+client script now swaps in the fresh one - on the next navigation within a
+second, on a page left open within ten. The music player takes the Player
+section's look - until now its bar and sliders stayed in Jellyfin's grey
+and blue whatever the theme said. Applied, "CSS only" takes the admin look
+off the plugin page at once, the CSS it writes holds nothing for the admin
+pages, and a theme exported in that mode is a CSS theme, so an import gives
+the same look. Plus a fix for the Sidebar layout, which broke the admin
+pages when they followed the defaults.
+
+Updating is enough - the plugin brings the CSS in Branding up to date at
+startup, and the client script's address carries the version, so a fresh
+page load picks the new one up (a browser holding the old page in its cache
+may need one Ctrl+F5).
+
+### A theme applied reaches open pages at once
+
+- Fixed: a theme just applied took a minute or more to show on the user-facing pages - on the admin pages it was there at once. Jellyfin's client keeps the branding CSS it fetched for a minute before it asks again (and a tab left open did not ask until something nudged it). The theme block now carries a stamp, a new `/Jellycanvas/CssStamp` tells the current one in a few bytes, and the client script asks for it when a page loads, on every navigation, when the window or the tab comes back, and every ten seconds while the page is in view; it also watches the client's copy, which the client renders again after a navigation. An older copy is switched off and the fresh CSS goes in over it until the client catches up - a navigation shows the new theme within a second, a page just left open within ten. With "CSS only" there is no script, and Jellyfin's minute stays.
+- The client script runs for an applied theme even without a feature of its own (that check is its job then).
+- The startup refresh compares the stamp: the date line in the block made it rewrite Branding on every start, even with nothing changed.
+
+### The music player
+
+- The music player follows the Player section: its bar along the bottom takes the control bar's style (solid, glass, gradient and the rest, its color, opacity, blur), floats and rounds like it, and its buttons take the buttons' size. The position and volume sliders - in the bar and on the queue page - take the progress slider's color and the position ones its height. Until now all of it stayed in Jellyfin's stock grey and hard-coded blue.
+- Sliders anywhere else (a settings page, say) take the accent instead of Jellyfin blue.
+- Fixed: with the Sidebar layout the music bar ran under the sidebar and covered its bottom (the user button among it); it starts where the content does now.
+- Test server: `test\Make-Music.ps1` adds a music library - three made-up albums of generated tones, tagged and with covers - to check the music pages against a theme.
+
+### CSS only
+
 - Fixed: after "CSS only" was applied, the plugin page itself - an admin page - kept the custom Dashboard look until it was reloaded. The client script running in it went on with what it had fetched when the page loaded. The designer now swaps it for what the server serves after every Apply and every Remove: nothing after CSS only (the admin pages turn stock at once), and the fresh admin look after an ordinary Apply, which until now also waited for a reload.
 - CSS only: the theme no longer writes its rules for the admin pages - without the script they never reach them (Jellyfin renders Branding on the user-facing pages only), so they were dead weight.
+- Share: a theme exported in "CSS only" mode carries the CSS look only. The script's features were hidden from its author, yet the export took whatever they still held (from before the switch, or from an import) - so an import brought a slideshow, badges or an admin look nobody had seen with that theme. The admin pages are left out now (their panel settings, "Theme the Dashboard" and the Dashboard tab's document), and of the script's features only their switches go along, turned off (the slideshow, the badges, the item page's banner, the info bar's close button) - an import gives the same CSS version, and the theme site no longer lists such a theme as needing File Transformation or styling the admin pages. The importer's own "CSS only" choice, buttons and Seerr stay theirs, as before. The Share section says so while CSS only is on.
 - Designer: unticking "CSS only" brings the script features back into the preview straight away; until now they came back only with the next change to a script setting.
+
+### The admin pages
+
+- Fixed: with the Sidebar layout and the theme on the Dashboard, the admin pages fell apart - their top bar was turned into the sidebar column and went off the screen, and the content slid under the admin menu. The admin pages have a menu of their own on the left, so the sidebar now stays on the user-facing pages and the admin bar docks next to the menu as before. The Dashboard tab no longer offers a layout either; it shows the bar's own settings.
+
+### The designer
+
 - Designer: rows show where they do something - the "Play" label only while the other buttons have no labels (with labels on, Play has one anyway), the logo's height for the Jellyfin icon or a custom image and its width for a custom image only, and the info bar's settings only while the bar is on.
 
 ## 1.3.1 - 2026-10-01
