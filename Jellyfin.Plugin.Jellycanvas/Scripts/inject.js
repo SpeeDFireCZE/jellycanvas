@@ -71,6 +71,7 @@
         }
         document.removeEventListener('keydown', onKeyDown);
         document.removeEventListener('visibilitychange', onVisible);
+        window.removeEventListener('focus', onFocus);
         freshRemove();
         buttons.forEach(function (b) {
             removeButton(b);
@@ -1362,7 +1363,7 @@
         if (dashCss === null) {
             dashCss = '';
             var base = location.pathname.replace(/[^/]*$/, '');
-            fetch(base + '../Branding/Css', { credentials: 'same-origin' })
+            fetch(base + '../Branding/Css?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' })
                 .then(function (r) { return r.ok ? r.text() : ''; })
                 .then(function (css) { dashCss = css || ''; dashboardSync(); })
                 .catch(function () { dashCss = ''; });
@@ -2465,6 +2466,9 @@
         if (disposed) {
             return;
         }
+        // A copy of the branding CSS the client has just rendered (after a
+        // navigation) may be the old one again.
+        themeApply(false);
         // The admin pages' own scope in the theme is "html.jc-dashboard":
         // a class, because the selector that needs none of this (:has) is
         // one an older TV browser cannot read - and it drops the whole rule.
@@ -2915,7 +2919,8 @@
             lastUrl = location.href;
             closeAll();
             sync();
-            checkTheme(false);
+            // a navigation always asks (a click is rare, the answer a few bytes)
+            checkTheme(true);
         }
     }
 
@@ -2924,14 +2929,21 @@
     // fetched (Branding/Configuration) for a minute before it asks again,
     // so a page left open showed the old theme for a while. The block
     // carries a stamp; the server tells the current one (a few bytes), and
-    // where the page's copy is older the fresh CSS goes in over it - the
-    // client's copy is switched off until it catches up. Checked when the
-    // page loads, on a navigation and when the tab comes back into view.
+    // while the page's copy is older the fresh CSS goes in over it - the
+    // client's copy is switched off until it catches up. The server is
+    // asked when the page loads, on a navigation, when the window or the
+    // tab comes back, and every ten seconds while the page is in view; the
+    // client's copy is looked at (no network) whenever the page changes,
+    // as it is rendered again after a navigation.
     // ------------------------------------------------------------------
     var FRESH_ID = 'jellycanvasFresh';
     var STAMP_RE = /jellycanvas-stamp: ([0-9a-f]+)/;
-    var themeChecked = 0;
-    var themeChecking = false;
+    var themeStamp = ''; // the server's, as last asked
+    var themeAsked = 0;
+    var themeAsking = false;
+    var themeLooked = 0;
+    var freshCss = ''; // the CSS fetched for the newest stamp
+    var freshFetching = false;
 
     function stampOf(css) {
         var m = STAMP_RE.exec(css || '');
@@ -2956,69 +2968,103 @@
             fresh.remove();
         }
         var theirs = clientTheme();
-        if (theirs) {
+        if (theirs && theirs.disabled) {
             theirs.disabled = false;
         }
     }
 
+    function themeGet(path) {
+        var base = location.pathname.replace(/[^/]*$/, '');
+        return fetch(base + path + '?t=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.text() : ''; });
+    }
+
+    /** Asks the server for the current stamp - at most every few seconds unless now. */
     function checkTheme(now) {
-        if (!themeOn || disposed || themeChecking) {
+        if (!themeOn || disposed || themeAsking) {
             return;
         }
         var t = Date.now();
-        if (!now && t - themeChecked < 5000) {
+        if (!now && t - themeAsked < 5000) {
             return;
         }
-        themeChecked = t;
-        themeChecking = true;
-        var base = location.pathname.replace(/[^/]*$/, '');
-        var get = function (path) {
-            return fetch(base + path + '?t=' + t, { credentials: 'same-origin', cache: 'no-store' })
-                .then(function (r) { return r.ok ? r.text() : ''; });
-        };
-        get('../Jellycanvas/CssStamp').then(function (stamp) {
+        themeAsked = t;
+        themeAsking = true;
+        themeGet('../Jellycanvas/CssStamp').then(function (stamp) {
             stamp = (stamp || '').trim();
-            if (!stamp || disposed) {
-                return null;
+            if (stamp && !disposed) {
+                themeStamp = stamp;
+                themeApply(true);
             }
-            // The admin pages' copy is fetched once per page load: a newer
-            // theme takes it out, and the next pass fetches it again.
-            if (dashCss && stampOf(dashCss) !== stamp) {
-                dashCss = null;
-                var copy = document.getElementById(DASH_ID);
-                if (copy) {
-                    copy.remove();
-                }
-                dashboardSync();
+        }).catch(function () { /* offline - the page keeps what it has */ }).then(function () {
+            themeAsking = false;
+        });
+    }
+
+    /**
+     * Puts the page on the server's stamp: the admin pages' copy fetched
+     * again when older; the client's copy switched off with the fresh CSS
+     * after it while it is older, back on once it has caught up. Network
+     * only when the fresh CSS has to be fetched.
+     */
+    function themeApply(now) {
+        if (!themeOn || disposed || !themeStamp) {
+            return;
+        }
+        var t = Date.now();
+        if (!now && t - themeLooked < 1000) {
+            return;
+        }
+        themeLooked = t;
+        // The admin pages' copy is fetched once per page load.
+        if (dashCss && stampOf(dashCss) !== themeStamp) {
+            dashCss = null;
+            var copy = document.getElementById(DASH_ID);
+            if (copy) {
+                copy.remove();
             }
-            var theirs = clientTheme();
-            var fresh = document.getElementById(FRESH_ID);
-            if (!theirs || stampOf(theirs.textContent) === stamp) {
-                // No copy (an admin page, custom CSS turned off by the user),
-                // or the client has caught up: its own copy is the one.
-                freshRemove();
-                return null;
-            }
-            if (fresh && stampOf(fresh.textContent) === stamp) {
-                theirs.disabled = true;
-                return null;
-            }
-            return get('../Branding/Css').then(function (css) {
-                if (disposed || stampOf(css) !== stamp) {
-                    return;
-                }
-                var el = document.getElementById(FRESH_ID) || document.createElement('style');
+            dashboardSync();
+        }
+        var theirs = clientTheme();
+        if (!theirs || stampOf(theirs.textContent) === themeStamp) {
+            // No copy (an admin page, custom CSS turned off by the user),
+            // or the client has caught up: its own copy is the one.
+            freshRemove();
+            return;
+        }
+        if (stampOf(freshCss) === themeStamp) {
+            var el = document.getElementById(FRESH_ID);
+            if (!el) {
+                el = document.createElement('style');
                 el.id = FRESH_ID;
-                el.textContent = css;
-                // Last in <body>, after the client's copy - as that one sits.
+                el.textContent = freshCss;
+            }
+            // After the client's copy, wherever the client put it.
+            if (!el.parentNode || !(theirs.compareDocumentPosition(el) & 4)) {
                 document.body.appendChild(el);
-                var stale = clientTheme();
-                if (stale) {
-                    stale.disabled = true;
-                }
-            });
-        }).catch(function () { /* offline - the client's copy stays */ }).then(function () {
-            themeChecking = false;
+            }
+            // (a copy the client rendered anew after a navigation comes on again)
+            if (!theirs.disabled) {
+                theirs.disabled = true;
+            }
+            return;
+        }
+        if (freshFetching) {
+            return;
+        }
+        freshFetching = true;
+        themeGet('../Branding/Css').then(function (css) {
+            var got = stampOf(css);
+            if (got) {
+                // (newer than asked even: then that is the stamp now)
+                freshCss = css;
+                themeStamp = got;
+            }
+        }).catch(function () { /* offline */ }).then(function () {
+            freshFetching = false;
+            if (stampOf(freshCss) === themeStamp) {
+                themeApply(true);
+            }
         });
     }
 
@@ -3026,6 +3072,10 @@
         if (document.visibilityState === 'visible') {
             checkTheme(true);
         }
+    }
+
+    function onFocus() {
+        checkTheme(false);
     }
 
     ['pushState', 'replaceState'].forEach(function (name) {
@@ -3111,8 +3161,16 @@
         window.addEventListener('scroll', onScroll, true);
         jcOnScroll = onScroll;
         // Safety net for navigations that bypass both the History API and mutations.
-        timers.push(setInterval(function () { checkUrl(); sync(); }, 1000));
+        timers.push(setInterval(function () {
+            checkUrl();
+            sync();
+            // the theme: asked every ten seconds while the page is in view
+            if (themeOn && document.visibilityState !== 'hidden' && Date.now() - themeAsked >= 10000) {
+                checkTheme(true);
+            }
+        }, 1000));
         document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('focus', onFocus);
         checkTheme(true);
         // A font that arrives after the badges were placed changes their
         // widths: place them again (the pills' icons are SVG, but the text

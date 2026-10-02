@@ -156,7 +156,7 @@ outside them.
 
 The web client keeps the branding CSS for a minute before it asks again.
 With the client script, open pages pick a freshly applied theme up on the
-next navigation or when their tab comes back into view; with *CSS only*
+next navigation, or within ten seconds when left open; with *CSS only*
 other browsers may need a reload a little later.
 
 ## Themes to share
