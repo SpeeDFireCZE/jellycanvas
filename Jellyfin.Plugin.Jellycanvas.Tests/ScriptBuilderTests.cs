@@ -74,6 +74,17 @@ public class ScriptBuilderTests
     }
 
     [Fact]
+    public void An_applied_theme_is_reason_enough_for_the_script()
+    {
+        // It keeps open pages on the theme just applied - even with no
+        // feature of its own; CSS only still means no script at all.
+        var applied = new PluginConfiguration { Enabled = true, Scripts = new ScriptSettings { Enabled = true } };
+        Assert.Contains("\"theme\":true", ScriptBuilder.Build(applied), StringComparison.Ordinal);
+        applied.CssOnly = true;
+        Assert.Equal(string.Empty, ScriptBuilder.Build(applied));
+    }
+
+    [Fact]
     public void Configuration_is_baked_into_the_template()
     {
         var js = ScriptBuilder.Build(WithButton("https://requests.example/"));

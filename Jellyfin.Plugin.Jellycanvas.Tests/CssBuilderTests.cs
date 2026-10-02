@@ -805,6 +805,26 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void The_block_carries_a_stamp_of_what_it_holds()
+    {
+        var a = CssBuilder.Build(new PluginConfiguration());
+        var stamp = CssBuilder.ReadStamp(a);
+
+        // Right under the head, ten hex digits; the same settings, the same
+        // stamp (the date line does not count), other settings another one.
+        Assert.Matches("^[0-9a-f]{10}$", stamp);
+        Assert.Equal(stamp, CssBuilder.ReadStamp(CssBuilder.Build(new PluginConfiguration())));
+        var other = new PluginConfiguration();
+        other.Player.ProgressColor = "#22d3ee";
+        Assert.NotEqual(stamp, CssBuilder.ReadStamp(CssBuilder.Build(other)));
+        Assert.StartsWith(CssBuilder.StartMarker, a, StringComparison.Ordinal);
+
+        // Found in the whole Branding text too, foreign CSS around it.
+        Assert.Equal(stamp, CssBuilder.ReadStamp("body { color: red; }\n" + a));
+        Assert.Null(CssBuilder.ReadStamp("body { color: red; }"));
+    }
+
+    [Fact]
     public void The_music_player_takes_the_players_look()
     {
         var cfg = new PluginConfiguration();

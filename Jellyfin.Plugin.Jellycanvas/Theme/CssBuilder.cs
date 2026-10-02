@@ -53,13 +53,39 @@ public static class CssBuilder
     private const string LogoLink = Toolbar + " a[href=\"#/\"]";
     private const string NavLink = Toolbar + " .MuiStack-root > a.MuiButton-sizeMedium";
 
+    /// <summary>
+    /// The comment that carries a block's stamp - a hash of everything after
+    /// it, so the same settings give the same stamp (the date above it does
+    /// not count). The client script compares the stamp of the copy a page
+    /// holds with the server's; the startup refresh compares it too.
+    /// </summary>
+    public const string StampPrefix = "/* jellycanvas-stamp: ";
+
+    /// <summary>The stamp in a piece of CSS (our block, or the whole Branding text); null without one.</summary>
+    public static string? ReadStamp(string? css)
+    {
+        if (string.IsNullOrEmpty(css))
+        {
+            return null;
+        }
+
+        var at = css.IndexOf(StampPrefix, StringComparison.Ordinal);
+        if (at < 0)
+        {
+            return null;
+        }
+
+        var start = at + StampPrefix.Length;
+        var end = css.IndexOf(" */", start, StringComparison.Ordinal);
+        return end < 0 ? null : css[start..end];
+    }
+
     public static string Build(PluginConfiguration c)
     {
         ArgumentNullException.ThrowIfNull(c);
 
+        // The theme first, then the head with its stamp in front of it.
         var sb = new StringBuilder();
-        sb.AppendLine(StartMarker);
-        sb.AppendLine("/* Jellycanvas theme " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC */");
 
         // A device with changes of its own gets the whole theme again, built
         // from the merged settings and scoped to its layout class - and the
@@ -124,7 +150,13 @@ public static class CssBuilder
         }
 
         sb.AppendLine(EndMarker);
-        return sb.ToString();
+        var body = sb.ToString();
+        var stamp = Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(Encoding.UTF8.GetBytes(body)), 0, 5).ToLowerInvariant();
+        var head = new StringBuilder();
+        head.AppendLine(StartMarker);
+        head.AppendLine("/* Jellycanvas theme " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC */");
+        head.AppendLine(StampPrefix + stamp + " */");
+        return head.Append(body).ToString();
     }
 
     /// <summary>The theme's rules for one configuration; scope = a device's layout selector, or null for the defaults.</summary>

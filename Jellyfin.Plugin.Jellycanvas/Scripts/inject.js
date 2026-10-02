@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "banner": null, "dashboard": false, "rows": [], "seerrOpen": 0, "devices": {} };
+    var CONFIG = /*JELLYCANVAS_CONFIG*/{ "buttons": [], "slideshow": null, "infoBar": null, "badges": null, "backdrop": null, "banner": null, "dashboard": false, "rows": [], "seerrOpen": 0, "devices": {}, "theme": false };
 
     // Only one copy may run - the script can arrive twice when both File
     // Transformation and an injector plugin are installed. The global holds
@@ -35,6 +35,9 @@
     var backdrop = CONFIG.backdrop || null;
     var banner = CONFIG.banner || null;
     var themeDashboard = !!CONFIG.dashboard;
+    // The theme is applied: open pages are kept on its current version
+    // (not in a preview frame - the designer feeds that one itself).
+    var themeOn = !!CONFIG.theme && !window.frameElement;
     // The background is a per-device setting: a TV or a phone with changes
     // of its own carries its own copy (null there = nothing for the script).
     function activeBackdrop() {
@@ -67,6 +70,8 @@
             window.removeEventListener('scroll', jcOnScroll, true);
         }
         document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('visibilitychange', onVisible);
+        freshRemove();
         buttons.forEach(function (b) {
             removeButton(b);
             removeDrawerItem(b);
@@ -88,7 +93,7 @@
     }
 
     var anyBackdrop = !!backdrop || !!banner || themeDashboard || Object.keys(CONFIG.devices || {}).some(function (k) { return CONFIG.devices[k] && CONFIG.devices[k].backdrop; });
-    if (!buttons.length && !slideshow && !infoBar && !badges && !anyBackdrop && !rows.length) {
+    if (!buttons.length && !slideshow && !infoBar && !badges && !anyBackdrop && !rows.length && !themeOn) {
         return;
     }
 
@@ -2910,6 +2915,116 @@
             lastUrl = location.href;
             closeAll();
             sync();
+            checkTheme(false);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // A theme applied a moment ago. The client keeps the branding CSS it
+    // fetched (Branding/Configuration) for a minute before it asks again,
+    // so a page left open showed the old theme for a while. The block
+    // carries a stamp; the server tells the current one (a few bytes), and
+    // where the page's copy is older the fresh CSS goes in over it - the
+    // client's copy is switched off until it catches up. Checked when the
+    // page loads, on a navigation and when the tab comes back into view.
+    // ------------------------------------------------------------------
+    var FRESH_ID = 'jellycanvasFresh';
+    var STAMP_RE = /jellycanvas-stamp: ([0-9a-f]+)/;
+    var themeChecked = 0;
+    var themeChecking = false;
+
+    function stampOf(css) {
+        var m = STAMP_RE.exec(css || '');
+        return m ? m[1] : '';
+    }
+
+    /** The client's own copy of the branding CSS - the one with our block in it. */
+    function clientTheme() {
+        var styles = document.querySelectorAll('style');
+        for (var i = 0; i < styles.length; i++) {
+            var s = styles[i];
+            if (s.id !== DASH_ID && s.id !== FRESH_ID && s.id !== 'jellycanvas-preview' && s.textContent.indexOf('JELLYCANVAS START') >= 0) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    function freshRemove() {
+        var fresh = document.getElementById(FRESH_ID);
+        if (fresh) {
+            fresh.remove();
+        }
+        var theirs = clientTheme();
+        if (theirs) {
+            theirs.disabled = false;
+        }
+    }
+
+    function checkTheme(now) {
+        if (!themeOn || disposed || themeChecking) {
+            return;
+        }
+        var t = Date.now();
+        if (!now && t - themeChecked < 5000) {
+            return;
+        }
+        themeChecked = t;
+        themeChecking = true;
+        var base = location.pathname.replace(/[^/]*$/, '');
+        var get = function (path) {
+            return fetch(base + path + '?t=' + t, { credentials: 'same-origin', cache: 'no-store' })
+                .then(function (r) { return r.ok ? r.text() : ''; });
+        };
+        get('../Jellycanvas/CssStamp').then(function (stamp) {
+            stamp = (stamp || '').trim();
+            if (!stamp || disposed) {
+                return null;
+            }
+            // The admin pages' copy is fetched once per page load: a newer
+            // theme takes it out, and the next pass fetches it again.
+            if (dashCss && stampOf(dashCss) !== stamp) {
+                dashCss = null;
+                var copy = document.getElementById(DASH_ID);
+                if (copy) {
+                    copy.remove();
+                }
+                dashboardSync();
+            }
+            var theirs = clientTheme();
+            var fresh = document.getElementById(FRESH_ID);
+            if (!theirs || stampOf(theirs.textContent) === stamp) {
+                // No copy (an admin page, custom CSS turned off by the user),
+                // or the client has caught up: its own copy is the one.
+                freshRemove();
+                return null;
+            }
+            if (fresh && stampOf(fresh.textContent) === stamp) {
+                theirs.disabled = true;
+                return null;
+            }
+            return get('../Branding/Css').then(function (css) {
+                if (disposed || stampOf(css) !== stamp) {
+                    return;
+                }
+                var el = document.getElementById(FRESH_ID) || document.createElement('style');
+                el.id = FRESH_ID;
+                el.textContent = css;
+                // Last in <body>, after the client's copy - as that one sits.
+                document.body.appendChild(el);
+                var stale = clientTheme();
+                if (stale) {
+                    stale.disabled = true;
+                }
+            });
+        }).catch(function () { /* offline - the client's copy stays */ }).then(function () {
+            themeChecking = false;
+        });
+    }
+
+    function onVisible() {
+        if (document.visibilityState === 'visible') {
+            checkTheme(true);
         }
     }
 
@@ -2997,6 +3112,8 @@
         jcOnScroll = onScroll;
         // Safety net for navigations that bypass both the History API and mutations.
         timers.push(setInterval(function () { checkUrl(); sync(); }, 1000));
+        document.addEventListener('visibilitychange', onVisible);
+        checkTheme(true);
         // A font that arrives after the badges were placed changes their
         // widths: place them again (the pills' icons are SVG, but the text
         // badges follow the page font).

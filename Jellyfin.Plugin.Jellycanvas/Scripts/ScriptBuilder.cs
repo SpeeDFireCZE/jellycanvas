@@ -17,7 +17,7 @@ namespace Jellyfin.Plugin.Jellycanvas.Scripts;
 /// </summary>
 public static class ScriptBuilder
 {
-    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"banner\": null, \"dashboard\": false, \"rows\": [], \"seerrOpen\": 0, \"devices\": {} }";
+    private const string Placeholder = "/*JELLYCANVAS_CONFIG*/{ \"buttons\": [], \"slideshow\": null, \"infoBar\": null, \"badges\": null, \"backdrop\": null, \"banner\": null, \"dashboard\": false, \"rows\": [], \"seerrOpen\": 0, \"devices\": {}, \"theme\": false }";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -96,7 +96,9 @@ public static class ScriptBuilder
                 })
                 .ToArray();
         var hasRows = rows.Length > 0;
-        if (c.CssOnly || !s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows))
+        // An applied theme is reason enough: the script keeps open pages on
+        // the theme just applied (see "theme" in inject.js).
+        if (c.CssOnly || !s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows && !c.Enabled))
         {
             return string.Empty;
         }
@@ -171,7 +173,8 @@ public static class ScriptBuilder
             && CleanUrl(s.ToolbarButtons[openWith - 1].Url).Length > 0;
         var seerrOpen = viaButton ? openWith : 0;
 
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, seerrOpen, devices }, JsonOptions);
+        var theme = c.Enabled;
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, seerrOpen, devices, theme }, JsonOptions);
 
         return Template.Value.Replace(Placeholder, json, StringComparison.Ordinal);
     }

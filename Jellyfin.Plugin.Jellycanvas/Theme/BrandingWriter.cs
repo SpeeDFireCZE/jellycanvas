@@ -91,8 +91,12 @@ public static class BrandingWriter
             return false;
         }
 
+        // The same theme carries the same stamp (the date line does not
+        // count), so an unchanged block is left alone - before the stamp the
+        // date made every startup rewrite it.
         var css = CssBuilder.Build(settings).TrimEnd();
-        if (string.Equals(CurrentBlock(config), css, StringComparison.Ordinal))
+        var current = CssBuilder.ReadStamp(CurrentBlock(config));
+        if (current is not null && string.Equals(current, CssBuilder.ReadStamp(css), StringComparison.Ordinal))
         {
             return false;
         }

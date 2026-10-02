@@ -442,6 +442,22 @@ public class JellycanvasController : ControllerBase
     /// the tag loads before login. Never cached for long - the admin expects
     /// a change to show up on the next reload.
     /// </summary>
+    /// <summary>
+    /// The stamp of the theme in Branding right now - a few bytes the client
+    /// script compares with the copy a page holds (the client keeps its
+    /// branding CSS for a minute before it asks again). Anonymous like the
+    /// CSS itself, which the login page carries too; never cached.
+    /// </summary>
+    [HttpGet("CssStamp")]
+    [AllowAnonymous]
+    [Produces("text/plain")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ContentResult GetCssStamp()
+    {
+        Response.Headers.CacheControl = "no-store";
+        return Content(CssBuilder.ReadStamp(BrandingWriter.Read(_config)) ?? string.Empty, "text/plain");
+    }
+
     [HttpGet("Script.js")]
     [AllowAnonymous]
     [Produces("text/javascript")]

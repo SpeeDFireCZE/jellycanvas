@@ -154,7 +154,9 @@ Custom CSS you had in Branding before is preserved: the generated block
 sits between two marker comments, and the plugin never touches anything
 outside them.
 
-The web client caches the branding for up to a minute, so after *Apply*
+The web client keeps the branding CSS for a minute before it asks again.
+With the client script, open pages pick a freshly applied theme up on the
+next navigation or when their tab comes back into view; with *CSS only*
 other browsers may need a reload a little later.
 
 ## Themes to share
