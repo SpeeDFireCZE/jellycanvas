@@ -55,6 +55,8 @@
                 /* The Dashboard switched to Jellyfin's own: this tab's settings say nothing. */
                 .jc-controls.jc-edit-dashboard.jc-stock-dash .jc-section { opacity: .45; pointer-events: none; }
                 /* CSS only: nothing that needs the client script, and no Dashboard. */
+                .jc-css-only-note { display: none; }
+                .jc-css-only .jc-css-only-note { display: block; }
                 .jc-css-only .jc-edit-btn[data-edit="Dashboard"], .jc-css-only #jcPage option[value^="dashboard"] { display: none !important; }
                 .jc-edit-hint { margin: 0 0 1em; }
                 .jc-device-mode .jc-section[data-nodevice] { display: none; }
@@ -283,6 +285,7 @@
                                     <a class="raised emby-button jc-share-site" href="https://jellycanvas.jellyscope.cz" target="_blank" rel="noopener"><span class="material-icons" aria-hidden="true">public</span><span>jellycanvas.jellyscope.cz</span></a>
                                 </div>
                                 <h4 class="jc-sub" data-i18n="exportHeading">Export</h4>
+                                <div class="jc-hint jc-css-only-note" data-i18n="exportCssOnly">CSS only: the export carries the CSS look only. The slideshow, the badges, the banner, the info bar's close button and the admin pages' look go out switched off, so whoever imports it gets the same CSS version.</div>
                                 <div class="jc-actions">
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportCopy"><span data-i18n="exportCopy">Copy theme JSON</span></button>
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnExportFile"><span data-i18n="exportFile">Download .json</span></button>
