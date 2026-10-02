@@ -805,6 +805,32 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void The_music_player_takes_the_players_look()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Colors.Accent = "#f59e0b";
+        cfg.Player.Osd = OsdStyle.Glass;
+        cfg.Player.OsdFloating = true;
+        cfg.Player.ProgressColor = "#22d3ee";
+
+        var css = CssBuilder.Build(cfg);
+
+        // The bar along the bottom: the control bar's surface, floating like it.
+        Assert.Contains("html .nowPlayingBar { background-color:", css, StringComparison.Ordinal);
+        Assert.Contains("html .nowPlayingBar { margin: 0 16px 16px !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html .appfooter { background: transparent !important;", css, StringComparison.Ordinal);
+        // The players' sliders (the music bar's and its page's too) take the
+        // progress color; any other slider the accent instead of Jellyfin blue.
+        Assert.Contains("html .nowPlayingBar .mdl-slider-background-lower, html .nowPlayingPage .mdl-slider-background-lower { background-color: #22d3ee !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html .mdl-slider-background-lower { background-color: #f59e0b !important; }", css, StringComparison.Ordinal);
+
+        // Next to a sidebar it starts where the content does.
+        cfg.Header.Layout = HeaderLayout.Sidebar;
+        cfg.Header.SidebarWidth = 240;
+        Assert.Contains(" .appfooter { left: calc(240px + 0px + 0px) !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void The_loading_ring_takes_the_accent_unless_it_has_a_color_of_its_own()
     {
         // Jellyfin paints its ring blue by hard-coded value.

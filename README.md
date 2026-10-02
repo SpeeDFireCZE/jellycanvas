@@ -199,7 +199,8 @@ so the way there and back is: export in the designer, upload on the site
 - **Seerr rows** (script) - rows on the home page from Jellyseerr /
   Overseerr: coming soon (requested), recently requested, waiting for
   approval, now available, trending, popular movies and series.
-- **Player** - the control bar, the progress slider, button size, the
+- **Player** (video and music) - the control bar (and the music bar along
+  the bottom), the progress slider, button size, the
   "Skip intro / credits" button and the loading ring (six styles, color,
   size, speed, glow, a disc behind it).
 - **Buttons & inputs**, **dialogs & menus** (and the player's "Up next"
@@ -235,6 +236,7 @@ dotnet test                       # CssBuilder / BrandingWriter / ScriptBuilder 
 .\test\Start-Jellyfin.ps1         # build, install into test\data\plugins, start the server
 .\test\Setup-Jellyfin.ps1         # first run only: wizard, admin/admin, test libraries
 .\test\Make-Media.ps1             # optional: test clips with resolutions, HDR, languages, subtitles
+.\test\Make-Music.ps1             # optional: a music library (made-up albums of generated tones)
 ```
 
 The test server keeps everything under `test\data\` (git-ignored). Log in

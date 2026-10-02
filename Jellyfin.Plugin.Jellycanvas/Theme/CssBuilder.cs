@@ -506,7 +506,7 @@ public static class CssBuilder
             // Folding waits 150ms: when one of the bar's menus opens, the
             // backdrop takes the hover a frame before the menu is in the
             // DOM, and without the delay the bar would twitch narrower.
-            sb.AppendLine($"{bar} {{ transition: width 0.2s ease 0.15s; z-index: 1200 !important; }}");
+            sb.AppendLine($"{bar} {{ transition: width 0.2s ease 0.15s; z-index: 1202 !important; }}");
             // :focus-within would keep it open after a click (the clicked link
             // keeps focus); :focus-visible only fires for keyboard focus.
             // Only the column itself counts as hovered - the library row
@@ -535,6 +535,9 @@ public static class CssBuilder
         // Second row: pinned to the top of the content area, in the bar's own surface.
         sb.AppendLine($"{bar} .MuiToolbar-root:nth-child(2) {{ position: fixed; top: var(--jellycanvas-info, 0px); left: calc({width} + {inset}); right: 0; z-index: 2; {Surface(h.Style == SurfaceStyle.Transparent ? SurfaceStyle.Glass : h.Style, x.HeaderColor, Math.Min(h.Opacity, 92), h.Blur, x, "90deg")} }}");
         sb.AppendLine($"{scope} header.MuiAppBar-root + div {{ display: none !important; }}");
+        // The music player's bar along the bottom lies above the sidebar (a
+        // z-index of its own): it starts where the content does.
+        sb.AppendLine($"{scope} .appfooter {{ left: calc({width} + {inset} + {inset}) !important; }}");
         // main keeps the full viewport width (React sizes it to 100%), so
         // without a matching width the right edge would run off the screen.
         sb.AppendLine($"{scope} header.MuiAppBar-root ~ main {{ margin-left: calc({width} + {inset} + {inset}) !important; width: calc(100% - {width} - {inset} - {inset}) !important; max-width: none !important; }}");
@@ -2720,8 +2723,16 @@ public static class CssBuilder
     private static void AppendPlayer(StringBuilder sb, Context x)
     {
         var p = x.Config.Player;
-        sb.AppendLine("/* --- video player --- */");
+        sb.AppendLine("/* --- video and music player --- */");
         var bar = $"{x.P}html .videoOsdBottom";
+        // The music player: its bar along the bottom (.nowPlayingBar, inside
+        // the fixed .appfooter) and its full page (the queue, .nowPlayingPage)
+        // take the same look as the video's controls. The look goes on the
+        // bar, not the footer: the footer stays when the bar is hidden (on
+        // the queue page), and a surface on it showed as a strip there.
+        var music = $"{x.P}html .nowPlayingBar";
+        var players = new[] { bar, $"{x.P}html .nowPlayingBar", $"{x.P}html .nowPlayingPage" };
+        string InPlayers(string tail) => string.Join(", ", players.Select(b => $"{b} {tail}"));
 
         if (p.Osd != OsdStyle.Default)
         {
@@ -2750,28 +2761,59 @@ public static class CssBuilder
                 sb.AppendLine($"{bar}, {bar} .paper-icon-button-light {{ color: {color.ContrastText} !important; }}");
             }
 
+            // The music bar: the same surface, floating or rounded the same
+            // way (floating by margins: the footer around it is fixed and
+            // full-width, and lets clicks through beside the bar). Its
+            // position slider runs along its top edge and pokes out above
+            // it, so the bar does not clip.
+            sb.AppendLine($"{x.P}html .appfooter {{ background: transparent !important; box-shadow: none !important; pointer-events: none; }}");
+            sb.AppendLine($"{music} {{ {Surface(style, color, p.OsdOpacity, p.OsdBlur, x, "0deg")} pointer-events: auto; }}");
+            if (p.OsdFloating)
+            {
+                sb.AppendLine($"{music} {{ margin: 0 16px 16px !important; border-radius: {radius} !important; }}");
+            }
+            else if (p.OsdRadius > 0)
+            {
+                sb.AppendLine($"{music} {{ border-radius: {radius} {radius} 0 0 !important; }}");
+            }
+
+            if (style == SurfaceStyle.NeoBrutalism)
+            {
+                sb.AppendLine($"{music}, {music} .mediaButton, {music} .nowPlayingBarSecondaryText {{ color: {color.ContrastText} !important; }}");
+            }
+
             // The top fade (back button, title) takes the bar's color.
             sb.AppendLine($"{x.P}html .skinHeader-withBackground.osdHeader {{ background: linear-gradient(180deg, {color.Rgba(0.75)}, {color.Rgba(0)}) !important; }}");
         }
 
-        // The slider is Jellyfin blue by hard-coded value; it follows the
-        // accent (or the chosen color) always.
+        // The sliders are Jellyfin blue by hard-coded value. Any slider
+        // follows the accent; the players' ones (the video's, the music
+        // bar's and its full page's, volume included) the progress color,
+        // which is the accent unless set.
         {
             var progress = Color.Parse(p.ProgressColor, x.Accent);
-            sb.AppendLine($"{bar} .mdl-slider-background-lower {{ background-color: {progress.Hex} !important; }}");
-            sb.AppendLine($"{bar} .mdl-slider::-webkit-slider-thumb {{ background: {progress.Hex} !important; }}");
-            sb.AppendLine($"{bar} .mdl-slider::-moz-range-thumb {{ background: {progress.Hex} !important; }}");
-            sb.AppendLine($"{bar} .mdl-slider {{ color: {progress.Hex} !important; }}");
+            void Slider(Func<string, string> scoped, Color c)
+            {
+                sb.AppendLine($"{scoped(".mdl-slider-background-lower")} {{ background-color: {c.Hex} !important; }}");
+                sb.AppendLine($"{scoped(".mdl-slider::-webkit-slider-thumb")} {{ background: {c.Hex} !important; }}");
+                sb.AppendLine($"{scoped(".mdl-slider::-moz-range-thumb")} {{ background: {c.Hex} !important; }}");
+                sb.AppendLine($"{scoped(".mdl-slider")} {{ color: {c.Hex} !important; }}");
+            }
+
+            Slider(tail => $"{x.P}html {tail}", x.Accent);
+            Slider(InPlayers, progress);
             if (p.ProgressHeight > 0)
             {
+                // The position sliders only - a thick volume track would look odd.
                 var h = Px(p.ProgressHeight);
-                sb.AppendLine($"{bar} .mdl-slider-background-flex {{ height: {h} !important; margin-top: calc({h} / -2) !important; border-radius: {h}; }}");
+                var tracks = $"{bar} .mdl-slider-background-flex, {x.P}html .nowPlayingBarPositionContainer .mdl-slider-background-flex, {x.P}html .nowPlayingPositionSliderContainer .mdl-slider-background-flex";
+                sb.AppendLine($"{tracks} {{ height: {h} !important; margin-top: calc({h} / -2) !important; border-radius: {h}; }}");
             }
         }
 
         if (p.ButtonScale != 100)
         {
-            sb.AppendLine($"{bar} .paper-icon-button-light {{ font-size: {p.ButtonScale}% !important; }}");
+            sb.AppendLine($"{bar} .paper-icon-button-light, {music} .mediaButton, {x.P}html .nowPlayingPage .nowPlayingButtonsContainer .paper-icon-button-light {{ font-size: {p.ButtonScale}% !important; }}");
         }
 
         // The skip button.
