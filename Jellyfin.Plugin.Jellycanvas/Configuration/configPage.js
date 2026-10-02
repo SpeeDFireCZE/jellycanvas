@@ -113,7 +113,7 @@
             backdropUrl: 'Adresa vlastního obrázku', animate: 'Pomalé plynutí obrázku', rotate: 'Střídat náhodný backdrop po (0 = jen při načtení)',
             backdropHint: '„Náhodný“ vybere při každém načtení jiný backdrop filmu nebo seriálu - uvidí ho i nepřihlášený na přihlašovací stránce. U „Výchozí Jellyfin“ se obrázek ukazuje jen tam, kde má uživatel pozadí zapnuté (detail, domů podle nastavení zobrazení).',
             shareSite: 'Témata k prohlížení, náhledu a stažení – a místo, kam dát vlastní (prohlížení a stahování je otevřené všem, nahrávání vyžaduje účet na stránce):',
-            share: 'Sdílení / import', exportCssOnly: 'Režim „jen CSS“: export nese jen vzhled z CSS. Slideshow, badge, banner, zavírací tlačítko lišty a vzhled administrace v něm budou vypnuté, takže kdo ho importuje, dostane stejnou CSS verzi.', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, řádky ze Seerru i s adresou a klíčem, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Preferované jazyky zvuku a titulků se vyprazdňují taky – jsou tvoje, ne tématu. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
+            share: 'Sdílení / import', exportCssOnly: 'Režim „jen CSS“: export nese jen vzhled z CSS - nic pro administraci a funkce skriptu (slideshow, badge, banner, zavírací tlačítko lišty) jen jako vypnuté přepínače, takže kdo ho importuje, dostane stejnou CSS verzi.', shareHint: 'Téma je jeden soubor JSON se vzhledem z této stránky. Nic, co ukazuje na tvůj server, v něm není: vlastní tlačítka a jejich adresy, řádky ze Seerru i s adresou a klíčem, text informační lišty, nadpis přihlášení, nahrané logo ani odkazy na obrázky na privátních adresách. Preferované jazyky zvuku a titulků se vyprazdňují taky – jsou tvoje, ne tématu. Zkopíruj ho pro sdílení; vlož cizí – nebo odkaz na něj (třeba raw soubor z GitHubu) – a vyzkoušej ho. Na server se nic nezapíše, dokud nedáš Použít.', exportHeading: 'Export', exportCopy: 'Zkopírovat JSON tématu', exportFile: 'Stáhnout .json', importHeading: 'Import', importPlaceholder: 'Sem vlož JSON tématu', importApply: 'Načíst do editoru', importFile: 'Otevřít soubor .json…', importDone: 'Téma načteno do editoru – zkontroluj náhled a pak Použít.', importBad: 'Tohle není téma Jellycanvas (čekal jsem JSON objekt s nastavením).',
             plugins: 'Spolupracující pluginy', pluginsHint: 'Celé téma je čisté CSS a nic dalšího nepotřebuje. Pár funkcí vyžaduje JavaScript ve webovém klientu; jejich sekce se ukážou, jen když je nainstalovaný některý z těchto pluginů.', pluginInstalled: 'Nainstalovaný', pluginMissing: 'Není nainstalovaný', pluginFtDesc: 'Vloží klientský skript do webového klienta automaticky. Odemyká: vlastní tlačítka v liště, slideshow na Domů, odznaky na kartách (rozlišení, jazyky), křížek na informační liště a jejich živý náhled.', pluginInjectorDesc: 'Alternativa, když nechceš File Transformation: vygenerovaný skript se do něj vloží ručně. Odemyká totéž (po vložení).',
             login: 'Přihlašovací stránka', loginBg: 'Adresa obrázku na pozadí (prázdné = žádný)', loginForm: 'Formulář', loginPlain: 'Prostý (výchozí)', loginCard: 'Karta', loginGlass: 'Skleněná karta',
             themeDashboard: 'Nástěnka podle výchozího nastavení', themeDashboardHint: 'Zaškrtnutí vrátí admin stránky na téma tak, jak je nastavené v Defaults, a zahodí, co je nastavené tady; první vlastní změna ho zase odškrtne a Nástěnka si ji nechá. Odškrtnuté a bez vlastního nastavení = admin stránky zůstanou tak, jak je kreslí Jellyfin. Vyžaduje skript.',
@@ -2477,22 +2477,24 @@
         delete copy.Enabled;
         stripPrivate(copy);
         if (cssOnly) {
-            scriptFeaturesOff(copy);
+            cssLookOnly(copy, false);
         }
         // The per-device documents can carry the same things (a backdrop address, say).
         if (copy.Overrides) {
             ['Web', 'Tv', 'Mobile', 'Dashboard'].forEach(function (d) {
+                if (!(d in copy.Overrides)) {
+                    return; // (CSS only: the admin pages' document is gone already)
+                }
                 var doc = null;
                 try {
                     doc = copy.Overrides[d] ? JSON.parse(copy.Overrides[d]) : null;
                 } catch (e) {
                     doc = null;
                 }
-                // CSS only: the admin pages are reached through the script alone.
-                if (doc && typeof doc === 'object' && !(cssOnly && d === 'Dashboard')) {
+                if (doc && typeof doc === 'object') {
                     stripPrivate(doc);
                     if (cssOnly) {
-                        scriptFeaturesOff(doc, true);
+                        cssLookOnly(doc, true);
                     }
                     copy.Overrides[d] = Object.keys(doc).length ? JSON.stringify(doc) : '';
                 } else {
@@ -2503,50 +2505,56 @@
         return JSON.stringify(copy, null, 2);
     }
 
-    // A theme made in CSS-only mode is a CSS look: the script's features
-    // were hidden from its author, so what they still hold (from before the
-    // switch, or from an import) is no part of what was seen and shared.
-    // They go out switched off, and an import gives the same CSS-only look.
-    // A device's document just loses them (it inherits "off" then).
-    function scriptFeaturesOff(doc, device) {
-        var off = [
-            ['Scripts', 'Slideshow', 'Enabled'],
-            ['Scripts', 'CardBadges', 'Enabled'],
-            ['Detail', 'Banner'],
-            ['Backdrop', 'ItemDetail'],
-            ['InfoBar', 'Closable'],
-            ['Misc', 'ThemeDashboard']
-        ];
-        off.forEach(function (path) {
-            var holder = doc;
-            for (var i = 0; i < path.length - 1 && holder; i++) {
-                holder = holder[path[i]];
-            }
-            var key = path[path.length - 1];
-            if (!holder || typeof holder !== 'object') {
-                return;
-            }
-            if (device) {
-                delete holder[key];
-            } else {
-                holder[key] = false;
-            }
-        });
+    // A theme made in CSS-only mode is a CSS look, and its file holds that
+    // and no more. The admin pages go (only the script takes a theme
+    // there), and so does everything the script's features were set to:
+    // they were hidden from the theme's author, so what they still hold
+    // (from before the switch, or from an import) was never part of what
+    // was seen and shared. Only their switches stay, off - an import then
+    // turns them off too and gives the same CSS look. A device's document
+    // loses them altogether (it inherits "off" from the theme).
+    function cssLookOnly(doc, device) {
+        delete doc.Dashboard;
+        if (doc.Misc) {
+            delete doc.Misc.ThemeDashboard;
+        }
+        if (doc.Overrides) {
+            delete doc.Overrides.Dashboard;
+        }
         if (device) {
-            // what is left empty goes too
-            ['Scripts', 'Detail', 'Backdrop', 'InfoBar', 'Misc'].forEach(function (k) {
-                if (doc[k] && typeof doc[k] === 'object') {
-                    ['Slideshow', 'CardBadges'].forEach(function (s) {
-                        if (doc[k][s] && !Object.keys(doc[k][s]).length) {
-                            delete doc[k][s];
-                        }
-                    });
-                    if (!Object.keys(doc[k]).length) {
-                        delete doc[k];
-                    }
+            delete doc.Scripts;
+        } else {
+            doc.Scripts = { Slideshow: { Enabled: false }, CardBadges: { Enabled: false } };
+        }
+        if (doc.Detail) {
+            Object.keys(doc.Detail).forEach(function (k) {
+                if (k.indexOf('Banner') === 0) {
+                    delete doc.Detail[k];
                 }
             });
+            if (!device) {
+                doc.Detail.Banner = false;
+            }
         }
+        if (doc.InfoBar) {
+            delete doc.InfoBar.RememberClose;
+            delete doc.InfoBar.Closable;
+            if (!device) {
+                doc.InfoBar.Closable = false;
+            }
+        }
+        if (doc.Backdrop) {
+            delete doc.Backdrop.ItemDetail;
+            if (!device) {
+                doc.Backdrop.ItemDetail = false;
+            }
+        }
+        // A group left empty goes too.
+        Object.keys(doc).forEach(function (k) {
+            if (doc[k] && typeof doc[k] === 'object' && !Array.isArray(doc[k]) && !Object.keys(doc[k]).length) {
+                delete doc[k];
+            }
+        });
     }
 
     function stripPrivate(copy) {

@@ -138,8 +138,9 @@ client with your theme injected.
   file, for example). The export holds only the look: custom buttons and
   their addresses, the info bar text, the login title, the uploaded logo
   and image links on private addresses never leave your server. Exported
-  with *CSS only* on, it is a CSS theme: the script's features (slideshow,
-  badges, banner, the admin pages' look) go out switched off. Ready-made
+  with *CSS only* on, it is a CSS theme: nothing for the admin pages, and
+  the script's features (slideshow, badges, banner) only as switches turned
+  off. Ready-made
   themes are at **[jellycanvas.jellyscope.cz](https://jellycanvas.jellyscope.cz)**
   (see below) - the file you download there is imported the same way.
 
