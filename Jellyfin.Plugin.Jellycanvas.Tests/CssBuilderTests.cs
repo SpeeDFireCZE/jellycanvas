@@ -771,6 +771,10 @@ public class CssBuilderTests
         Assert.Contains("===== Tv:", css, StringComparison.Ordinal);
         Assert.DoesNotContain("===== Dashboard:", css, StringComparison.Ordinal);
         Assert.DoesNotContain("jc-dashboard", css, StringComparison.Ordinal);
+        // Nor the defaults' rules for the admin pages: Jellyfin renders
+        // Branding on the user-facing pages only, so only the script took them there.
+        Assert.DoesNotContain("body.dashboardDocument", css, StringComparison.Ordinal);
+        Assert.Contains("body.dashboardDocument", CssBuilder.Build(new PluginConfiguration()), StringComparison.Ordinal);
     }
 
     [Fact]

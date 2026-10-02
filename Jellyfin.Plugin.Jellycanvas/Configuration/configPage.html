@@ -460,8 +460,8 @@
                                     <button is="emby-button" type="button" class="raised emby-button" id="jcBtnLogoDelete"><span data-i18n="logoDelete">Delete uploaded</span></button>
                                 </div>
                                 <div class="fieldDescription" data-i18n="logoHint">PNG, SVG, WebP, JPG or GIF up to 2 MB. Uploading fills in the URL and switches the image to Custom.</div>
-                                <div class="jc-row" data-slider="Header.LogoHeight" data-min="12" data-max="80" data-unit="px" data-i18n-label="logoHeight">Logo height</div>
-                                <div class="jc-row" data-slider="Header.LogoWidth" data-min="0" data-max="400" data-unit="px" data-i18n-label="logoWidth">Custom logo width (0 = auto)</div>
+                                <div class="jc-row" data-when="Header.Logo=Default|Custom" data-slider="Header.LogoHeight" data-min="12" data-max="80" data-unit="px" data-i18n-label="logoHeight">Logo height</div>
+                                <div class="jc-row" data-when="Header.Logo=Custom" data-slider="Header.LogoWidth" data-min="0" data-max="400" data-unit="px" data-i18n-label="logoWidth">Custom logo width (0 = auto)</div>
                             </div>
                         </details>
 
@@ -523,27 +523,27 @@
                             <div class="jc-section-body">
                                 <h4 class="jc-sub" data-i18n="infobarTextHeading">Text &amp; placement</h4>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Enabled"><span data-i18n="infobarEnabled">Show an announcement strip</span></label></div>
-                                <div class="inputContainer">
+                                <div class="inputContainer" data-when="InfoBar.Enabled=true">
                                     <label class="inputLabel inputLabelUnfocused" for="jcInfoText" data-i18n="infobarText">Text</label>
                                     <input is="emby-input" type="text" id="jcInfoText" data-path="InfoBar.Text" placeholder="Maintenance on Sunday 22:00 - 23:00">
                                 </div>
-                                <div class="selectContainer">
+                                <div class="selectContainer" data-when="InfoBar.Enabled=true">
                                     <label class="selectLabel" for="jcInfoPos" data-i18n="infobarPosition">Position</label>
                                     <select is="emby-select" id="jcInfoPos" data-path="InfoBar.Position" class="emby-select-withcolor emby-select">
                                         <option value="Top" data-i18n="infobarTop">Top (under the top bar / above the content with a sidebar)</option>
                                         <option value="Bottom" data-i18n="infobarBottom">Bottom edge</option>
                                     </select>
                                 </div>
-                                <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
-                                <div class="jc-color" data-color="InfoBar.Color" data-optional="1" data-i18n-label="infobarColor">Background (empty = accent)</div>
-                                <div class="jc-color" data-color="InfoBar.TextColor" data-optional="1" data-i18n-label="infobarTextColor">Text color (empty = auto)</div>
-                                <div class="jc-row" data-slider="InfoBar.Height" data-min="20" data-max="80" data-unit="px" data-i18n-label="infobarHeight">Height</div>
-                                <div class="jc-row" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
-                                <h4 class="jc-sub" data-i18n="behaviourHeading">Behaviour</h4>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
-                                <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
-                                <div class="checkboxContainer jc-needs-script" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
-                                <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
+                                <h4 class="jc-sub" data-when="InfoBar.Enabled=true" data-i18n="lookHeading">Look</h4>
+                                <div class="jc-color" data-when="InfoBar.Enabled=true" data-color="InfoBar.Color" data-optional="1" data-i18n-label="infobarColor">Background (empty = accent)</div>
+                                <div class="jc-color" data-when="InfoBar.Enabled=true" data-color="InfoBar.TextColor" data-optional="1" data-i18n-label="infobarTextColor">Text color (empty = auto)</div>
+                                <div class="jc-row" data-when="InfoBar.Enabled=true" data-slider="InfoBar.Height" data-min="20" data-max="80" data-unit="px" data-i18n-label="infobarHeight">Height</div>
+                                <div class="jc-row" data-when="InfoBar.Enabled=true" data-slider="InfoBar.Radius" data-min="0" data-max="40" data-unit="px" data-i18n-label="infobarRadius">Corner radius</div>
+                                <h4 class="jc-sub" data-when="InfoBar.Enabled=true" data-i18n="behaviourHeading">Behaviour</h4>
+                                <div class="checkboxContainer" data-when="InfoBar.Enabled=true"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnMobile"><span data-i18n="infobarMobile">Hide on phones</span></label></div>
+                                <div class="checkboxContainer" data-when="InfoBar.Enabled=true"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Enabled=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
+                                <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" data-when2="InfoBar.Enabled=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
                             </div>
                         </details>
@@ -690,7 +690,7 @@
                                 </div>
                                 <div data-nodash="1" class="jc-color" data-color="Buttons.PlayColor" data-optional="1" data-i18n-label="playColor">Play color (empty = accent)</div>
                                 <div data-nodash="1" class="jc-row" data-slider="Buttons.PlayRadius" data-min="-1" data-max="40" data-pill="999" data-unit="px" data-i18n-label="playRadius">Play radius (-1 = same as buttons)</div>
-                                <div data-nodash="1" class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
+                                <div data-nodash="1" class="checkboxContainer" data-when="Buttons.DetailLabels=false"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Buttons.PlayLabel"><span data-i18n="playLabel">Show the "Play" label next to the icon</span></label></div>
                             </div>
                         </details>
 

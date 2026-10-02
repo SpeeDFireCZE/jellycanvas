@@ -681,6 +681,9 @@
                 if (path === 'CssOnly') {
                     cssOnlyView();
                     schedulePreview();
+                    // The script last fetched for the preview is the one for
+                    // the old choice (empty while CSS only was on).
+                    scheduleScriptPreview();
                 }
                 if (path === 'Misc.StockDashboard') {
                     stockDashboardView();
@@ -2391,6 +2394,27 @@
         });
     }
 
+    // The client script runs in this page as well - an admin page, which
+    // it gives the theme. After an Apply or a Remove it would go on with
+    // what it fetched when the page loaded: the old admin look, or one at
+    // all after "CSS only" or "Jellyfin's own Dashboard". So it is swapped
+    // for what the server serves now; an empty one (CSS only, nothing to
+    // do) leaves this page as Jellyfin draws it.
+    function reloadOwnScript() {
+        var running = window.__jellycanvasScript;
+        if (running && running.dispose) {
+            running.dispose();
+        }
+        var old = document.querySelector('script[data-jellycanvas-reload]');
+        if (old) {
+            old.remove();
+        }
+        var tag = document.createElement('script');
+        tag.setAttribute('data-jellycanvas-reload', '1');
+        tag.src = ApiClient.getUrl('Jellycanvas/Script.js') + '?v=' + Date.now();
+        document.body.appendChild(tag);
+    }
+
     page.querySelector('#jcBtnApply').addEventListener('click', function () {
         // A strip the admin closed earlier on this browser shows again
         // after an Apply - otherwise a freshly enabled close button looks
@@ -2408,6 +2432,7 @@
             // The client script is served from the saved settings, so the
             // toolbar buttons in the preview only update after a reload.
             loadPreview();
+            reloadOwnScript();
             return refreshStatus();
         }).catch(fail).finally(Dashboard.hideLoadingMsg);
     });
@@ -2428,6 +2453,7 @@
         post('Disable').then(function () {
             state.Enabled = false;
             toast(t('removed'));
+            reloadOwnScript();
             return refreshStatus();
         }).catch(fail).finally(Dashboard.hideLoadingMsg);
     });

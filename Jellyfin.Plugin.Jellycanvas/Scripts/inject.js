@@ -74,6 +74,7 @@
         updateScrollLock();
         ssStop();
         document.documentElement.classList.remove('jellycanvas-infobar-closed');
+        document.documentElement.classList.remove('jc-dashboard');
         badgesRemoveAll();
         backdropStop();
         rowsRemoveAll();

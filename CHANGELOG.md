@@ -3,6 +3,13 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- Fixed: after "CSS only" was applied, the plugin page itself - an admin page - kept the custom Dashboard look until it was reloaded. The client script running in it went on with what it had fetched when the page loaded. The designer now swaps it for what the server serves after every Apply and every Remove: nothing after CSS only (the admin pages turn stock at once), and the fresh admin look after an ordinary Apply, which until now also waited for a reload.
+- CSS only: the theme no longer writes its rules for the admin pages - without the script they never reach them (Jellyfin renders Branding on the user-facing pages only), so they were dead weight.
+- Designer: unticking "CSS only" brings the script features back into the preview straight away; until now they came back only with the next change to a script setting.
+- Designer: rows show where they do something - the "Play" label only while the other buttons have no labels (with labels on, Play has one anyway), the logo's height for the Jellyfin icon or a custom image and its width for a custom image only, and the info bar's settings only while the bar is on.
+
 ## 1.3.1 - 2026-10-01
 
 **The loading ring gets a look of its own, and a season's episodes get

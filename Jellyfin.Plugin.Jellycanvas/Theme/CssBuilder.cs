@@ -144,7 +144,12 @@ public static class CssBuilder
         AppendCards(sb, ctx);
         AppendPlayButton(sb, ctx);
         AppendDetailBanner(sb, ctx);
-        AppendDashboard(sb, ctx);
+        if (!ctx.Config.CssOnly)
+        {
+            // Without the script the admin pages never get this CSS: Jellyfin
+            // renders Branding on the user-facing pages only.
+            AppendDashboard(sb, ctx);
+        }
         AppendButtons(sb, ctx);
         AppendDialogs(sb, ctx);
         AppendPlayer(sb, ctx);
