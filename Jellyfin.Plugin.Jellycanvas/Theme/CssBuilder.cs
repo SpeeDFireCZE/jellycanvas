@@ -804,8 +804,12 @@ public static class CssBuilder
         Place(bottom, 20, true, false);
     }
 
-    // Phones and TV keep a top bar (TV has no MUI header at all), so nothing of the sidebar applies there.
-    private static string SidebarScope(Context x) => $"{x.P}html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide)))";
+    // Phones and TV keep a top bar (TV has no MUI header at all), so nothing
+    // of the sidebar applies there. Nor on the admin pages (the client script
+    // marks them .jc-dashboard): they have a menu of their own on the left,
+    // and their bar docks next to it - as a column it went off the screen
+    // and the content slid under the menu.
+    private static string SidebarScope(Context x) => $"{x.P}html:not(.layout-mobile):not(.layout-tv):not(.jc-dashboard):not(:has(#loginPage:not(.hide)))";
 
     /// <summary>
     /// The announcement strip. Rendered with a pseudo-element, so the text

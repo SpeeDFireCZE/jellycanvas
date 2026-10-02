@@ -305,8 +305,10 @@
         }
         var v = deepMerge(JSON.parse(JSON.stringify(state)), overrides[editDevice]);
         // The sidebar is a desktop thing: the TV and the phone keep a plain
-        // top bar with it, so that is what their view shows.
-        if (v.Header.Layout === 'Sidebar' && editDevice !== 'Dashboard') {
+        // top bar with it, so that is what their view shows. The admin pages
+        // always have one (a bar next to their own menu, whatever the layout),
+        // and their view offers no layout at all.
+        if (editDevice === 'Dashboard' || v.Header.Layout === 'Sidebar') {
             v.Header.Layout = 'Full';
         }
         return v;
@@ -2744,7 +2746,7 @@
     // markup, because a control sits inside a container of its own.
     // (the background source stays: an admin page may want a flat color of
     // its own while the client keeps its backdrops)
-    ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Backdrop.RotateSeconds', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
+    ['Buttons.Detail', 'Buttons.Play', 'Header.LibraryRow', 'Header.Layout', 'Backdrop.RotateSeconds', 'Backdrop.Animate', 'Dialogs.UpNext'].forEach(function (prefix) {
         mark(prefix, 'data-nodash');
     });
     // The same idea for the device views, so every view offers what that

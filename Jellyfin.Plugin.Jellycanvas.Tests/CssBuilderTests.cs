@@ -156,7 +156,7 @@ public class CssBuilderTests
         Assert.Contains("header.MuiAppBar-root { top: 0px !important; left: 0px !important; bottom: 0px !important; right: auto !important; width: 240px !important;", css, StringComparison.Ordinal);
         Assert.Contains("header.MuiAppBar-root + div { display: none !important; }", css, StringComparison.Ordinal);
         Assert.Contains("header.MuiAppBar-root ~ main { margin-left: calc(240px + 0px + 0px) !important; width: calc(100% - 240px - 0px - 0px) !important;", css, StringComparison.Ordinal);
-        Assert.Contains("html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide)))", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.layout-mobile):not(.layout-tv):not(.jc-dashboard):not(:has(#loginPage:not(.hide)))", css, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -285,7 +285,7 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("width: 60px !important;", css, StringComparison.Ordinal);
-        Assert.Contains(":has(.MuiToolbar-root:first-child :focus-visible), html:not(.layout-mobile):not(.layout-tv):not(:has(#loginPage:not(.hide))):has(#app-user-menu", css, StringComparison.Ordinal);
+        Assert.Contains(":has(.MuiToolbar-root:first-child :focus-visible), html:not(.layout-mobile):not(.layout-tv):not(.jc-dashboard):not(:has(#loginPage:not(.hide))):has(#app-user-menu", css, StringComparison.Ordinal);
         // an open header menu keeps the bar out
         Assert.Contains(":has(#app-user-menu:not(.MuiModal-hidden), #app-sync-play-menu:not(.MuiModal-hidden), #app-remote-play-menu:not(.MuiModal-hidden)) header.MuiAppBar-root { width: 220px !important; transition-delay: 0s; }", css, StringComparison.Ordinal);
         // the library row is clipped under the slid-out bar

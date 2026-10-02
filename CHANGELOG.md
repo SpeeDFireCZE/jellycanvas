@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Fixed: with the Sidebar layout and the theme on the Dashboard, the admin pages fell apart - their top bar was turned into the sidebar column and went off the screen, and the content slid under the admin menu. The admin pages have a menu of their own on the left, so the sidebar now stays on the user-facing pages and the admin bar docks next to the menu as before. The Dashboard tab no longer offers a layout either; it shows the bar's own settings.
 - Fixed: after "CSS only" was applied, the plugin page itself - an admin page - kept the custom Dashboard look until it was reloaded. The client script running in it went on with what it had fetched when the page loaded. The designer now swaps it for what the server serves after every Apply and every Remove: nothing after CSS only (the admin pages turn stock at once), and the fresh admin look after an ordinary Apply, which until now also waited for a reload.
 - CSS only: the theme no longer writes its rules for the admin pages - without the script they never reach them (Jellyfin renders Branding on the user-facing pages only), so they were dead weight.
 - Designer: unticking "CSS only" brings the script features back into the preview straight away; until now they came back only with the next change to a script setting.
