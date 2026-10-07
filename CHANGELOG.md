@@ -3,10 +3,28 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.3.3 - 2026-10-07
+
+**Drop-down menus in the theme's look, and a title over the poster that
+makes way for the hover buttons.** Jellyfin's drop-down fields - the item
+page's audio and subtitle menus, "Add to playlist", the settings - showed
+the browser's own grey list; in Chrome and Edge they now take the Dialogs &
+menus look and open downwards. With the title printed over the poster, the
+watched / favorite / menu buttons were hidden under it and greyed by its
+gradient; the title now fades (or slides) away while the pointer is on the
+card. All of it is plain CSS, so "CSS only" has it too.
+
+Updating is enough - the plugin brings the CSS in Branding up to date at
+startup, and open pages pick it up on their own (a browser holding the old
+page in its cache may need one Ctrl+F5).
+
+### Drop-down menus
 
 - Dialogs & menus: Jellyfin's drop-down fields take the menus' look - style, color, opacity, blur, corners - with the chosen entry marked in the accent: the item page's version / video / audio / subtitle menus, "Add to playlist" (the one music users meet) and "Add to collection", the user settings for the home screen, playback and subtitles, the metadata editor. They are native selects, and on a computer or a phone the browser drew their list itself, in its own grey, out of any theme's reach. Chrome and Edge (135 and up) now draw it as part of the page (`appearance: base-select`); other browsers keep their own list, in the theme's colors. The TV opens Jellyfin's own menu, which was themed already. Plain CSS, so "CSS only" has it too.
 - The lists open downwards. The browser picks the side with more room, so a field in the lower row of the item page opened upwards; below comes first now, a list that does not fit there gets shorter (it scrolls), and only a field at the very bottom of the window opens upwards.
+
+### Cards
+
 - Cards: with the title over the image, the hover buttons (watched, favorite, menu) appeared under it - both sit in the bottom corner, and the title lay on top and took their clicks. The title now makes way while the pointer is on the card: it fades out (the default) or slides down as it fades, and comes back when the pointer leaves. The choice is under the title setting (*Cards → The title when the pointer is on the card*, shown for "Over the image" while the hover buttons are on); "Stays" keeps it as before. Only where the buttons appear - not on the TV or a phone, not on series, seasons and collections whose buttons are hidden, and not on the Seerr rows' cards (their button sits in the middle). Plain CSS, so it works with "CSS only" too.
 - Fixed: with the title over the image the hover buttons and the bottom card badges were grey and dull - the dark gradient under the title was painted over them (the same layer, and last in the card). It lies under them now, and while the title makes way the gradient goes with it; Jellyfin's own veil over a hovered card stays.
 
