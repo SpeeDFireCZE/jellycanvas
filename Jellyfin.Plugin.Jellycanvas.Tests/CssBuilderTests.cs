@@ -814,7 +814,12 @@ public class CssBuilderTests
         // and its link stops taking the buttons' clicks.
         var css = CssBuilder.Build(cfg);
         Assert.Contains("@media (hover: hover) { html:not(.layout-tv):not(.layout-mobile) .card:not([data-jellycanvas]):hover .cardBox:not(.visualCardBox) > .cardText { opacity: 0; }", css, StringComparison.Ordinal);
-        Assert.Contains("> .cardText > * { pointer-events: none; } }", css, StringComparison.Ordinal);
+        Assert.Contains("> .cardText > * { pointer-events: none; }", css, StringComparison.Ordinal);
+        // The gradient for the title lies under the hover buttons (it made
+        // them grey), and goes with the title.
+        var gradient = Array.Find(css.Split('\n'), l => l.Contains("> .cardScalable::after { content: ''", StringComparison.Ordinal)) ?? string.Empty;
+        Assert.Contains("z-index: 0; }", gradient, StringComparison.Ordinal);
+        Assert.Contains(":hover .cardBox:not(.visualCardBox) > .cardScalable::after { opacity: 0; } }", css, StringComparison.Ordinal);
 
         cfg.Cards.TextHover = CardTextHover.Slide;
         Assert.Contains("> .cardText { opacity: 0; transform: translateY(0.8em); }", CssBuilder.Build(cfg), StringComparison.Ordinal);

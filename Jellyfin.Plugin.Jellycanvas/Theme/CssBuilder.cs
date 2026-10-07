@@ -1242,10 +1242,14 @@ public static class CssBuilder
         }
 
         var text = $"{web}{card}:hover .cardBox:not(.visualCardBox) > .cardText";
+        var shade = $"{web}{card}:hover .cardBox:not(.visualCardBox) > .cardScalable::after";
         var away = k.TextHover == CardTextHover.Slide ? "opacity: 0; transform: translateY(0.8em);" : "opacity: 0;";
         sb.AppendLine($"{web}.cardBox:not(.visualCardBox) > .cardText {{ transition: opacity 0.2s ease, transform 0.2s ease; }}");
-        // The title's link would still take the clicks meant for the buttons.
-        sb.AppendLine($"@media (hover: hover) {{ {text} {{ {away} }} {text} > * {{ pointer-events: none; }} }}");
+        sb.AppendLine($"{web}.cardBox:not(.visualCardBox) > .cardScalable::after {{ transition: opacity 0.2s ease; }}");
+        // The title's link would still take the clicks meant for the buttons;
+        // the gradient goes with the title it was there for (Jellyfin's own
+        // veil over a hovered card stays).
+        sb.AppendLine($"@media (hover: hover) {{ {text} {{ {away} }} {text} > * {{ pointer-events: none; }} {shade} {{ opacity: 0; }} }}");
     }
 
     private static void AppendPlayButton(StringBuilder sb, Context x)
@@ -1506,9 +1510,13 @@ public static class CssBuilder
                 // In Jellyfin 12 the .cardText elements sit directly in .cardBox
                 // (no footer wrapper). Position them absolutely over the bottom
                 // of the image and put a dark gradient under them (::after on
-                // .cardScalable) so they stay readable.
+                // .cardScalable) so they stay readable. The gradient lies
+                // over the image but under what sits on it (z-index 0): the
+                // hover buttons and the script's badges have z-index 1, and
+                // with the same 1 the gradient - last in the card - darkened
+                // them to grey.
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) {{ position: relative; }}");
-                sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardScalable::after {{ content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.85)); border-radius: 0 0 {Px(k.Radius)} {Px(k.Radius)}; pointer-events: none; z-index: 1; }}");
+                sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardScalable::after {{ content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.85)); border-radius: 0 0 {Px(k.Radius)} {Px(k.Radius)}; pointer-events: none; z-index: 0; }}");
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText {{ position: absolute; left: 0; right: 0; z-index: 2; padding: 0 0.6em !important; color: #fff; pointer-events: none; }}");
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText > * {{ pointer-events: auto; }}");
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText-first {{ bottom: 1.5em; }}");

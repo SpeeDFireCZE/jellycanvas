@@ -5,7 +5,8 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
-- Cards: with the title over the image, the hover buttons (watched, favorite, menu) appeared under it - both sit in the bottom corner, and the title lay on top and took their clicks. The title now makes way while the pointer is on the card: it fades out (the default) or slides down as it fades, and comes back when the pointer leaves. The choice is under the title setting (*Cards → The title when the pointer is on the card*, shown for "Over the image" while the hover buttons are on); "Stays" keeps it as before. Only where the buttons appear - not on the TV or a phone, not on series, seasons and collections whose buttons are hidden, and not on the Seerr rows' cards (their button sits in the middle).
+- Cards: with the title over the image, the hover buttons (watched, favorite, menu) appeared under it - both sit in the bottom corner, and the title lay on top and took their clicks. The title now makes way while the pointer is on the card: it fades out (the default) or slides down as it fades, and comes back when the pointer leaves. The choice is under the title setting (*Cards → The title when the pointer is on the card*, shown for "Over the image" while the hover buttons are on); "Stays" keeps it as before. Only where the buttons appear - not on the TV or a phone, not on series, seasons and collections whose buttons are hidden, and not on the Seerr rows' cards (their button sits in the middle). Plain CSS, so it works with "CSS only" too.
+- Fixed: with the title over the image the hover buttons and the bottom card badges were grey and dull - the dark gradient under the title was painted over them (the same layer, and last in the card). It lies under them now, and while the title makes way the gradient goes with it; Jellyfin's own veil over a hovered card stays.
 
 ## 1.3.2 - 2026-10-02
 
