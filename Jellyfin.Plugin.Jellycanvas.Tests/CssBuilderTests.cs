@@ -805,7 +805,7 @@ public class CssBuilderTests
     }
 
     [Fact]
-    public void The_item_pages_track_menus_take_the_menus_look()
+    public void Drop_down_menus_take_the_menus_look()
     {
         var cfg = new PluginConfiguration();
         cfg.Colors.Surface = "#221f1b";
@@ -817,10 +817,12 @@ public class CssBuilderTests
         // Where the browser can draw the list as part of the page, it does -
         // in the dialogs' look; the native list elsewhere takes the colors.
         Assert.Contains("@supports (appearance: base-select) {", css, StringComparison.Ordinal);
-        Assert.Contains("html select.detailTrackSelect, html select.detailTrackSelect::picker(select) { appearance: base-select; }", css, StringComparison.Ordinal);
-        Assert.Contains("html select.detailTrackSelect::picker(select) { background-color: rgba(34, 31, 27,", css, StringComparison.Ordinal);
+        Assert.Contains("html select.emby-select:not([multiple]), html select.emby-select:not([multiple])::picker(select) { appearance: base-select; }", css, StringComparison.Ordinal);
+        Assert.Contains("html select.emby-select:not([multiple])::picker(select) { background-color: rgba(34, 31, 27,", css, StringComparison.Ordinal);
+        // Below the field, up only when it does not fit (the browser picks the roomier side).
+        Assert.Contains("position-try-order: normal; position-try-fallbacks: --jellycanvas-below-short, --jellycanvas-below-shorter, flip-block; }", css, StringComparison.Ordinal);
         Assert.Contains("border-radius: 18px !important;", css, StringComparison.Ordinal);
-        Assert.Contains("html select.detailTrackSelect option { background-color: #221f1b;", css, StringComparison.Ordinal);
+        Assert.Contains("html select.emby-select:not([multiple]) option { background-color: #221f1b;", css, StringComparison.Ordinal);
     }
 
     [Fact]

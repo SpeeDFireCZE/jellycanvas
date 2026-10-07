@@ -207,7 +207,7 @@ so the way there and back is: export in the designer, upload on the site
   "Skip intro / credits" button and the loading ring (six styles, color,
   size, speed, glow, a disc behind it).
 - **Buttons & inputs**, **dialogs & menus** (and the player's "Up next"
-  prompt and the item page's audio / subtitle menus), **item detail page** (title ribbon, poster, cast & crew as
+  prompt and Jellyfin's drop-down fields), **item detail page** (title ribbon, poster, cast & crew as
   circles or squares, selectors / genres / tags / links as chips, section
   titles, hide sections), **background image** (random backdrop from the
   library, rotating every N seconds, custom URL, blur, dim, panning),

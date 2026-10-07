@@ -1810,7 +1810,7 @@ public static class CssBuilder
         // image editor): the rounded corners still clip, only sideways.
         sb.AppendLine($"{x.P}html .dialog.scrollY:not(.dialog-fullscreen), {x.P}html .dialog.smoothScrollY:not(.dialog-fullscreen) {{ overflow-x: hidden; overflow-y: auto; }}");
         sb.AppendLine($"{x.P}html .toast {{ border-radius: {Px(d.Radius)} !important; }}");
-        AppendTrackMenus(sb, x, color);
+        AppendSelectMenus(sb, x, color);
         if (d.UpNext)
         {
             // The "Up next" prompt of the video player: a fixed box in the
@@ -1829,26 +1829,33 @@ public static class CssBuilder
     }
 
     /// <summary>
-    /// The item page's track menus - version, video, audio, subtitles - are
-    /// native &lt;select&gt;s (emby-select), and on a computer or a phone the
-    /// browser draws their list itself, out of any stylesheet's reach. A
-    /// browser that knows customizable selects (Chrome and Edge 135 and up)
-    /// draws it as part of the page with appearance: base-select, and then
-    /// it takes the menus' look; elsewhere the native list at least takes
-    /// the colors. The TV opens Jellyfin's own action sheet - a .dialog,
-    /// styled with the rest.
+    /// Jellyfin's drop-down fields (emby-select) are native &lt;select&gt;s:
+    /// the item page's version / video / audio / subtitle menus, "Add to
+    /// playlist" and "Add to collection", the user settings, the metadata
+    /// editor. On a computer or a phone the browser draws their list itself,
+    /// out of any stylesheet's reach. A browser that knows customizable
+    /// selects (Chrome and Edge 135 and up) draws it as part of the page with
+    /// appearance: base-select, and then it takes the menus' look; elsewhere
+    /// the native list at least takes the colors. The TV opens Jellyfin's own
+    /// action sheet - a .dialog, styled with the rest.
     /// </summary>
-    private static void AppendTrackMenus(StringBuilder sb, Context x, Color color)
+    private static void AppendSelectMenus(StringBuilder sb, Context x, Color color)
     {
         var d = x.Config.Dialogs;
-        var track = $"{x.P}html select.detailTrackSelect";
+        var track = $"{x.P}html select.emby-select:not([multiple])";
         sb.AppendLine($"{track} option {{ background-color: {color.Hex}; color: {x.Text.Hex}; }}");
         var item = Math.Min(Math.Max(d.Radius - 4, 0), 10);
         sb.AppendLine("@supports (appearance: base-select) {");
         sb.AppendLine($"  {track}, {track}::picker(select) {{ appearance: base-select; }}");
         // Jellyfin draws its own arrow next to the box.
         sb.AppendLine($"  {track}::picker-icon {{ display: none; }}");
-        sb.AppendLine($"  {track}::picker(select) {{ {Surface(d.Style, color, d.Opacity, d.Blur, x, "160deg")} border-radius: {Px(d.Radius)} !important; color: {x.Text.Hex}; border: 1px solid {x.Text.Rgba(0.12)}; padding: 4px; margin: 4px 0; min-width: anchor-size(width); max-height: 60vh; }}");
+        // Down, below the field: the browser's own choice is the side with
+        // more room, so a field low on the page opened its list upwards.
+        // Below first; when the list does not fit there it gets shorter
+        // (it scrolls), and only a field at the very bottom opens upwards.
+        sb.AppendLine("  @position-try --jellycanvas-below-short { position-area: block-end span-inline-end; max-height: 30vh; }");
+        sb.AppendLine("  @position-try --jellycanvas-below-shorter { position-area: block-end span-inline-end; max-height: 15vh; }");
+        sb.AppendLine($"  {track}::picker(select) {{ {Surface(d.Style, color, d.Opacity, d.Blur, x, "160deg")} border-radius: {Px(d.Radius)} !important; color: {x.Text.Hex}; border: 1px solid {x.Text.Rgba(0.12)}; padding: 4px; margin: 4px 0; min-width: anchor-size(width); max-height: 60vh; position-try-order: normal; position-try-fallbacks: --jellycanvas-below-short, --jellycanvas-below-shorter, flip-block; }}");
         sb.AppendLine($"  {track} option {{ background-color: transparent; padding: 0.5em 0.9em; border-radius: {Px(item)}; gap: 0.5em; }}");
         sb.AppendLine($"  {track} option:hover, {track} option:focus-visible {{ background-color: {x.Text.Rgba(0.08)}; outline: none; }}");
         sb.AppendLine($"  {track} option:checked {{ background-color: {x.Accent.Rgba(0.22)}; font-weight: 600; }}");
