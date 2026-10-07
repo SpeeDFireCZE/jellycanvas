@@ -73,7 +73,7 @@
             drawer: 'Boční menu (mobil / úzké okno)', menuColor: 'Barva menu (prázdné = barva pozadí)', itemRadius: 'Zaoblení položek', width: 'Šířka (0 = výchozí)',
             playButtonHeading: 'Tlačítko přehrát na plakátech', playButtonHint: 'Tlačítko, které spustí přehrávání z plakátu: na webu se objeví při najetí, mobily a tablety ho mají na každém plakátu pořád. Na TV není.', playDefault: 'Jellyfin (tmavý kotouč)', playDark: 'Tmavé', playColor: 'Barva (prázdné = podle stylu)', playHoverColor: 'Barva při najetí (prázdné = lehce zesvětlit, ikona ve zvýrazňovací barvě)', playOpacity: 'Krytí výplně (sklo škáluje svou tenkou výplň)', playPosition: 'Umístění', playPosDefault: 'Jellyfin (uprostřed na webu, vpravo dole na mobilu)', playPosCenter: 'Uprostřed', playRadius: 'Zaoblení rohů (-1 = jako ikonová tlačítka, 999 = kulaté)', playHideMobile: 'Bez tlačítka přehrát na mobilu',
             cards: 'Karty (plakáty)', hover: 'Efekt při najetí', none: 'Žádný', lift: 'Nadzvednout', zoom: 'Zvětšit', glow: 'Rozsvítit',
-            cardText: 'Název a text', below: 'Pod obrázkem', overlay: 'Přes obrázek', hidden: 'Skrytý', border: 'Tenký rámeček',
+            cardText: 'Název a text', below: 'Pod obrázkem', overlay: 'Přes obrázek', cardTextHover: 'Název při najetí myší na kartu', textHoverFade: 'Zmizí - roh dostanou tlačítka', textHoverSlide: 'Sjede dolů z cesty', textHoverStay: 'Zůstane (tlačítka jsou částečně pod ním)', hidden: 'Skrytý', border: 'Tenký rámeček',
             hideOverlay: 'Schovat tlačítka při najetí (přehrát, menu)', spacing: 'Rozestupy',
             buttons: 'Tlačítka a pole', filled: 'Plná', outline: 'Obrys', soft: 'Jemná (tónovaná)', btnSkipHeader: 'Nepoužívat styl na tlačítka v horní liště (odkazy na knihovny a řádek pod nimi zůstanou v původním vzhledu; Přehrát vše se stylem řídí dál)',
             typography: 'Písmo', family: 'Rodina', fontDefault: 'Výchozí Jellyfin (Noto Sans)', fontSystem: 'Systémové písmo', fontCustom: 'Vlastní název…',
@@ -2828,7 +2828,7 @@
             box.setAttribute('data-nodevice', '1');
         }
     });
-    ['Cards.Hover', 'Cards.HideOverlayButtons', 'Cards.PlayHoverColor', 'Buttons.HoverLift'].forEach(function (prefix) {
+    ['Cards.Hover', 'Cards.TextHover', 'Cards.HideOverlayButtons', 'Cards.PlayHoverColor', 'Buttons.HoverLift'].forEach(function (prefix) {
         mark(prefix, 'data-nohover');
     });
 

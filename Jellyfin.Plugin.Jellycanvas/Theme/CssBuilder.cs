@@ -1215,6 +1215,39 @@ public static class CssBuilder
     /// disc on the old (home page) cards. The TV has none of them, so
     /// nothing here is scoped to it.
     /// </summary>
+    /// <summary>
+    /// The title over the image and the hover buttons (watched, favorite,
+    /// menu) share the bottom corner of a poster, and the title lies on top
+    /// of them. While the pointer is on the card the title makes way - it
+    /// fades out, or slides down as it fades - and comes back when the
+    /// pointer leaves. Only where the buttons appear: a pointer that hovers
+    /// (not the TV, not a phone), cards whose buttons are not hidden, and
+    /// not the Seerr rows' cards (their one button sits in the middle).
+    /// </summary>
+    private static void AppendOverlayTextHover(StringBuilder sb, Context x)
+    {
+        var k = x.Config.Cards;
+        if (k.TextHover == CardTextHover.Stay || k.HideOverlayButtons || x.IsTv || x.IsMobile)
+        {
+            return;
+        }
+
+        // The defaults reach every layout: keep them to the web one.
+        var web = (x.P.Length == 0 ? "html" : x.P.TrimEnd()) + ":not(.layout-tv):not(.layout-mobile) ";
+        var card = ".card:not([data-jellycanvas])";
+        if (k.HideOverlayButtonsOnFolders)
+        {
+            // (those cards have no buttons, so their title stays)
+            card += string.Concat(new[] { "Series", "Season", "BoxSet", "CollectionFolder", "Folder" }.Select(f => $":not([data-type=\"{f}\"])"));
+        }
+
+        var text = $"{web}{card}:hover .cardBox:not(.visualCardBox) > .cardText";
+        var away = k.TextHover == CardTextHover.Slide ? "opacity: 0; transform: translateY(0.8em);" : "opacity: 0;";
+        sb.AppendLine($"{web}.cardBox:not(.visualCardBox) > .cardText {{ transition: opacity 0.2s ease, transform 0.2s ease; }}");
+        // The title's link would still take the clicks meant for the buttons.
+        sb.AppendLine($"@media (hover: hover) {{ {text} {{ {away} }} {text} > * {{ pointer-events: none; }} }}");
+    }
+
     private static void AppendPlayButton(StringBuilder sb, Context x)
     {
         var k = x.Config.Cards;
@@ -1484,6 +1517,7 @@ public static class CssBuilder
                 sb.AppendLine($"{x.P}.cardBox-bottompadded {{ margin-bottom: 0.6em !important; }}");
                 // (The script's card badges measure the title strip themselves
                 // and stop right above it - no fixed lift here, the two added up.)
+                AppendOverlayTextHover(sb, x);
                 break;
             case CardText.Hidden:
                 sb.AppendLine($"{x.P}.cardBox:not(.visualCardBox) > .cardText {{ display: none !important; }}");

@@ -189,7 +189,8 @@ so the way there and back is: export in the designer, upload on the site
 - **Logo** - Jellyfin icon, a custom image (URL or upload), server name.
 - **Info bar** - an announcement strip at the top or bottom, with an
   optional close button (script).
-- **Cards** - rounding, hover effect, shadow, border, title placement,
+- **Cards** - rounding, hover effect, shadow, border, title placement (a
+  title over the image fades or slides away for the hover buttons),
   spacing; watched items as a badge, corner badge, dimmed or black &
   white poster; progress as a thin line, floating bar, bold bar, top line
   or a translucent fill over the poster; hover buttons off everywhere or

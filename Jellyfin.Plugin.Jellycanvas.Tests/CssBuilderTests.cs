@@ -805,6 +805,40 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_title_over_the_poster_makes_way_for_the_hover_buttons()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Cards.Text = CardText.Overlay;
+
+        // Fades by default, on the web layout and a pointer that hovers only,
+        // and its link stops taking the buttons' clicks.
+        var css = CssBuilder.Build(cfg);
+        Assert.Contains("@media (hover: hover) { html:not(.layout-tv):not(.layout-mobile) .card:not([data-jellycanvas]):hover .cardBox:not(.visualCardBox) > .cardText { opacity: 0; }", css, StringComparison.Ordinal);
+        Assert.Contains("> .cardText > * { pointer-events: none; } }", css, StringComparison.Ordinal);
+
+        cfg.Cards.TextHover = CardTextHover.Slide;
+        Assert.Contains("> .cardText { opacity: 0; transform: translateY(0.8em); }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        // Folders without their buttons keep the title.
+        cfg.Cards.HideOverlayButtonsOnFolders = true;
+        Assert.Contains(".card:not([data-jellycanvas]):not([data-type=\"Series\"]):not([data-type=\"Season\"])", CssBuilder.Build(cfg), StringComparison.Ordinal);
+
+        // Nothing to make way for: no buttons, the title staying, or text below the image.
+        foreach (var off in new Action<PluginConfiguration>[]
+        {
+            c => c.Cards.HideOverlayButtons = true,
+            c => c.Cards.TextHover = CardTextHover.Stay,
+            c => c.Cards.Text = CardText.Below,
+        })
+        {
+            var c = new PluginConfiguration();
+            c.Cards.Text = CardText.Overlay;
+            off(c);
+            Assert.DoesNotContain(":hover .cardBox:not(.visualCardBox) > .cardText", CssBuilder.Build(c), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void The_block_carries_a_stamp_of_what_it_holds()
     {
         var a = CssBuilder.Build(new PluginConfiguration());

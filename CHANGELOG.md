@@ -3,6 +3,10 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- Cards: with the title over the image, the hover buttons (watched, favorite, menu) appeared under it - both sit in the bottom corner, and the title lay on top and took their clicks. The title now makes way while the pointer is on the card: it fades out (the default) or slides down as it fades, and comes back when the pointer leaves. The choice is under the title setting (*Cards → The title when the pointer is on the card*, shown for "Over the image" while the hover buttons are on); "Stays" keeps it as before. Only where the buttons appear - not on the TV or a phone, not on series, seasons and collections whose buttons are hidden, and not on the Seerr rows' cards (their button sits in the middle).
+
 ## 1.3.2 - 2026-10-02
 
 **A theme applied shows at once, the music player follows the theme, and

@@ -581,6 +581,14 @@
                                         <option value="Hidden" data-i18n="hidden">Hidden</option>
                                     </select>
                                 </div>
+                                <div class="selectContainer" data-when="Cards.Text=Overlay" data-when2="Cards.HideOverlayButtons=false">
+                                    <label class="selectLabel" for="jcCardTextHover" data-i18n="cardTextHover">The title when the pointer is on the card</label>
+                                    <select is="emby-select" id="jcCardTextHover" data-path="Cards.TextHover" class="emby-select-withcolor emby-select">
+                                        <option value="Fade" data-i18n="textHoverFade">Fades out - the hover buttons get the corner</option>
+                                        <option value="Slide" data-i18n="textHoverSlide">Slides down out of the way</option>
+                                        <option value="Stay" data-i18n="textHoverStay">Stays (the hover buttons partly under it)</option>
+                                    </select>
+                                </div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtons"><span data-i18n="hideOverlay">Hide hover buttons (play, menu)</span></label></div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Cards.HideOverlayButtonsOnFolders"><span data-i18n="hideOverlayFolders">Hide hover buttons only on whole series, seasons and collections (movies and episodes keep them)</span></label></div>
                                 <h4 class="jc-sub" data-device="Mobile" data-i18n="playButtonHeading">Play button on posters</h4>

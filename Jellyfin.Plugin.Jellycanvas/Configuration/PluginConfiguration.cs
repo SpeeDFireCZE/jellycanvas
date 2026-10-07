@@ -42,6 +42,19 @@ public enum CardHover
     Glow,
 }
 
+/// <summary>What a title printed over the image does while the pointer is on the card.</summary>
+public enum CardTextHover
+{
+    /// <summary>It fades out, and the hover buttons have the corner.</summary>
+    Fade,
+
+    /// <summary>It slides down out of the way as it fades.</summary>
+    Slide,
+
+    /// <summary>It stays (the hover buttons partly under it) - for cards without hover buttons.</summary>
+    Stay,
+}
+
 /// <summary>Where a card's title and secondary text sit.</summary>
 public enum CardText
 {
@@ -806,6 +819,13 @@ public class CardSettings
     public bool Border { get; set; } = false;
 
     public CardText Text { get; set; } = CardText.Below;
+
+    /// <summary>
+    /// With the title over the image: what it does while the pointer is on
+    /// the card - the hover buttons (watched, favorite, menu) appear in the
+    /// same bottom corner.
+    /// </summary>
+    public CardTextHover TextHover { get; set; } = CardTextHover.Fade;
 
     /// <summary>Hide the buttons that appear over a card on hover (play, menu...).</summary>
     public bool HideOverlayButtons { get; set; } = false;
