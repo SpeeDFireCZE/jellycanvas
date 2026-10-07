@@ -1810,6 +1810,7 @@ public static class CssBuilder
         // image editor): the rounded corners still clip, only sideways.
         sb.AppendLine($"{x.P}html .dialog.scrollY:not(.dialog-fullscreen), {x.P}html .dialog.smoothScrollY:not(.dialog-fullscreen) {{ overflow-x: hidden; overflow-y: auto; }}");
         sb.AppendLine($"{x.P}html .toast {{ border-radius: {Px(d.Radius)} !important; }}");
+        AppendTrackMenus(sb, x, color);
         if (d.UpNext)
         {
             // The "Up next" prompt of the video player: a fixed box in the
@@ -1825,6 +1826,34 @@ public static class CssBuilder
             // footer) - for glass to make sense they must be transparent too.
             sb.AppendLine($"{x.P}html .dialog .formDialogHeader, {x.P}html .dialog .formDialogFooter, {x.P}html .dialog .actionSheetContent {{ background: transparent !important; }}");
         }
+    }
+
+    /// <summary>
+    /// The item page's track menus - version, video, audio, subtitles - are
+    /// native &lt;select&gt;s (emby-select), and on a computer or a phone the
+    /// browser draws their list itself, out of any stylesheet's reach. A
+    /// browser that knows customizable selects (Chrome and Edge 135 and up)
+    /// draws it as part of the page with appearance: base-select, and then
+    /// it takes the menus' look; elsewhere the native list at least takes
+    /// the colors. The TV opens Jellyfin's own action sheet - a .dialog,
+    /// styled with the rest.
+    /// </summary>
+    private static void AppendTrackMenus(StringBuilder sb, Context x, Color color)
+    {
+        var d = x.Config.Dialogs;
+        var track = $"{x.P}html select.detailTrackSelect";
+        sb.AppendLine($"{track} option {{ background-color: {color.Hex}; color: {x.Text.Hex}; }}");
+        var item = Math.Min(Math.Max(d.Radius - 4, 0), 10);
+        sb.AppendLine("@supports (appearance: base-select) {");
+        sb.AppendLine($"  {track}, {track}::picker(select) {{ appearance: base-select; }}");
+        // Jellyfin draws its own arrow next to the box.
+        sb.AppendLine($"  {track}::picker-icon {{ display: none; }}");
+        sb.AppendLine($"  {track}::picker(select) {{ {Surface(d.Style, color, d.Opacity, d.Blur, x, "160deg")} border-radius: {Px(d.Radius)} !important; color: {x.Text.Hex}; border: 1px solid {x.Text.Rgba(0.12)}; padding: 4px; margin: 4px 0; min-width: anchor-size(width); max-height: 60vh; }}");
+        sb.AppendLine($"  {track} option {{ background-color: transparent; padding: 0.5em 0.9em; border-radius: {Px(item)}; gap: 0.5em; }}");
+        sb.AppendLine($"  {track} option:hover, {track} option:focus-visible {{ background-color: {x.Text.Rgba(0.08)}; outline: none; }}");
+        sb.AppendLine($"  {track} option:checked {{ background-color: {x.Accent.Rgba(0.22)}; font-weight: 600; }}");
+        sb.AppendLine($"  {track} option::checkmark {{ color: {x.Accent.Hex}; }}");
+        sb.AppendLine("}");
     }
 
     private static void AppendBackdrop(StringBuilder sb, Context x)
