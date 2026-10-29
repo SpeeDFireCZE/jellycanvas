@@ -886,6 +886,54 @@ public class CssBuilderTests
         Assert.Contains("html #itemDetailPage .itemTags:not(.hide) { display: flex !important;", css, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(999, -1, "12px")]
+    [InlineData(8, -1, "8px")]
+    [InlineData(999, 30, "30px")]
+    [InlineData(4, 0, "0")]
+    public void A_text_area_takes_the_buttons_rounding_as_far_as_its_text_allows(int buttons, int textArea, string radius)
+    {
+        // A pill (999) or any big radius on a field of several lines (the
+        // metadata editor's overview) cut the text in its corners. By default
+        // a text area follows the buttons up to 12px; its own value is kept as set.
+        var cfg = new PluginConfiguration();
+        cfg.Buttons.Radius = buttons;
+        cfg.Buttons.TextAreaRadius = textArea;
+
+        var css = CssBuilder.Build(cfg);
+
+        var lines = css.Split('\n').Select(l => l.Trim()).ToArray();
+        Assert.Contains($".emby-textarea {{ border-radius: {radius} !important; }}", lines);
+        // ...and no other rule rounds it.
+        Assert.DoesNotContain(lines, l => l.Contains(".emby-textarea", StringComparison.Ordinal) && l.Contains("border-radius", StringComparison.Ordinal) && !l.StartsWith(".emby-textarea {", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_text_area_on_the_admin_pages_follows_their_own_button_rounding()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Buttons.Radius = 8;
+        cfg.Overrides.Dashboard = "{\"Buttons\":{\"Radius\":999}}";
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html:not(.jc-dashboard) .emby-textarea { border-radius: 8px !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.jc-dashboard .emby-textarea { border-radius: 12px !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void An_empty_drop_down_keeps_the_height_of_a_line()
+    {
+        // A customizable select is as tall as its chosen option's text: with
+        // nothing chosen (Custom rating, 3D format; or no option chosen at
+        // all, a value not in the list) it shrank to its padding, and
+        // Jellyfin's arrow hung out of it. It gets the line back - only
+        // there: an option chosen in an optgroup has its text too.
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        Assert.Contains("  html select.emby-select:not([multiple]):not(:has(option:checked:not(:empty))) { min-block-size: calc-size(auto, size + 1lh); }", css, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void Drop_down_menus_take_the_menus_look()
     {

@@ -1626,6 +1626,13 @@ public class ButtonSettings
     public int IconRadius { get; set; } = -1;
 
     /// <summary>
+    /// Radius of the fields of several lines (the metadata editor's overview);
+    /// -1 = the buttons' radius, at most 12 px (CssBuilder.TextAreaAutoMaxRadius) -
+    /// a bigger one cuts the text in the corners.
+    /// </summary>
+    public int TextAreaRadius { get; set; } = -1;
+
+    /// <summary>
     /// Leave the plain buttons in the top bar (the library links, the row
     /// under them) out of the chosen look - a frame or a fill on every link
     /// turns the bar into a row of boxes. The accented ones (Play all) and

@@ -1683,6 +1683,14 @@ public static class CssBuilder
         }
     }
 
+    /// <summary>
+    /// The most a text area takes of the buttons' radius by itself. The
+    /// settings page says so in its labels (en and cs), and so does
+    /// ButtonSettings.TextAreaRadius. (Not a constant of the settings class:
+    /// Jellycanvas Web reads that file and takes every public line for a setting.)
+    /// </summary>
+    private const int TextAreaAutoMaxRadius = 12;
+
     private static void AppendButtons(StringBuilder sb, Context x)
     {
         var b = x.Config.Buttons;
@@ -1692,7 +1700,11 @@ public static class CssBuilder
         // in dialogs and settings), .detailButton (the flat buttons on the
         // detail page: Play, Favorite...) and MUI .MuiButton-root (library:
         // Play all, filters).
-        sb.AppendLine($"{x.P}.emby-button, {x.P}.raised, {x.P}.fab, {x.P}.button-submit, {x.P}.emby-input, {x.P}.emby-textarea, {x.P}.emby-select-withcolor, {x.P}html .MuiButton-root, {x.P}html .MuiButtonGroup-root, {x.P}html .detailButton {{ border-radius: {Px(b.Radius)} !important; }}");
+        sb.AppendLine($"{x.P}.emby-button, {x.P}.raised, {x.P}.fab, {x.P}.button-submit, {x.P}.emby-input, {x.P}.emby-select-withcolor, {x.P}html .MuiButton-root, {x.P}html .MuiButtonGroup-root, {x.P}html .detailButton {{ border-radius: {Px(b.Radius)} !important; }}");
+        // A field of several lines (the metadata editor's overview): the
+        // buttons' pill, or any big radius, cut its text in the corners.
+        var textArea = b.TextAreaRadius >= 0 ? b.TextAreaRadius : Math.Min(b.Radius, TextAreaAutoMaxRadius);
+        sb.AppendLine($"{x.P}.emby-textarea {{ border-radius: {Px(textArea)} !important; }}");
         sb.AppendLine($"{x.P}html .MuiButtonGroup-root .MuiButton-root {{ border-radius: 0 !important; }}");
         sb.AppendLine($"{x.P}html .MuiButtonGroup-root .MuiButton-root:first-child {{ border-radius: {Px(b.Radius)} 0 0 {Px(b.Radius)} !important; }}");
         sb.AppendLine($"{x.P}html .MuiButtonGroup-root .MuiButton-root:last-child {{ border-radius: 0 {Px(b.Radius)} {Px(b.Radius)} 0 !important; }}");
@@ -1865,6 +1877,13 @@ public static class CssBuilder
         sb.AppendLine($"  {track}, {track}::picker(select) {{ appearance: base-select; }}");
         // Jellyfin draws its own arrow next to the box.
         sb.AppendLine($"  {track}::picker-icon {{ display: none; }}");
+        // It is as tall as its chosen option's text: with nothing chosen
+        // (Custom rating, 3D format) it shrank to its padding and the arrow
+        // hung out of it; so with no option chosen at all (a value not in
+        // the list). A line is added to its own height, whatever its padding
+        // is where it stands. (Not > option: one chosen in an optgroup has
+        // its text.)
+        sb.AppendLine($"  {track}:not(:has(option:checked:not(:empty))) {{ min-block-size: calc-size(auto, size + 1lh); }}");
         // Down, below the field: the browser's own choice is the side with
         // more room, so a field low on the page opened its list upwards.
         // Below first; when the list does not fit there it gets shorter

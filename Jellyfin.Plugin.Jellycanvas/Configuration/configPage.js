@@ -147,7 +147,7 @@
             scriptsNone: 'Tlačítka v liště a slideshow potřebují JavaScript v klientu. Nainstaluj plugin File Transformation (doporučeno, automatické) nebo JavaScript Injector.',
             btnLabel: 'Popisek', btnIcon: 'Ikona (Material Icons)', btnUrl: 'Adresa', btnAction: 'Akce', btnOverlay: 'Otevřít v překryvu pod lištou', btnNewTab: 'Otevřít v nové záložce', btnNavigate: 'Přejít na adresu',
             detailScale: 'Velikost tlačítek na detailu', detailLabels: 'Ukázat na detailu vedle ikon i text', hoverLift: 'Nadzvednout při najetí', uppercase: 'Text velkými písmeny',
-            iconRadius: 'Zaoblení ikonových tlačítek (-1 = kulatá)', playHeading: 'Tlačítko Přehrát (detail)', playInherit: 'Jako ostatní tlačítka', playAccent: 'Vyplněné',
+            iconRadius: 'Zaoblení ikonových tlačítek (-1 = kulatá)', textAreaRadius: 'Zaoblení víceřádkových polí (-1 = jako tlačítka, nejvýš 12 px)', playHeading: 'Tlačítko Přehrát (detail)', playInherit: 'Jako ostatní tlačítka', playAccent: 'Vyplněné',
             playColor: 'Barva Přehrát (prázdné = zvýraznění)', playRadius: 'Zaoblení Přehrát (-1 = jako tlačítka)', playLabel: 'Ukázat vedle ikony text „Přehrát“',
             btnPlacement: 'Umístění', btnIcons: 'Mezi ikonami vpravo', btnNav: 'Za odkazy vlevo', btnHideTv: 'Schovat na TV', btnKeepAlive: 'Překryv nechat načtený po zavření', iconPick: 'Vybrat…', iconSearch: 'Hledat ikonu…', iconNone: 'Nic nenalezeno - název jde napsat i ručně.', close: 'Zavřít', btnBeforeLogin: 'Ukázat i před přihlášením (na přihlašovací stránce)', btnRemove: 'Odebrat', btnEnabled: 'Zapnuto'
         }
@@ -1505,6 +1505,7 @@
         ['#loginPage', 'login', 'backgroundHeading'],
         ['.mainDetailButtons .btnPlay, .mainDetailButtons .btnPlaySimple, .btnPlay', 'buttons', 'playHeading'],
         ['.detailButton', 'buttons', 'buttonsDetailHeading'],
+        ['.emby-textarea', 'buttons', '[data-slider="Buttons.TextAreaRadius"]'],
         ['.emby-button, .MuiButton-root, .emby-input, .emby-select, .MuiInputBase-root, .MuiSwitch-root, .MuiCheckbox-root, .MuiSelect-select', 'buttons', 'buttonsAllHeading'],
         // The admin pages are panels, tables and lists on the surface color;
         // without these almost everything there fell through to the backdrop.
@@ -1540,7 +1541,8 @@
     var DASH_MAP = [
         ['.MuiDrawer-paper, .mainDrawer', 'drawer'],
         ['header.MuiAppBar-root, .skinHeader', 'header', 'topBarHeading'],
-        ['.emby-button, .MuiButton-root, button, .emby-input, .emby-select, .emby-textarea, input, select, textarea, .MuiInputBase-root, .MuiSwitch-root, .MuiCheckbox-root', 'buttons', 'buttonsAllHeading'],
+        ['.emby-textarea', 'buttons', '[data-slider="Buttons.TextAreaRadius"]'],
+        ['.emby-button, .MuiButton-root, button, .emby-input, .emby-select, input, select, textarea, .MuiInputBase-root, .MuiSwitch-root, .MuiCheckbox-root', 'buttons', 'buttonsAllHeading'],
         ['.MuiPaper-root, .MuiTableContainer-root, .MuiTable-root, table, .paperList, .listItem, .MuiAccordion-root, .MuiCard-root', 'dashboard', '[data-slider="Dashboard.PanelOpacity"]'],
         ['.dialog, .MuiMenu-paper, .MuiPopover-paper, .MuiDialog-paper, .toast', 'dialogs'],
         ['h1, h2, h3, h4, .sectionTitle, .MuiTypography-root, p, label, td, th, .fieldDescription', 'typography'],

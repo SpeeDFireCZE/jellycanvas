@@ -5,6 +5,8 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Edit metadata: an empty drop-down (Custom rating, 3D format, an unset language or country) no longer shrinks to a sliver with its arrow hanging out of it - in the browsers that draw the list as part of the page (Chrome and Edge 135+).
+- Edit metadata: the overview (and every text field of several lines) no longer cuts its text in the corners when the buttons are rounded a lot. **New setting** *Buttons → Multi-line text field radius*: by default (-1) such a field follows the buttons' radius up to 12 px, so with a pill (999) it now gets 12 px; any other value is used as set.
 - Admin pages on a phone: a user's tabs (Profile, Access, Parental Control, Password) were wider than the screen and Jellyfin cut the row off, so the Password tab could not be reached. The row now scrolls sideways (a Jellyfin bug; fixed wherever the theme reaches the admin pages, so not in *CSS only*).
 - Admin pages: the user cards on the Users page sit apart again. Each card's box hung out of its card, so two rows touched (with a hover effect on) or lost the bottom of their rounded corners (without).
 - Item page, track selections as chips: on the TV each field takes the whole row, as Jellyfin's own fields do there. An older TV measured a chip before its font arrived and cut the text.
