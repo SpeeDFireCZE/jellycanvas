@@ -5,6 +5,10 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Admin pages on a phone: a user's tabs (Profile, Access, Parental Control, Password) were wider than the screen and Jellyfin cut the row off, so the Password tab could not be reached. The row now scrolls sideways (a Jellyfin bug; fixed wherever the theme reaches the admin pages, so not in *CSS only*).
+- Admin pages: the user cards on the Users page sit apart again. Each card's box hung out of its card, so two rows touched (with a hover effect on) or lost the bottom of their rounded corners (without).
+- Item page, track selections as chips: on the TV each field takes the whole row, as Jellyfin's own fields do there. An older TV measured a chip before its font arrived and cut the text.
+- Item page, chips (track selections, tags, links): a part the item does not have (a series has no track selections) no longer shows up as an empty block.
 - Development: the local test instance runs on Linux too - `test/start-jellyfin.sh` builds the plugin, installs it and starts a portable Jellyfin 12 with jellyfin-ffmpeg on port 3004, `test/setup-jellyfin.sh` completes the wizard and adds the libraries. See *Development* in the README.
 
 ## 1.3.3 - 2026-10-07

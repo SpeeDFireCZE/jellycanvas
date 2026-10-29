@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
 using Jellyfin.Plugin.Jellycanvas.Theme;
 using Xunit;
@@ -802,6 +803,87 @@ public class CssBuilderTests
         Assert.Contains("html body.dashboardDocument .MuiCardMedia-root[style*=\"url(\"] > .MuiStack-root { background-color: rgba(0, 0, 0, 0.3) !important; }", css, StringComparison.Ordinal);
         Assert.DoesNotContain(".MuiCardMedia-root .MuiStack-root", css, StringComparison.Ordinal);
         Assert.Contains("text-shadow: 0 1px 3px", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_hover_effect_lifts_containment_from_every_card()
+    {
+        // Jellyfin's cards are contain: content, which clips what reaches
+        // past a card: the hover effect, the card shadow and the item page's
+        // poster shadow (that poster is no .card-hoverable).
+        var cfg = new PluginConfiguration();
+        cfg.Cards.Hover = CardHover.Zoom;
+
+        var lines = CssBuilder.Build(cfg).Split('\n').Select(l => l.Trim()).ToArray();
+
+        Assert.Contains(".card { contain: none !important; }", lines);
+    }
+
+    [Fact]
+    public void An_admin_user_cards_box_fills_its_card_inside_its_margins()
+    {
+        // Jellyfin gives the box height: 100% and a margin on top of it, so
+        // it hangs out of its card and two rows of users touched. As a flex
+        // column the card holds the box with its margins, whatever they are.
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        Assert.Contains("html body.dashboardDocument .localUsers > .card { display: flex !important; flex-direction: column !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html body.dashboardDocument .localUsers > .card > .cardBox { height: auto !important; flex: 1 1 auto !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_admin_pages_tab_rows_scroll_sideways()
+    {
+        // A user's tabs (Profile, Access, Parental Control, Password) are
+        // wider than a phone and Jellyfin clips them (overflow-x: hidden):
+        // the last ones could not be reached. Vertical tab lists stay as they are.
+        var css = CssBuilder.Build(new PluginConfiguration());
+
+        Assert.Contains("html body.dashboardDocument .MuiTabs-root:not(.MuiTabs-vertical) > .MuiTabs-scroller { overflow-x: auto !important;", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Track_chips_on_the_tv_take_the_whole_row()
+    {
+        // A chip is as wide as the browser measures its text; an older TV
+        // measures before the font arrives and cuts the text. On the TV the
+        // chips take the row, as Jellyfin's own fields do - spaced by a
+        // margin, as Chromium 53 knows no flex gap.
+        var cfg = new PluginConfiguration();
+        cfg.Detail.TrackSelections = DetailBlockStyle.AccentChips;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html.layout-tv #itemDetailPage .trackSelections .selectContainer { flex: 1 1 100% !important; margin: 0 0 8px !important; }", css, StringComparison.Ordinal);
+        // Rows, Jellyfin's look, need nothing.
+        cfg.Detail.TrackSelections = DetailBlockStyle.Default;
+        Assert.DoesNotContain(".trackSelections .selectContainer { flex: 1 1 100%", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_phones_own_section_writes_no_tv_chip_rules()
+    {
+        var cfg = new PluginConfiguration();
+        cfg.Detail.TrackSelections = DetailBlockStyle.AccentChips;
+        cfg.Overrides.Mobile = "{\"Cards\":{\"Radius\":7}}";
+
+        Assert.DoesNotContain("html.layout-mobile.layout-tv #itemDetailPage", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Chips_keep_a_part_the_page_hides_hidden()
+    {
+        // Jellyfin hides a part an item does not have (.hide: display none),
+        // a series has no track selections - the chips' display: flex showed
+        // it again, an empty panel.
+        var cfg = new PluginConfiguration();
+        cfg.Detail.TrackSelections = DetailBlockStyle.AccentChips;
+        cfg.Detail.Tags = DetailBlockStyle.Chips;
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html #itemDetailPage .trackSelections:not(.hide) { display: flex !important;", css, StringComparison.Ordinal);
+        Assert.Contains("html #itemDetailPage .itemTags:not(.hide) { display: flex !important;", css, StringComparison.Ordinal);
     }
 
     [Fact]

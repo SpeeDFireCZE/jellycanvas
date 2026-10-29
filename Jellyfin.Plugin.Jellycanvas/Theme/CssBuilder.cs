@@ -1140,6 +1140,19 @@ public static class CssBuilder
         // color: the class stays on a card that shows what is playing, with
         // the item's picture set inline over it.
         sb.AppendLine($"{dash} .MuiCardMedia-root.defaultCardBackground {{ background-color: {x.Accent.Rgba(0.45)} !important; }}");
+        // A user's tabs (Profile, Access, Parental Control, Password) are
+        // wider than a phone, and Jellyfin clips the row (overflow-x:
+        // hidden): the last tabs could not be reached. The row scrolls (the
+        // selected tab Jellyfin scrolls into view itself).
+        var tabs = $"{dash} .MuiTabs-root:not(.MuiTabs-vertical) > .MuiTabs-scroller";
+        sb.AppendLine($"{tabs} {{ overflow-x: auto !important; scrollbar-width: none; }}");
+        sb.AppendLine($"{tabs}::-webkit-scrollbar {{ display: none; }}");
+        // The user cards: Jellyfin gives the box height: 100% and its margin
+        // on top, so it hangs out of the card - two rows of users touched
+        // (Jellyfin's paint containment hides it, at the cost of the box's
+        // bottom). As a flex column the card holds the box with its margins.
+        sb.AppendLine($"{dash} .localUsers > .card {{ display: flex !important; flex-direction: column !important; }}");
+        sb.AppendLine($"{dash} .localUsers > .card > .cardBox {{ height: auto !important; flex: 1 1 auto !important; }}");
         // Jellyfin writes white on its blue; on the theme's color the text
         // follows how light that color comes out - the accent laid over the
         // panel, the panel over the page (its color; a picture behind a
@@ -1501,6 +1514,9 @@ public static class CssBuilder
                 _ => string.Empty,
             };
             sb.AppendLine($"{hovered} {{ {rule} }}");
+            // Jellyfin's cards are contain: content, which clips what reaches
+            // past a card: the effect, the card shadow, the item page's
+            // poster shadow (that poster is no .card-hoverable).
             sb.AppendLine($"{x.P}.card {{ contain: none !important; }}");
         }
 
@@ -2161,7 +2177,7 @@ public static class CssBuilder
                     var custom = !string.IsNullOrWhiteSpace(d.ChipColor);
                     var bg = custom ? chip.Hex : style == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
                     var fg = custom ? chip.ContrastText : style == DetailBlockStyle.AccentChips ? x.Accent.Lighten(0.3).Hex : x.Text.Hex;
-                    sb.AppendLine($"{row} {{ display: flex !important; flex-wrap: wrap !important; gap: 6px !important; align-items: center !important; font-size: 0 !important; }}");
+                    sb.AppendLine($"{row}:not(.hide) {{ display: flex !important; flex-wrap: wrap !important; gap: 6px !important; align-items: center !important; font-size: 0 !important; }}");
                     sb.AppendLine($"{link} {{ font-size: 0.85rem !important; background: {bg} !important; color: {fg} !important; padding: 3px 10px !important; border-radius: 999px !important; margin: 0 !important; text-decoration: none !important; line-height: 1.4 !important; }}");
                     sb.AppendLine($"{link}:hover {{ background: {x.Accent.Rgba(0.4)} !important; color: {x.Text.Hex} !important; }}");
                     break;
@@ -2184,10 +2200,22 @@ public static class CssBuilder
                 // The four selectors side by side as compact pills instead of
                 // full-width rows.
                 var bg = !string.IsNullOrWhiteSpace(d.ChipColor) ? Color.Parse(d.ChipColor, x.Text).Hex : d.TrackSelections == DetailBlockStyle.AccentChips ? x.Accent.Rgba(0.22) : x.Text.Rgba(0.1);
-                sb.AppendLine($"{selects} {{ display: flex !important; flex-wrap: wrap !important; gap: 8px 12px !important; margin-bottom: 1em !important; }}");
+                // (:not(.hide): a series has no track selections, and Jellyfin
+                // hides the block - display: flex would show it, empty)
+                sb.AppendLine($"{selects}:not(.hide) {{ display: flex !important; flex-wrap: wrap !important; gap: 8px 12px !important; margin-bottom: 1em !important; }}");
                 sb.AppendLine($"{selects} .selectContainer {{ flex: 0 1 auto !important; width: auto !important; min-width: 12em !important; margin: 0 !important; }}");
                 sb.AppendLine($"{selects} .emby-select-withcolor {{ background: {bg} !important; border: 0 !important; border-radius: 999px !important; padding: 0.45em 2.4em 0.45em 1em !important; }}");
                 sb.AppendLine($"{selects} .selectLabel {{ font-size: 0.75em !important; opacity: 0.75; margin-left: 1em !important; }}");
+                // A chip is exactly as wide as the browser measures its text,
+                // and an older TV (Chromium 53) measures before the font has
+                // arrived - the text came out cut. On the TV each chip takes
+                // the row, as Jellyfin's own fields do there; spaced by a
+                // margin, as Chromium 53 knows no flex gap.
+                if (!x.IsMobile)
+                {
+                    sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections:not(.hide) {{ row-gap: 0 !important; }}");
+                    sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer {{ flex: 1 1 100% !important; margin: 0 0 8px !important; }}");
+                }
                 break;
         }
 
