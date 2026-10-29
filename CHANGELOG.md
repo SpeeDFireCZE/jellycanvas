@@ -3,6 +3,10 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- Development: the local test instance runs on Linux too - `test/start-jellyfin.sh` builds the plugin, installs it and starts a portable Jellyfin 12 with jellyfin-ffmpeg on port 3004, `test/setup-jellyfin.sh` completes the wizard and adds the libraries. See *Development* in the README.
+
 ## 1.3.3 - 2026-10-07
 
 **Drop-down menus in the theme's look, and a title over the poster that

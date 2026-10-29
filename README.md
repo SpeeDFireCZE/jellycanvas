@@ -245,6 +245,23 @@ dotnet test                       # CssBuilder / BrandingWriter / ScriptBuilder 
 The test server keeps everything under `test\data\` (git-ignored). Log in
 as `admin` / `admin` and open *Dashboard → My Plugins → Jellycanvas*.
 
+On Linux the same instance runs from a portable Jellyfin 12
+(`jellyfin_12.x-amd64.tar.xz` from
+<https://repo.jellyfin.org/files/server/linux/stable/>, unpacked into
+`test/jellyfin-linux/`) with jellyfin-ffmpeg
+(`jellyfin-ffmpeg_*_portable_linux64-gpl.tar.xz` from
+<https://repo.jellyfin.org/files/ffmpeg/linux/>, unpacked into
+`test/jellyfin-linux/ffmpeg/`), on port 3004 (`JF_PORT` changes it):
+
+```
+./test/start-jellyfin.sh          # build, install into test/data-linux/plugins, start (--no-build, --stop)
+./test/setup-jellyfin.sh          # first run only: wizard, admin/admin, the libraries over test/media
+```
+
+Its data goes to `test/data-linux/` (git-ignored). The media scripts are
+PowerShell for Windows; the libraries need a `test/media/` with
+`Movies`, `Shows` and `Music` folders.
+
 ### Layout
 
 ```

@@ -6,7 +6,11 @@ obj/
 
 # Local Jellyfin 12 test instance (portable server, its data, logs, media, packages)
 test/jellyfin/
+test/jellyfin-linux/
 test/data/
+test/data-linux/
+test/dl-linux/
+test/.venv/
 test/media/
 test/ft/
 test/*.zip
