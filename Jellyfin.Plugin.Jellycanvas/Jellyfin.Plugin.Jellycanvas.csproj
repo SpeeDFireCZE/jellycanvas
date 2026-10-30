@@ -52,6 +52,8 @@
     <EmbeddedResource Include="Configuration\configPage.js" />
     <!-- The client script template, served from /Jellycanvas/Script.js with the configuration baked in. -->
     <EmbeddedResource Include="Scripts\inject.js" />
+    <!-- Inlined at the top of index.html; keeps the settings page's preview from touching the stored sign-in. -->
+    <EmbeddedResource Include="Scripts\preview-guard.js" />
   </ItemGroup>
 
 </Project>

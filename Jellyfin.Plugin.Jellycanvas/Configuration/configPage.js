@@ -2096,12 +2096,14 @@
 
     function loadPreview() {
         var kind = page.querySelector('#jcPage').value;
-        previewUrl(kind).then(function (url) {
+        Promise.all([previewUrl(kind), guardReady()]).then(function (r) {
+            var url = r[0];
             // Changing only the hash would not reload the page (and our
             // <style> would stay); "about:blank" in between forces a clean load.
             frame.src = 'about:blank';
             setTimeout(function () {
                 pushPreviewLayout();
+                pushPreviewSignIn();
                 frame.src = url;
             }, 30);
         });
@@ -2109,6 +2111,7 @@
 
     frame.addEventListener('load', function () {
         restorePreviewLayout();
+        guardPreview(frame.contentWindow);
         injectCss();
         injectScript();
         // The client keeps building the page for a while after start and
@@ -2297,6 +2300,78 @@
         } catch (e) {
             // storage unavailable - nothing was written either
         }
+    }
+
+    // ------------------------------------------------------------------
+    // The preview is a client of its own: with "Remember me" unticked it
+    // dropped the stored token as it started and asked for the password,
+    // and signing in or out in it ended the admin's own session. The preview
+    // guard (Scripts/preview-guard.js) keeps it from both. File
+    // Transformation puts it at the top of index.html, where it runs before
+    // the client - for good. Without it (CSS only, another injector) the
+    // guard is run in each new window of the frame from here, as soon as
+    // the window exists and again at "load": in time in practice (the client
+    // connects after "load"), though not guaranteed.
+    // ------------------------------------------------------------------
+    var guardSource = null;
+    var guardFetch = null;
+
+    /** The guard's text, fetched once (again after a failure); the preview waits for it 3 s at most. */
+    function guardReady() {
+        if (!guardSource && !guardFetch) {
+            guardFetch = ApiClient.ajax({
+                type: 'GET',
+                url: ApiClient.getUrl('Jellycanvas/PreviewGuard.js'),
+                dataType: 'text'
+            }).then(function (text) {
+                guardSource = text;
+            }, function (e) {
+                console.error('Jellycanvas: preview guard unavailable', e);
+            }).then(function () {
+                guardFetch = null;
+            });
+        }
+        return Promise.race([guardFetch || Promise.resolve(), new Promise(function (r) { setTimeout(r, 3000); })]);
+    }
+
+    var signInWatch = null;
+
+    /** Runs the guard in the frame's window, unless it is there already. Returns whether it is. */
+    function guardPreview(w) {
+        try {
+            if (!w || w.location.href === 'about:blank') {
+                return false;
+            }
+            if (w.__jellycanvasPreviewGuard || !guardSource) {
+                return !!w.__jellycanvasPreviewGuard;
+            }
+            // As a script element (a content security policy that allows
+            // the client's inline scripts allows it); eval if that failed.
+            var d = w.document;
+            var tag = d.createElement('script');
+            tag.textContent = guardSource;
+            (d.head || d.documentElement).appendChild(tag);
+            tag.remove();
+            if (!w.__jellycanvasPreviewGuard) {
+                w.eval(guardSource);
+            }
+            return !!w.__jellycanvasPreviewGuard;
+        } catch (e) {
+            // not reachable (an error page, another origin) - nothing to do
+            return false;
+        }
+    }
+
+    /** From just before the preview's address is set: the new window in the frame, as soon as it is there. */
+    function pushPreviewSignIn() {
+        clearInterval(signInWatch);
+        var until = Date.now() + 20000;
+        signInWatch = setInterval(function () {
+            if (guardPreview(frame.contentWindow) || Date.now() > until) {
+                clearInterval(signInWatch);
+                signInWatch = null;
+            }
+        }, 25);
     }
 
     // ------------------------------------------------------------------

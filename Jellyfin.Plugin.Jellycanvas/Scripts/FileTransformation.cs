@@ -87,7 +87,8 @@ public static class FileTransformation
     /// The callback File Transformation invokes for index.html. Adds our
     /// script tag before &lt;/body&gt;. The tag is always added; the script
     /// itself is empty when nothing is enabled, so the page stays clean
-    /// without needing a re-registration.
+    /// without needing a re-registration. The preview guard goes first into
+    /// the head: it has to run before the client's own scripts.
     /// </summary>
     public static string IndexHtml(PatchRequestPayload payload)
     {
@@ -125,7 +126,8 @@ public static class FileTransformation
             version,
             stamp);
 
-        return Regex.Replace(contents, "(</body>)", tag + "$1", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+        contents = Regex.Replace(contents, "(</body>)", tag + "$1", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+        return PreviewGuard.InsertInto(contents);
     }
 
     private static Assembly? FindAssembly()

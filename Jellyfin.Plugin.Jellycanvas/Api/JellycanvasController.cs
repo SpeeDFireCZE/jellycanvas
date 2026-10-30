@@ -468,6 +468,20 @@ public class JellycanvasController : ControllerBase
         return Content(ScriptBuilder.Build(Plugin.Instance!.Configuration), "text/javascript");
     }
 
+    /// <summary>
+    /// The preview guard, for the settings page to run in its preview frame
+    /// when File Transformation has not put it into index.html (admins only,
+    /// like the page).
+    /// </summary>
+    /// <returns>The script.</returns>
+    [HttpGet("PreviewGuard.js")]
+    [Produces("text/javascript")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ContentResult GetPreviewGuard()
+    {
+        return Content(PreviewGuard.Source, "text/javascript");
+    }
+
     // ------------------------------------------------------------------
     // Logo: upload from the settings page, served for the CSS.
     // ------------------------------------------------------------------

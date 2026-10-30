@@ -200,11 +200,7 @@ public static class ScriptBuilder
 
     private static string LoadTemplate()
     {
-        var name = typeof(ScriptBuilder).Namespace + ".inject.js";
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name)
-            ?? throw new InvalidOperationException("Embedded resource missing: " + name);
-        using var reader = new StreamReader(stream);
-        var text = reader.ReadToEnd();
+        var text = EmbeddedText.Read("inject.js");
         if (!text.Contains(Placeholder, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("inject.js has no configuration placeholder");
