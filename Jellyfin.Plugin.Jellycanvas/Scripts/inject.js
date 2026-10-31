@@ -2090,7 +2090,10 @@
         if (isLegacyBar(bar)) {
             return templateIconButton(bar);
         }
-        return bar.querySelector('.MuiStack-root > a.MuiButton-sizeMedium:not([data-jellycanvas])');
+        // Not the current library's link (colorPrimary): its look would make
+        // ours look selected for good.
+        return bar.querySelector('.MuiStack-root > a.MuiButton-sizeMedium.MuiButton-colorInherit:not([data-jellycanvas])')
+            || bar.querySelector('.MuiStack-root > a.MuiButton-sizeMedium:not([data-jellycanvas])');
     }
 
     // A template's own role classes (headerSearchButton, headerCastButton)
@@ -2098,7 +2101,39 @@
     function templateClasses(tpl) {
         return tpl.className.split(/\s+/).filter(function (c) {
             return c && !/^(header(Search|Cast|Sync|User|Home|Back)|syncButton|castButton|searchButton|userButton)/.test(c);
+        }).map(function (c) {
+            // a selected link as the only template: ours starts unselected
+            return c === 'MuiButton-colorPrimary' ? 'MuiButton-colorInherit' : c === 'MuiButton-textPrimary' ? 'MuiButton-textInherit' : c;
         }).join(' ');
+    }
+
+    // A button whose overlay is open says so, as the current library's link
+    // does: an icon gets jc-active (the theme's accent), a link the link's
+    // own "selected" classes, a drawer entry Mui-selected. aria-pressed
+    // tells assistive technology the same.
+    function markOpen(b, open) {
+        if (b.action !== 'Overlay') {
+            return;
+        }
+        var bar = document.getElementById(buttonId(b));
+        if (bar) {
+            bar.classList.toggle('jc-active', open && !bar.classList.contains('MuiButton-root'));
+            if (bar.classList.contains('MuiButton-root')) {
+                bar.classList.toggle('MuiButton-colorPrimary', open);
+                bar.classList.toggle('MuiButton-textPrimary', open);
+                bar.classList.toggle('MuiButton-colorInherit', !open);
+                bar.classList.toggle('MuiButton-textInherit', !open);
+            }
+            bar.setAttribute('aria-pressed', open ? 'true' : 'false');
+        }
+        var item = document.getElementById(drawerItemId(b));
+        if (item) {
+            var link = item.tagName === 'A' ? item : item.querySelector('a');
+            if (link) {
+                link.classList.toggle(link.classList.contains('navMenuOption') ? 'navMenuOption-selected' : 'Mui-selected', open);
+                link.setAttribute('aria-pressed', open ? 'true' : 'false');
+            }
+        }
     }
 
     // Where the overlay may go: under a top bar, or to the right of a
@@ -2175,6 +2210,7 @@
         }
         applyFrameGeometry(f);
         updateScrollLock();
+        markOpen(b, true);
     }
 
     function closeFrame(b) {
@@ -2188,6 +2224,7 @@
             f.remove();
         }
         updateScrollLock();
+        markOpen(b, false);
     }
 
     function onResize() {
@@ -2499,6 +2536,7 @@
                     barButton.remove();
                 }
                 syncDrawerItem(b);
+                markOpen(b, isOpen(b));
                 return;
             }
             removeDrawerItem(b);
@@ -2518,6 +2556,8 @@
                 }
             }
             placeButton(el, b, bar, following);
+            // (React re-renders the bar and a template look is borrowed late)
+            markOpen(b, isOpen(b));
         });
     }
 

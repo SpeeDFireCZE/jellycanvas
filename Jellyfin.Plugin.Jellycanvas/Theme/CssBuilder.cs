@@ -469,6 +469,13 @@ public static class CssBuilder
                 break;
         }
 
+        // A custom button whose overlay is open (the script marks it): as an
+        // icon in the accent; as a link the way the current library's link
+        // is (MuiButton-colorPrimary, which the link styles above already
+        // dress) - in the accent where the link style is Jellyfin's own.
+        sb.AppendLine($"{x.P}html [data-jellycanvas].jc-active {{ color: {x.Accent.Hex} !important; background-color: {x.Accent.Rgba(0.18)} !important; }}");
+        sb.AppendLine($"{x.P}html a[data-jellycanvas].MuiButton-colorPrimary {{ color: {x.Accent.Hex}; }}");
+
         // Icons on the right. They have stable aria-controls values; the
         // localized labels cannot be relied on.
         if (h.HideSyncPlay)

@@ -935,6 +935,22 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void An_open_custom_button_is_marked_like_the_current_page()
+    {
+        // The script marks a custom button while its overlay is open: as an
+        // icon (jc-active) in the accent, as a link the way the current
+        // library's link is (MuiButton-colorPrimary) - also when the link
+        // style is Jellyfin's own, which has no rule for our links.
+        var cfg = new PluginConfiguration();
+        cfg.Colors.Accent = "#f59e0b";
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("[data-jellycanvas].jc-active { color: #f59e0b !important; background-color: rgba(245, 158, 11, 0.18) !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("a[data-jellycanvas].MuiButton-colorPrimary { color: #f59e0b; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Drop_down_menus_take_the_menus_look()
     {
         var cfg = new PluginConfiguration();
