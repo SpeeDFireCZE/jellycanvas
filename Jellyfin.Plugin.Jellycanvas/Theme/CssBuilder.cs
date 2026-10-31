@@ -50,6 +50,9 @@ public static class CssBuilder
     // renames something again.
     private const string AppBar = "html header.MuiAppBar-root";
     private const string Toolbar = AppBar + " .MuiToolbar-root";
+
+    /// <summary>The bar's button while casting: it shows the target device's name (scoped by the caller).</summary>
+    private const string CastingButton = "header.MuiAppBar-root .MuiToolbar-root [aria-controls=\"app-remote-play-active-menu\"]";
     private const string LogoLink = Toolbar + " a[href=\"#/\"]";
     private const string NavLink = Toolbar + " .MuiStack-root > a.MuiButton-sizeMedium";
 
@@ -473,8 +476,46 @@ public static class CssBuilder
         // icon in the accent; as a link the way the current library's link
         // is (MuiButton-colorPrimary, which the link styles above already
         // dress) - in the accent where the link style is Jellyfin's own.
-        sb.AppendLine($"{x.P}html [data-jellycanvas].jc-active {{ color: {x.Accent.Hex} !important; background-color: {x.Accent.Rgba(0.18)} !important; }}");
-        sb.AppendLine($"{x.P}html a[data-jellycanvas].MuiButton-colorPrimary {{ color: {x.Accent.Hex}; }}");
+        // The mark (this one and casting's below) is the accent with a light
+        // fill - on a bar in the accent itself (neo-brutalism's default) the
+        // bar's contrasting color, or it would vanish into the bar.
+        // (The buttons are the script's: CSS only has none.)
+        var onAccent = h.Style == SurfaceStyle.NeoBrutalism || string.Equals(color.Hex, x.Accent.Hex, StringComparison.OrdinalIgnoreCase);
+        var mark = onAccent ? color.ContrastText : x.Accent.Hex;
+        var markFill = onAccent ? (color.IsLight ? "rgba(0, 0, 0, 0.14)" : "rgba(255, 255, 255, 0.2)") : x.Accent.Rgba(0.18);
+        if (!x.Config.CssOnly)
+        {
+            sb.AppendLine($"{x.P}html [data-jellycanvas].jc-active {{ color: {mark} !important; background-color: {markFill} !important; }}");
+            sb.AppendLine($"{x.P}html a[data-jellycanvas].MuiButton-colorPrimary {{ color: {mark}; }}");
+        }
+
+        // While casting, Jellyfin shows the target device's name in the bar
+        // in place of the cast icon. The text wrapped, and a long name made
+        // the bar several lines tall: one line, cut short with an ellipsis
+        // (inline-block - a flex box puts no ellipsis on its text). A phone
+        // has no room for a name: the icon alone, which Jellyfin colors
+        // while casting; the name is in the menu it opens.
+        sb.AppendLine($"{x.P}html {CastingButton} {{ display: inline-block !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 14em !important; min-width: 0 !important; vertical-align: middle; }}");
+        sb.AppendLine($"{x.P}html {CastingButton} .MuiButton-startIcon {{ display: inline-flex !important; vertical-align: middle; }}");
+        sb.AppendLine($"{x.P}html {CastingButton} {{ color: {mark} !important; background-color: {markFill} !important; }}");
+        // A phone - and the sidebar, an icon wide - have no room for a name:
+        // the icon alone, marked; the name is in the menu it opens.
+        var iconOnly = new List<string>();
+        if (!x.IsTv)
+        {
+            iconOnly.Add(x.MobileScope);
+        }
+
+        if (h.Layout == HeaderLayout.Sidebar)
+        {
+            iconOnly.Add(SidebarScope(x));
+        }
+
+        foreach (var scope in iconOnly)
+        {
+            sb.AppendLine($"{scope} {CastingButton} {{ font-size: 0 !important; max-width: none !important; padding: 6px !important; }}");
+            sb.AppendLine($"{scope} {CastingButton} .MuiButton-startIcon {{ margin: 0 !important; }}");
+        }
 
         // Icons on the right. They have stable aria-controls values; the
         // localized labels cannot be relied on.
@@ -2241,6 +2282,15 @@ public static class CssBuilder
                 {
                     sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections:not(.hide) {{ row-gap: 0 !important; }}");
                     sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer {{ flex: 1 1 100% !important; margin: 0 0 8px !important; }}");
+                    // The script measures each chip's text in the font the TV
+                    // has (again once a font arrives) and sets the width: the
+                    // fields it marked fit their text, side by side.
+                    if (!x.Config.CssOnly)
+                    {
+                        sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections {{ --jc-fit: 1; }}");
+                        sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer.jc-fit {{ flex: 0 0 auto !important; min-width: 0 !important; margin: 0 12px 8px 0 !important; }}");
+                        sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer.jc-fit > select {{ flex: 0 0 auto !important; }}");
+                    }
                 }
                 break;
         }
@@ -3036,6 +3086,16 @@ public static class CssBuilder
         AppendTvHeader(sb, x);
 
         sb.AppendLine($"{x.TvScope} .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {{ border-width: {Px(tv.FocusWidth)} !important; }}");
+
+        // Jellyfin shows a focused button filled with the accent, its text
+        // dark (and scaled up). The button look's fill (!important) took the
+        // fill away and left the dark text on a dim button: the focused one
+        // gets the focus color. The play button keeps its own fill and gets
+        // a ring in the focus color, set off by a gap in the page's color -
+        // it shows whatever the fill and the focus color are.
+        var focused = string.Join(", ", new[] { ".detailButton:not(.btnPlay)", ".raised", "a[data-role=button]", ".userPreferencesPage a.emby-button" }.Select(b => $"{x.TvScope} {b}.show-focus:focus"));
+        sb.AppendLine($"{focused} {{ background: {x.Focus.Hex} !important; color: {x.Focus.ContrastText} !important; }}");
+        sb.AppendLine($"{x.TvScope} .detailButton.btnPlay.show-focus:focus {{ box-shadow: 0 0 0 2px {x.Background.Hex}, 0 0 0 {Px(2 + Math.Max(2, tv.FocusWidth))} {x.Focus.Hex} !important; }}");
         if (tv.FocusScale != 100)
         {
             sb.AppendLine($"{x.TvScope} .card:focus .cardBox:not(.visualCardBox) .cardScalable {{ transform: scale({Dec(tv.FocusScale / 100.0)}); transition: transform 0.15s ease; }}");

@@ -2362,12 +2362,27 @@
         }
     }
 
-    /** From just before the preview's address is set: the new window in the frame, as soon as it is there. */
+    function frameDocument() {
+        try {
+            return frame.contentDocument;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    /**
+     * From just before the preview's address is set: the new window in the
+     * frame, as soon as it is there. The document the frame holds now is not
+     * it - the blank page in between may not have come yet, and the last
+     * preview, guarded already, would end the watch before the new one.
+     */
     function pushPreviewSignIn() {
         clearInterval(signInWatch);
         var until = Date.now() + 20000;
+        var old = frameDocument();
         signInWatch = setInterval(function () {
-            if (guardPreview(frame.contentWindow) || Date.now() > until) {
+            var doc = frameDocument();
+            if ((doc && doc !== old && guardPreview(frame.contentWindow)) || Date.now() > until) {
                 clearInterval(signInWatch);
                 signInWatch = null;
             }

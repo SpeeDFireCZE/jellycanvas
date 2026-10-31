@@ -935,6 +935,106 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_cast_target_s_name_keeps_the_bar_one_line()
+    {
+        // While casting, Jellyfin shows the device's name in the bar; the
+        // text wrapped and a long name made the bar several lines tall. One
+        // line, cut short; on a phone the (accent) icon alone. CSS only too.
+        foreach (var cssOnly in new[] { false, true })
+        {
+            var css = CssBuilder.Build(new PluginConfiguration { CssOnly = cssOnly });
+
+            Assert.Contains("html header.MuiAppBar-root .MuiToolbar-root [aria-controls=\"app-remote-play-active-menu\"] { display: inline-block !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 14em !important; min-width: 0 !important; vertical-align: middle; }", css, StringComparison.Ordinal);
+            Assert.Contains("html.layout-mobile header.MuiAppBar-root .MuiToolbar-root [aria-controls=\"app-remote-play-active-menu\"] { font-size: 0 !important; max-width: none !important; padding: 6px !important; }", css, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void A_cast_target_s_name_leaves_the_sidebar_an_icon()
+    {
+        // The sidebar is an icon wide: a name stuck out of it, cut on both
+        // sides. There, as on a phone, the (marked) icon alone.
+        var cfg = new PluginConfiguration();
+        cfg.Header.Layout = HeaderLayout.Sidebar;
+
+        Assert.Contains("html:not(.layout-mobile):not(.layout-tv):not(.jc-dashboard):not(:has(#loginPage:not(.hide))) header.MuiAppBar-root .MuiToolbar-root [aria-controls=\"app-remote-play-active-menu\"] { font-size: 0 !important; max-width: none !important; padding: 6px !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Casting_and_an_open_button_are_marked_in_a_color_the_bar_does_not_have()
+    {
+        // The mark says "this is on": the accent with a light fill - and the
+        // bar's contrasting color where the bar is in the accent itself
+        // (neo-brutalism's default), or the mark would vanish into it.
+        var cfg = new PluginConfiguration();
+        cfg.Colors.Accent = "#f59e0b";
+        const string cast = "html header.MuiAppBar-root .MuiToolbar-root [aria-controls=\"app-remote-play-active-menu\"] { color: ";
+
+        var css = CssBuilder.Build(cfg);
+        Assert.Contains(cast + "#f59e0b !important; background-color: rgba(245, 158, 11, 0.18) !important; }", css, StringComparison.Ordinal);
+
+        cfg.Header.Style = SurfaceStyle.NeoBrutalism;
+        css = CssBuilder.Build(cfg);
+        Assert.Contains(cast + "rgba(0, 0, 0, 0.87) !important; background-color: rgba(0, 0, 0, 0.14) !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("[data-jellycanvas].jc-active { color: rgba(0, 0, 0, 0.87) !important; background-color: rgba(0, 0, 0, 0.14) !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("a[data-jellycanvas].MuiButton-colorPrimary { color: rgba(0, 0, 0, 0.87); }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_focused_button_on_the_tv_takes_the_focus_color()
+    {
+        // Jellyfin fills a focused button with the accent and darkens its
+        // text; the button look's fill (!important) took the fill away and
+        // left dark text on a dim button. The focused one gets the TV focus
+        // color (the accent when none is set); the play button, accented
+        // already, a ring. CSS only too.
+        var cfg = new PluginConfiguration { CssOnly = true };
+        cfg.Colors.Accent = "#f59e0b";
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html.layout-tv .detailButton:not(.btnPlay).show-focus:focus, html.layout-tv .raised.show-focus:focus, html.layout-tv a[data-role=button].show-focus:focus, html.layout-tv .userPreferencesPage a.emby-button.show-focus:focus { background: #f59e0b !important; color: rgba(0, 0, 0, 0.87) !important; }", css, StringComparison.Ordinal);
+        // The play button keeps its own fill; its ring stands off it by a
+        // gap in the page's color, so it shows whatever the two colors are.
+        Assert.Contains("html.layout-tv .detailButton.btnPlay.show-focus:focus { box-shadow: 0 0 0 2px #101010, 0 0 0 5px #f59e0b !important; }", css, StringComparison.Ordinal);
+
+        cfg.Tv.FocusColor = "#ffffff";
+        css = CssBuilder.Build(cfg);
+        Assert.Contains(".userPreferencesPage a.emby-button.show-focus:focus { background: #ffffff !important; color: rgba(0, 0, 0, 0.87) !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(".detailButton.btnPlay.show-focus:focus { box-shadow: 0 0 0 2px #101010, 0 0 0 5px #ffffff !important; }", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Track_chips_on_the_tv_fit_their_text_when_the_script_measured_them()
+    {
+        // The script measures each chip's text on the TV, in the font it
+        // has, and marks the field (jc-fit); without the script (CSS only)
+        // the chips keep the whole row.
+        var cfg = new PluginConfiguration();
+        cfg.Detail.TrackSelections = DetailBlockStyle.AccentChips;
+        // (min-width: 0 - the chips' 12em would leave a short field's arrow hanging past it)
+        const string fit = "html.layout-tv #itemDetailPage .trackSelections .selectContainer.jc-fit { flex: 0 0 auto !important; min-width: 0 !important; margin: 0 12px 8px 0 !important; }";
+
+        Assert.Contains(fit, CssBuilder.Build(cfg), StringComparison.Ordinal);
+        // the script fits only where the CSS asks it to
+        Assert.Contains("html.layout-tv #itemDetailPage .trackSelections { --jc-fit: 1; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.CssOnly = true;
+        var cssOnly = CssBuilder.Build(cfg);
+        Assert.DoesNotContain(".jc-fit", cssOnly, StringComparison.Ordinal);
+        Assert.Contains("html.layout-tv #itemDetailPage .trackSelections .selectContainer { flex: 1 1 100% !important; margin: 0 0 8px !important; }", cssOnly, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_open_button_mark_is_left_out_without_the_script()
+    {
+        // The custom buttons are the script's; CSS only has none to mark.
+        var css = CssBuilder.Build(new PluginConfiguration { CssOnly = true });
+
+        Assert.DoesNotContain("[data-jellycanvas].jc-active", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("a[data-jellycanvas].MuiButton-colorPrimary", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void An_open_custom_button_is_marked_like_the_current_page()
     {
         // The script marks a custom button while its overlay is open: as an

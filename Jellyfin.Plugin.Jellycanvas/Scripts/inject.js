@@ -183,6 +183,7 @@
     // One query for all of them, per user, asked again after half an hour -
     // a page left open (a TV on the home page) follows the days that way.
     var NEW_SERIES_REFRESH = 30 * 60000;
+    var NEW_SERIES_RETRY = 60000; // after a failed answer
     var NEW_EPISODES_WORDS = { en: 'New episodes', cs: 'Nové díly', sk: 'Nové diely', de: 'Neue Folgen' };
     var newSeries = null;
     var newSeriesUser = null;
@@ -207,16 +208,20 @@
         if (!BADGE_NEW_ON || newSeriesLoading || disposed || !user) {
             return;
         }
+        var stale = null;
         if (newSeries && user !== newSeriesUser) {
-            newSeries = null; // another user's series: the cards wait for this one's
+            // another user's series: new cards wait for this one's, the
+            // ones drawn already are drawn again where the answer differs
+            stale = newSeries;
+            newSeries = null;
         }
         if (newSeries && Date.now() - newSeriesAt < NEW_SERIES_REFRESH) {
             return;
         }
-        newSeriesLoad(user);
+        newSeriesLoad(user, stale);
     }
 
-    function newSeriesLoad(user) {
+    function newSeriesLoad(user, stale) {
         newSeriesLoading = true;
         // Premiere dates are kept as the midnight (UTC) of the day: the
         // viewer's today is written that way, and the window runs from the
@@ -224,7 +229,8 @@
         // counts, tomorrow's does not, wherever the viewer is.
         var now = new Date();
         var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-        var before = newSeries;
+        var before = newSeries || stale;
+        var failed = false;
         window.ApiClient.getItems(user, {
             Recursive: true, IncludeItemTypes: 'Episode', IsMissing: false,
             MinPremiereDate: new Date(today - ((badges.newEpisodesDays || 7) - 1) * 86400000).toISOString(),
@@ -240,11 +246,16 @@
                 });
                 newSeries = set;
             })
-            .catch(function () { newSeries = before || {}; /* offline or forbidden: what was known stays; asked again later */ })
+            .catch(function () {
+                // offline or forbidden: what was known for this user stays (nothing
+                // is new otherwise), and it is asked again in a minute
+                newSeries = (stale ? null : before) || {};
+                failed = true;
+            })
             .then(function () {
                 newSeriesLoading = false;
                 newSeriesUser = user;
-                newSeriesAt = Date.now();
+                newSeriesAt = failed ? Date.now() - NEW_SERIES_REFRESH + NEW_SERIES_RETRY : Date.now();
                 if (before && newSeries !== before) {
                     newSeriesRedraw(before, newSeries);
                 }
@@ -2660,6 +2671,71 @@
         return !!login && !login.classList.contains('hide');
     }
 
+    // ------------------------------------------------------------------
+    // TV, track selections as chips: each field as wide as its text. A
+    // field the browser sizes itself can come out short on an older TV (it
+    // measures before the font arrives), so the CSS gives the fields the
+    // whole row and asks for the fit (--jc-fit) where the script runs: the
+    // text is measured here in the field's own font, and again when the
+    // choice changes or a font arrives.
+    // ------------------------------------------------------------------
+
+    var fitCanvas = null;
+
+    function fitTrackChips(again) {
+        if (!isTv()) {
+            return;
+        }
+        var row = document.querySelector('.itemDetailPage:not(.hide) .trackSelections');
+        if (!row) {
+            return;
+        }
+        var fields = row.querySelectorAll('select');
+        var i;
+        if (getComputedStyle(row).getPropertyValue('--jc-fit').trim() !== '1') {
+            // the CSS no longer asks (another chip style, in the preview): the fields go back
+            for (i = 0; i < fields.length; i++) {
+                if (fields[i].hasAttribute('data-jc-fit')) {
+                    fields[i].style.removeProperty('width');
+                    fields[i].removeAttribute('data-jc-fit');
+                    var was = fields[i].closest('.selectContainer');
+                    if (was) {
+                        was.classList.remove('jc-fit');
+                    }
+                }
+            }
+            return;
+        }
+        if (document.fonts && document.fonts.status === 'loading') {
+            return; // the whole row until the fonts are in; "loadingdone" comes back here
+        }
+        for (i = 0; i < fields.length; i++) {
+            var sel = fields[i];
+            var opt = sel.options[sel.selectedIndex];
+            var text = opt ? opt.text : '';
+            // The same text as measured: nothing to do - a new font comes as "again".
+            // (This runs on every sync; the styles are read only for a change.)
+            if (!again && sel.getAttribute('data-jc-fit') === text) {
+                continue;
+            }
+            var box = sel.closest('.selectContainer');
+            if (!box || !sel.offsetParent) {
+                continue;
+            }
+            var cs = getComputedStyle(sel);
+            var shown = cs.textTransform === 'uppercase' ? text.toUpperCase() : text;
+            var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+            fitCanvas = fitCanvas || document.createElement('canvas').getContext('2d');
+            fitCanvas.font = font;
+            var w = fitCanvas.measureText(shown).width + (parseFloat(cs.letterSpacing) || 0) * shown.length +
+                parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+            // (a few pixels for the rounding of the text's own layout)
+            sel.style.setProperty('width', Math.ceil(w + 4) + 'px', 'important');
+            sel.setAttribute('data-jc-fit', text);
+            box.classList.add('jc-fit');
+        }
+    }
+
     function sync() {
         if (disposed) {
             return;
@@ -2677,6 +2753,7 @@
         badgeSync();
         backdropSync();
         rowsSync();
+        fitTrackChips(false);
         var tv = isTv();
         var mobile = isMobile();
         var dashboard = document.body && document.body.classList.contains('dashboardDocument');
@@ -3378,7 +3455,11 @@
         // badges follow the page font).
         if (document.fonts && document.fonts.addEventListener) {
             document.fonts.addEventListener('loadingdone', function () {
-                if (badges && !disposed) {
+                if (disposed) {
+                    return;
+                }
+                fitTrackChips(true);
+                if (badges) {
                     badgesRemoveAll();
                     badgeSync();
                 }
