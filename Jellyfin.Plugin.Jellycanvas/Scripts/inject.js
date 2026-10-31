@@ -113,6 +113,31 @@
     };
     var BADGE_TYPES = /^(Movie|Episode|Video|MusicVideo|Trailer)$/;
 
+    // What the corners hold: series cards get badges only for "New
+    // episodes" (and only then are the episodes asked for), the other cards
+    // only for the media badges (and only then are media streams asked for).
+    var BADGE_NEW_ON = false;
+    var BADGE_MEDIA_ON = false;
+    if (badges) {
+        Object.keys(badges.corners).forEach(function (k) {
+            badges.corners[k].forEach(function (id) {
+                if (id === 'newepisodes') {
+                    BADGE_NEW_ON = true;
+                } else {
+                    BADGE_MEDIA_ON = true;
+                }
+            });
+        });
+    }
+
+    /** Does a card of this type get badges? (A card without a type does - a list row may have none.) */
+    function badgeType(type) {
+        if (type === 'Series') {
+            return BADGE_NEW_ON;
+        }
+        return BADGE_MEDIA_ON && (!type || BADGE_TYPES.test(type));
+    }
+
     // What gets badges: cards, and the rows of a list - a season's page
     // lists its episodes that way, and so does a library in list view.
     var BADGE_ITEMS = ['.card[data-id]', '.listItem[data-id]'];
@@ -152,6 +177,114 @@
         });
         return out.slice(0, Math.max(1, max || 4));
     }
+    // Series with new episodes: an episode in the library that premiered
+    // within the last days (newEpisodesDays, today counted) - an old episode
+    // added today does not count, nor one whose premiere is still to come.
+    // One query for all of them, per user, asked again after half an hour -
+    // a page left open (a TV on the home page) follows the days that way.
+    var NEW_SERIES_REFRESH = 30 * 60000;
+    var NEW_EPISODES_WORDS = { en: 'New episodes', cs: 'Nové díly', sk: 'Nové diely', de: 'Neue Folgen' };
+    var newSeries = null;
+    var newSeriesUser = null;
+    var newSeriesAt = 0;
+    var newSeriesLoading = false;
+
+    /** The series ids with new episodes, or null while the first answer is awaited. */
+    function newSeriesReady() {
+        newSeriesTick();
+        return newSeries;
+    }
+
+    /**
+     * Asks for the series when there is no answer yet (or none for this
+     * user), and again when the answer is half an hour old - the old one
+     * stays in use meanwhile. Every sync calls it, so a client that did not
+     * know its user yet tries again a second later.
+     */
+    function newSeriesTick() {
+        var api = window.ApiClient;
+        var user = api && api.getCurrentUserId();
+        if (!BADGE_NEW_ON || newSeriesLoading || disposed || !user) {
+            return;
+        }
+        if (newSeries && user !== newSeriesUser) {
+            newSeries = null; // another user's series: the cards wait for this one's
+        }
+        if (newSeries && Date.now() - newSeriesAt < NEW_SERIES_REFRESH) {
+            return;
+        }
+        newSeriesLoad(user);
+    }
+
+    function newSeriesLoad(user) {
+        newSeriesLoading = true;
+        // Premiere dates are kept as the midnight (UTC) of the day: the
+        // viewer's today is written that way, and the window runs from the
+        // days - 1 before it to the end of it - a premiere later today still
+        // counts, tomorrow's does not, wherever the viewer is.
+        var now = new Date();
+        var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+        var before = newSeries;
+        window.ApiClient.getItems(user, {
+            Recursive: true, IncludeItemTypes: 'Episode', IsMissing: false,
+            MinPremiereDate: new Date(today - ((badges.newEpisodesDays || 7) - 1) * 86400000).toISOString(),
+            MaxPremiereDate: new Date(today + 86400000 - 1000).toISOString(),
+            EnableImages: false, EnableUserData: false, EnableTotalRecordCount: false
+        })
+            .then(function (result) {
+                var set = {};
+                (result.Items || []).forEach(function (e) {
+                    if (e.SeriesId) {
+                        set[e.SeriesId] = true;
+                    }
+                });
+                newSeries = set;
+            })
+            .catch(function () { newSeries = before || {}; /* offline or forbidden: what was known stays; asked again later */ })
+            .then(function () {
+                newSeriesLoading = false;
+                newSeriesUser = user;
+                newSeriesAt = Date.now();
+                if (before && newSeries !== before) {
+                    newSeriesRedraw(before, newSeries);
+                }
+                badgePlaceSoon();
+                if (!badgeIo) {
+                    badgeSync();
+                }
+            });
+    }
+
+    /** Series cards whose answer changed (the days ran out, a premiere came) get their badges placed again. */
+    function newSeriesRedraw(before, after) {
+        var cards = document.querySelectorAll(badgeItems('[data-type="Series"][data-jc-badges]'));
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            var id = card.getAttribute('data-id');
+            if (!before[id] === !after[id]) {
+                continue;
+            }
+            var boxes = card.querySelectorAll('.jellycanvas-badges');
+            for (var b = 0; b < boxes.length; b++) {
+                boxes[b].remove();
+            }
+            card.removeAttribute('data-jc-badges');
+            card.removeAttribute('data-jc-badges-w');
+            // the watcher reports it when it comes near; one near now is placed now
+            if (!badgeIo || card.jcNear) {
+                badgeReady.push(card);
+            }
+        }
+    }
+
+    /** What a series card's badges say; undefined while the series with new episodes are being asked for. */
+    function seriesBadgeInfo(card) {
+        if (!newSeriesReady()) {
+            return undefined;
+        }
+        return newSeries[card.getAttribute('data-id')] ? { newepisodes: (NEW_EPISODES_WORDS[rowLang()] || NEW_EPISODES_WORDS.en) } : null;
+    }
+
     var badgeCache = {};
     var badgePending = {};
     var badgeQueue = [];
@@ -200,6 +333,7 @@
             '.jellycanvas-badges { position: absolute; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.27em; padding: 5px; max-width: 100%; box-sizing: border-box; pointer-events: none; font-size: ' + size + 'px; font-weight: 700; line-height: 1; }' +
             '.jellycanvas-badges-tl { top: 0; left: 0; } .jellycanvas-badges-tr { top: 0; right: 0; justify-content: flex-end; }' +
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
+            '.jellycanvas-badges.jellycanvas-badges-under { z-index: 0; }' +
             stacked + rows +
             '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 0.27em; padding: 0.27em 0.55em; border-radius: 0.36em; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
             colorful +
@@ -456,7 +590,9 @@
     var BADGE_RANKS = {
         '4K': 0, '1080p': 1, '720p': 2, 'SD': 3,
         'DV': 4, 'HDR': 5, 'HLG': 6,
-        'HEVC': 7, 'H264': 8, 'AV1': 9, 'VP9': 10, 'MPEG-4': 11
+        'HEVC': 7, 'H264': 8, 'AV1': 9, 'VP9': 10, 'MPEG-4': 11,
+        // a rank past the fixed ones and the sound families: Vivid's 155 degrees, used by nothing else
+        'NEW': 325
     };
 
     // Hues by rank (see BADGE_RANKS and the sound families in badgeRank):
@@ -581,7 +717,7 @@
             return el;
         }
         el.appendChild(document.createTextNode(value));
-        badgeColor(el, id, value);
+        badgeColor(el, id, id === 'newepisodes' ? 'NEW' : value);
         if (id === 'sound') {
             // A long sound name ("TrueHD Atmos 7.1") has a short form for a
             // card where the two top corners would otherwise not fit side by
@@ -733,6 +869,11 @@
                     }
                 }
                 (els.length === undefined ? [els] : els).forEach(function (el) { box.appendChild(el); });
+                if (id === 'newepisodes') {
+                    // It may run past its quarter; Jellyfin's own marks (the
+                    // unplayed count) and the other badges lie over it.
+                    box.classList.add('jellycanvas-badges-under');
+                }
             });
             if (box) {
                 host.appendChild(box);
@@ -1009,6 +1150,16 @@
                 continue;
             }
             var id = card.getAttribute('data-id');
+            if (card.getAttribute('data-type') === 'Series') {
+                var seriesInfo = seriesBadgeInfo(card);
+                if (seriesInfo === undefined) {
+                    keep.push(card); // waits for the series with new episodes
+                } else {
+                    budget--;
+                    renderBadges(card, seriesInfo);
+                }
+                continue;
+            }
             if (badgeCache.hasOwnProperty(id)) {
                 budget--;
                 renderBadges(card, badgeCache[id]);
@@ -1077,6 +1228,7 @@
         if ((badges.hideOnMobile && isMobile()) || (badges.hideOnTv && isTv())) {
             return;
         }
+        newSeriesTick();
         var io = badgeWatcher();
         if (!io) {
             badgeSyncMeasured();
@@ -1086,7 +1238,7 @@
         for (var i = 0; i < cards.length; i++) {
             var card = cards[i];
             var type = card.getAttribute('data-type');
-            if ((type && !BADGE_TYPES.test(type)) || card.closest('.personCard, .mainDrawer')) {
+            if (!badgeType(type) || card.closest('.personCard, .mainDrawer')) {
                 card.setAttribute('data-jc-badges', 'skip');
                 continue;
             }
@@ -1105,7 +1257,7 @@
         for (var i = 0; i < cards.length; i++) {
             var card = cards[i];
             var type = card.getAttribute('data-type');
-            if ((type && !BADGE_TYPES.test(type)) || card.closest('.personCard, .mainDrawer')) {
+            if (!badgeType(type) || card.closest('.personCard, .mainDrawer')) {
                 card.setAttribute('data-jc-badges', 'skip');
                 continue;
             }
@@ -1114,6 +1266,15 @@
                 continue;
             }
             var id = card.getAttribute('data-id');
+            if (card.getAttribute('data-type') === 'Series') {
+                var info = seriesBadgeInfo(card);
+                if (info === undefined || budget-- <= 0) {
+                    more = true;
+                } else {
+                    renderBadges(card, info);
+                }
+                continue;
+            }
             if (badgeCache.hasOwnProperty(id)) {
                 if (budget-- <= 0) {
                     more = true;

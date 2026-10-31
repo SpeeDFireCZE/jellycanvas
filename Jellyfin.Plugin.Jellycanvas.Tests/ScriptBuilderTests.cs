@@ -37,6 +37,25 @@ public class ScriptBuilderTests
         Assert.Contains("\"subtitleLanguages\":\"Codes\"", js, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(7, 7)]
+    [InlineData(0, 1)]
+    [InlineData(90, 30)]
+    public void The_new_episodes_badge_goes_into_the_script_with_its_days(int days, int expected)
+    {
+        // A series card's badge while an episode premiered within the last
+        // days; on its own in a corner it is enough to turn the badges on.
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true, CardBadges = new CardBadgeSettings { Enabled = true, TopLeft = "NewEpisodes", BottomLeft = "", NewEpisodesDays = days } },
+        };
+
+        var js = ScriptBuilder.Build(cfg);
+
+        Assert.Contains("\"corners\":{\"tl\":[\"newepisodes\"],\"tr\":[],\"bl\":[],\"br\":[]}", js, StringComparison.Ordinal);
+        Assert.Contains($"\"newEpisodesDays\":{expected}", js, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void Rotating_backdrop_goes_into_the_script()
     {

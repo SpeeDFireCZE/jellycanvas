@@ -198,7 +198,9 @@ so the way there and back is: export in the designer, upload on the site
 - **Card badges** (script) - resolution, HDR, codec, sound, audio and
   subtitle languages (flags or codes, preferred languages first, at most
   1-4) in the corners of movie and episode cards; dark, accent, glass, or
-  a color per value from a chosen range.
+  a color per value from a chosen range. *New episodes* on a series' card
+  while an episode in the library premiered within the last 1-30 days (an
+  old episode added now does not count).
 - **Seerr rows** (script) - rows on the home page from Jellyseerr /
   Overseerr: coming soon (requested), recently requested, waiting for
   approval, now available, trending, popular movies and series.

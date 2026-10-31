@@ -1054,7 +1054,7 @@
                         <details class="jc-section" data-nodevice="1" data-section="badges" id="jcBadgesSection" hidden>
                             <summary><span class="material-icons" aria-hidden="true">sell</span><span data-i18n="badges">Card badges (resolution, languages)</span><span class="jc-caret"></span></summary>
                             <div class="jc-section-body">
-                                <div class="jc-hint" data-i18n="badgesHint">Resolution, HDR and the audio / subtitle languages on movie and episode cards, read from the media streams by the client script (one request per batch of cards, cached). Needs the script features enabled. Shows in the preview after Save or Apply.</div>
+                                <div class="jc-hint" data-i18n="badgesHint">Resolution, HDR and the audio / subtitle languages on movie and episode cards, read from the media streams by the client script (one request per batch of cards, cached); "New episodes" on series cards. Needs the script features enabled. Shows in the preview after Save or Apply.</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.Enabled"><span data-i18n="badgesEnabled">Show badges on cards</span></label></div>
                                 <h4 class="jc-sub" data-i18n="badgesCornersHeading">Corners</h4>
                                 <div class="jc-hint" data-i18n="badgesCornersHint">Drag each badge into a corner of the card, or into "Off" to drop it.</div>
@@ -1114,6 +1114,9 @@
                                     <label class="inputLabel inputLabelUnfocused" for="jcBadgeSubPref" data-i18n="badgeSubtitlePreferred">Preferred subtitle languages</label>
                                     <input is="emby-input" type="text" id="jcBadgeSubPref" data-path="Scripts.CardBadges.SubtitlePreferred" placeholder="cs, en">
                                 </div>
+                                <h4 class="jc-sub" data-i18n="badgeNewHeading">New episodes (series)</h4>
+                                <div class="jc-hint" data-i18n="badgeNewHint">Drag "New episodes" into a corner and a series' card gets it while an episode in the library premiered within the last days, today counted. An old episode added now does not bring it, nor one whose premiere is still to come; it goes on its own when the days are over. It may run past its quarter of the card and lies under Jellyfin's own marks (the unplayed count). One request for all series, asked again after half an hour (a reload asks at once).</div>
+                                <div class="jc-row" data-slider="Scripts.CardBadges.NewEpisodesDays" data-min="1" data-max="30" data-unit="" data-i18n-label="badgeNewDays">Days since the premiere</div>
                                 <h4 class="jc-sub" data-i18n="badgeLookHeading">Size and devices</h4>
                                 <div class="jc-row" data-slider="Scripts.CardBadges.Scale" data-min="50" data-max="200" data-unit="%" data-i18n-label="badgeScale">Size</div>
                                 <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="Scripts.CardBadges.HideOnMobile"><span data-i18n="badgesMobile">Hide on phones</span></label></div>

@@ -162,6 +162,7 @@ public static class ScriptBuilder
                 audioPreferred = LanguageList(cb.AudioPreferred),
                 subtitleMax = Math.Clamp(cb.SubtitleMax, 1, 4),
                 subtitlePreferred = LanguageList(cb.SubtitlePreferred),
+                newEpisodesDays = Math.Clamp(cb.NewEpisodesDays, 1, 30),
             }
             : null;
 
@@ -214,7 +215,7 @@ public static class ScriptBuilder
         => (text ?? string.Empty).Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(c => c.ToUpperInvariant()).Distinct().ToArray();
 
-    private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles" };
+    private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles", "newepisodes" };
 
     /// <summary>The known badge ids in a corner's list, in the order given.</summary>
     private static string[] BadgeList(string? value)

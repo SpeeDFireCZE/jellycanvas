@@ -618,6 +618,9 @@ public class CardBadgeSettings
 
     /// <summary>Subtitle languages shown first when the item has them, in this order; the rest fill up by how widely spoken they are.</summary>
     public string SubtitlePreferred { get; set; } = string.Empty;
+
+    /// <summary>The "New episodes" badge on a series card: shown while an episode in the library premiered within this many days (1-30).</summary>
+    public int NewEpisodesDays { get; set; } = 7;
 }
 
 /// <summary>How the audio / subtitle languages are shown on a card.</summary>
@@ -635,7 +638,7 @@ public enum LanguageBadgeStyle
 
 // Badge ids (comma-separated per corner): resolution, hdr, codec (H264 /
 // HEVC / AV1), sound (Dolby Digital+ 5.1, DTS-HD 7.1...), audio (languages),
-// subtitles (languages).
+// subtitles (languages), newepisodes (series cards only).
 
 /// <summary>Colors. All in "#rrggbb" notation.</summary>
 public class ColorSettings
