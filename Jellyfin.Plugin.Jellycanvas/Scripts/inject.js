@@ -1781,11 +1781,9 @@
             return;
         }
         rowsStyle();
-        // Build (or keep) every row's element, then put them where they
-        // belong in the settings' order: the top rows one after another
-        // right after the slideshow, the bottom rows at the very end.
-        var top = [];
-        var bottom = [];
+        // Build (or keep) every row's element, then put each where it
+        // belongs (rowsPlace).
+        var placed = [];
         rowEntries().forEach(function (entry) {
             var row = entry.row;
             var items = entry.items;
@@ -1847,7 +1845,113 @@
             if (arrowsEl && scrollerEl) {
                 arrowsEl.hidden = scrollerEl.scrollWidth <= scrollerEl.clientWidth + 2;
             }
-            (row.position === 'Top' ? top : bottom).push(el);
+            placed.push({ el: el, position: row.position, after: row.after || '' });
+        });
+        rowsPlace(placed, container);
+    }
+
+    // The kinds of the viewer's home sections by position (Jellyfin's
+    // homesection0-9; Jellyfin's defaults where none is set), asked once.
+    var HOME_SECTIONS = ['smalllibrarytiles', 'resume', 'resumeaudio', 'resumebook', 'livetv', 'nextup', 'latestmedia', 'none', 'none', 'none'];
+    var homeKinds = null;
+    var homeKindsAsked = false;
+
+    function homeSectionKinds() {
+        var api = window.ApiClient;
+        var user = api && api.getCurrentUserId();
+        if (homeKinds || homeKindsAsked || !user) {
+            return homeKinds;
+        }
+        homeKindsAsked = true;
+        var done = function (prefs) {
+            var custom = (prefs && prefs.CustomPrefs) || {};
+            homeKinds = HOME_SECTIONS.map(function (fallback, i) {
+                var v = custom['homesection' + i];
+                return v ? String(v).toLowerCase() : fallback;
+            });
+            rowsRender();
+        };
+        api.getJSON(api.getUrl('DisplayPreferences/usersettings', { userId: user, client: 'emby' })).then(done, function () { done(null); });
+        return null;
+    }
+
+    /**
+     * The element a row goes right after: the viewer's section of that kind
+     * (Jellyfin renders it as .section<N>, N its position - also while it
+     * is empty and hidden, so the row is where the section would be), or
+     * that library's part of "Recently added". Null: the viewer has no such
+     * section - the row goes by its position then.
+     */
+    function rowAnchor(after, container) {
+        var kind = after;
+        var library = '';
+        if (after.indexOf('latestmedia:') === 0) {
+            kind = 'latestmedia';
+            library = after.slice('latestmedia:'.length);
+        }
+        var at = homeKinds ? homeKinds.indexOf(kind) : -1;
+        if (at < 0) {
+            return null;
+        }
+        var section = null;
+        for (var i = 0; i < container.children.length && !section; i++) {
+            if (container.children[i].classList.contains('section' + at)) {
+                section = container.children[i];
+            }
+        }
+        if (!section || !library) {
+            return section;
+        }
+        var links = section.querySelectorAll('a[href*="topParentId="]');
+        for (var k = 0; k < links.length; k++) {
+            var m = /[?&]topParentId=([^&]+)/.exec(links[k].getAttribute('href'));
+            if (m && m[1].toLowerCase() === library) {
+                // the library's own block in the section
+                var part = links[k];
+                while (part && part.parentElement !== section) {
+                    part = part.parentElement;
+                }
+                return part;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Puts each row where it belongs, in the given order (the library's rows
+     * first, then Seerr's): under its section, the rows of one section after
+     * one another; otherwise the top rows right after the slideshow, the
+     * bottom ones at the very end. A row under a section waits (unshown)
+     * until the viewer's sections are known - one request.
+     */
+    function rowsPlace(list, container) {
+        var kinds = homeSectionKinds();
+        var top = [];
+        var bottom = [];
+        var under = [];
+        list.forEach(function (r) {
+            if (r.after && !kinds) {
+                return;
+            }
+            var anchor = r.after ? rowAnchor(r.after, container) : null;
+            if (anchor) {
+                under.push({ el: r.el, anchor: anchor });
+            } else {
+                (r.position === 'Top' ? top : bottom).push(r.el);
+            }
+        });
+        var lastUnder = [];
+        under.forEach(function (u) {
+            var prev = u.anchor;
+            for (var j = 0; j < lastUnder.length; j++) {
+                if (lastUnder[j].anchor === u.anchor) {
+                    prev = lastUnder[j].el;
+                }
+            }
+            if (u.el.parentElement !== prev.parentElement || prev.nextSibling !== u.el) {
+                prev.parentElement.insertBefore(u.el, prev.nextSibling);
+            }
+            lastUnder.push(u);
         });
         var prev = document.getElementById(SS_ID);
         top.forEach(function (el) {
