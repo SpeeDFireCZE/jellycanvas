@@ -37,23 +37,66 @@ public class ScriptBuilderTests
         Assert.Contains("\"subtitleLanguages\":\"Codes\"", js, StringComparison.Ordinal);
     }
 
-    [Theory]
-    [InlineData(7, 7)]
-    [InlineData(0, 1)]
-    [InlineData(90, 30)]
-    public void The_new_episodes_badge_goes_into_the_script_with_its_days(int days, int expected)
+    [Fact]
+    public void Jellyfin_rows_go_into_the_script_without_seerr()
     {
-        // A series card's badge while an episode premiered within the last
-        // days; on its own in a corner it is enough to turn the badges on.
+        // A row from the library itself: no Seerr address needed; the days
+        // and the count are kept in range, a row turned off is left out.
         var cfg = new PluginConfiguration
         {
-            Scripts = new ScriptSettings { Enabled = true, CardBadges = new CardBadgeSettings { Enabled = true, TopLeft = "NewEpisodes", BottomLeft = "", NewEpisodesDays = days } },
+            Scripts = new ScriptSettings { Enabled = true },
+            JellyfinRows = new JellyfinRowSettings
+            {
+                Rows =
+                {
+                    new JellyfinRow { Kind = JellyfinRowKind.NewEpisodes, Days = 90, Limit = 0 },
+                    new JellyfinRow { Enabled = false, Title = "Off" },
+                },
+            },
         };
 
         var js = ScriptBuilder.Build(cfg);
 
-        Assert.Contains("\"corners\":{\"tl\":[\"newepisodes\"],\"tr\":[],\"bl\":[],\"br\":[]}", js, StringComparison.Ordinal);
-        Assert.Contains($"\"newEpisodesDays\":{expected}", js, StringComparison.Ordinal);
+        Assert.NotEqual(string.Empty, js);
+        Assert.Contains("\"jellyfinRows\":[{\"id\":\"jf1\",\"kind\":\"NewEpisodes\",\"title\":\"\",\"position\":\"Top\",\"after\":\"\",\"limit\":1,\"days\":30}]", js, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("NextUp", "nextup")]
+    [InlineData(" latestmedia:ABC ", "latestmedia:abc")]
+    [InlineData("resume", "resume")]
+    [InlineData("bogus", "")]
+    [InlineData("latestmedia:", "")]
+    public void A_row_s_place_under_a_section_goes_into_the_script(string after, string expected)
+    {
+        // Under a kind of home section (or one library's recently added);
+        // anything else is no place - the row goes by Top / Bottom then.
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true },
+            Seerr = new SeerrSettings { Url = "http://seerr:5055", ApiKey = "k", Rows = { new SeerrRow { After = after } } },
+            JellyfinRows = new JellyfinRowSettings { Rows = { new JellyfinRow { After = after } } },
+        };
+
+        var js = ScriptBuilder.Build(cfg);
+
+        Assert.Contains($"\"position\":\"Top\",\"after\":\"{expected}\"", js, StringComparison.Ordinal); // the Jellyfin row
+        Assert.Contains($"\"after\":\"{expected}\",\"limit\":16,\"showTitle\"", js, StringComparison.Ordinal); // the Seerr row
+    }
+
+    [Fact]
+    public void The_new_episodes_badge_is_gone()
+    {
+        // It gave way to the row; a corner still naming it just loses it.
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true, CardBadges = new CardBadgeSettings { Enabled = true, TopLeft = "newepisodes,resolution", BottomLeft = "" } },
+        };
+
+        var js = ScriptBuilder.Build(cfg);
+
+        Assert.Contains("\"tl\":[\"resolution\"]", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"newEpisodesDays\":", js, StringComparison.Ordinal);
     }
 
     [Fact]

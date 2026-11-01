@@ -619,8 +619,6 @@ public class CardBadgeSettings
     /// <summary>Subtitle languages shown first when the item has them, in this order; the rest fill up by how widely spoken they are.</summary>
     public string SubtitlePreferred { get; set; } = string.Empty;
 
-    /// <summary>The "New episodes" badge on a series card: shown while an episode in the library premiered within this many days (1-30).</summary>
-    public int NewEpisodesDays { get; set; } = 7;
 }
 
 /// <summary>How the audio / subtitle languages are shown on a card.</summary>
@@ -638,7 +636,7 @@ public enum LanguageBadgeStyle
 
 // Badge ids (comma-separated per corner): resolution, hdr, codec (H264 /
 // HEVC / AV1), sound (Dolby Digital+ 5.1, DTS-HD 7.1...), audio (languages),
-// subtitles (languages), newepisodes (series cards only).
+// subtitles (languages).
 
 /// <summary>Colors. All in "#rrggbb" notation.</summary>
 public class ColorSettings
@@ -1279,6 +1277,9 @@ public class SeerrRow
 
     /// <summary>Who requested it, on the poster (request rows).</summary>
     public bool ShowRequester { get; set; } = false;
+
+    /// <summary>Under which kind of home section the row goes (see <see cref="JellyfinRow.After"/>); empty = by <see cref="Position"/>.</summary>
+    public string After { get; set; } = string.Empty;
 }
 
 /// <summary>What a Seerr row is limited to.</summary>
@@ -1294,6 +1295,47 @@ public enum RowPosition
 {
     Top,
     Bottom,
+}
+
+/// <summary>What a row from the library lists.</summary>
+public enum JellyfinRowKind
+{
+    /// <summary>Series you have watched with an episode premiered within the last days that you have not seen.</summary>
+    NewEpisodes,
+}
+
+/// <summary>A row on the home page from the library itself (no Seerr needed).</summary>
+public class JellyfinRow
+{
+    public bool Enabled { get; set; } = true;
+
+    public JellyfinRowKind Kind { get; set; } = JellyfinRowKind.NewEpisodes;
+
+    /// <summary>Heading; empty = the kind's default in the viewer's language.</summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Top or bottom - where the row goes without <see cref="After"/>, or when the viewer has no such section.</summary>
+    public RowPosition Position { get; set; } = RowPosition.Top;
+
+    /// <summary>
+    /// Under which kind of home section the row goes, whatever position the
+    /// viewer has it at: smalllibrarytiles, librarybuttons, resume,
+    /// resumeaudio, resumebook, activerecordings, livetv, nextup,
+    /// latestmedia, or latestmedia:&lt;library id&gt;. Empty = by <see cref="Position"/>.
+    /// </summary>
+    public string After { get; set; } = string.Empty;
+
+    /// <summary>Posters at most (1-50).</summary>
+    public int Limit { get; set; } = 16;
+
+    /// <summary>New episodes: days since the premiere (1-30, today counted).</summary>
+    public int Days { get; set; } = 7;
+}
+
+/// <summary>Rows on the home page from the library.</summary>
+public class JellyfinRowSettings
+{
+    public System.Collections.Generic.List<JellyfinRow> Rows { get; set; } = new();
 }
 
 /// <summary>Dialogs, menus and popovers (<c>.dialog</c>, <c>.MuiMenu-paper</c>...).</summary>
@@ -1895,6 +1937,8 @@ public class PluginConfiguration : BasePluginConfiguration
     public ScriptSettings Scripts { get; set; } = new();
 
     public SeerrSettings Seerr { get; set; } = new();
+
+    public JellyfinRowSettings JellyfinRows { get; set; } = new();
 
     /// <summary>Custom CSS appended after the generated block - for anything the controls do not cover.</summary>
     public string ExtraCss { get; set; } = string.Empty;

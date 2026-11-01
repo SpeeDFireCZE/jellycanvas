@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
@@ -84,6 +85,7 @@ public static class ScriptBuilder
                     media = t.r.Media.ToString(),
                     title = (t.r.Title ?? string.Empty).Trim(),
                     position = t.r.Position.ToString(),
+                    after = RowAfter(t.r.After),
                     limit = Math.Clamp(t.r.Limit, 1, 60),
                     showTitle = t.r.ShowTitle,
                     showSubtitle = t.r.ShowSubtitle,
@@ -93,7 +95,20 @@ public static class ScriptBuilder
                     showRequester = t.r.ShowRequester,
                 })
                 .ToArray();
-        var hasRows = rows.Length > 0;
+        // Rows from the library itself: no Seerr needed.
+        var jellyfinRows = c.JellyfinRows.Rows.Select((r, i) => (r, i)).Where(t => t.r.Enabled)
+            .Select(t => (object)new
+            {
+                id = "jf" + (t.i + 1).ToString(CultureInfo.InvariantCulture),
+                kind = t.r.Kind.ToString(),
+                title = (t.r.Title ?? string.Empty).Trim(),
+                position = t.r.Position.ToString(),
+                after = RowAfter(t.r.After),
+                limit = Math.Clamp(t.r.Limit, 1, 50),
+                days = Math.Clamp(t.r.Days, 1, 30),
+            })
+            .ToArray();
+        var hasRows = rows.Length > 0 || jellyfinRows.Length > 0;
         // An applied theme is reason enough: the script keeps open pages on
         // the theme just applied (see "theme" in inject.js).
         if (c.CssOnly || !s.Enabled || (!hasButtons && !hasSlideshow && !hasInfoBar && !hasBadges && !hasBackdrop && !hasRows && !c.Enabled))
@@ -160,7 +175,6 @@ public static class ScriptBuilder
                 audioPreferred = LanguageList(cb.AudioPreferred),
                 subtitleMax = Math.Clamp(cb.SubtitleMax, 1, 4),
                 subtitlePreferred = LanguageList(cb.SubtitlePreferred),
-                newEpisodesDays = Math.Clamp(cb.NewEpisodesDays, 1, 30),
             }
             : null;
 
@@ -173,7 +187,7 @@ public static class ScriptBuilder
         var seerrOpen = viaButton ? openWith : 0;
 
         var theme = c.Enabled;
-        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, seerrOpen, devices, theme }, JsonOptions);
+        var json = JsonSerializer.Serialize(new { buttons, slideshow, infoBar, badges, backdrop, banner, dashboard, rows, jellyfinRows, seerrOpen, devices, theme }, JsonOptions);
 
         return Template.Value.Replace(Placeholder, json, StringComparison.Ordinal);
     }
@@ -213,7 +227,36 @@ public static class ScriptBuilder
         => (text ?? string.Empty).Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(c => c.ToUpperInvariant()).Distinct().ToArray();
 
-    private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles", "newepisodes" };
+    private static readonly string[] BadgeIds = { "resolution", "hdr", "codec", "sound", "audio", "subtitles" };
+
+    /// <summary>The kinds of home section a row can go under (Jellyfin's homesection values).</summary>
+    private static readonly string[] SectionKinds = { "smalllibrarytiles", "librarybuttons", "resume", "resumeaudio", "resumebook", "activerecordings", "livetv", "nextup", "latestmedia" };
+
+    /// <summary>
+    /// A row's place: a kind of home section, or "latestmedia:&lt;library
+    /// id&gt;" (the id as letters, digits and dashes only - the script
+    /// compares it with the page's links). Anything else: "" (by position).
+    /// </summary>
+    private static string RowAfter(string? value)
+    {
+        var v = (value ?? string.Empty).Trim().ToLowerInvariant();
+        if (SectionKinds.Contains(v))
+        {
+            return v;
+        }
+
+        const string Latest = "latestmedia:";
+        if (v.StartsWith(Latest, StringComparison.Ordinal))
+        {
+            var id = v.Substring(Latest.Length);
+            if (id.Length > 0 && id.All(ch => (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-'))
+            {
+                return v;
+            }
+        }
+
+        return string.Empty;
+    }
 
     /// <summary>The known badge ids in a corner's list, in the order given.</summary>
     private static string[] BadgeList(string? value)
