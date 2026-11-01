@@ -3,22 +3,57 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.3.4 - 2026-11-01
 
-- Casting to another device: Jellyfin shows the device's name in the bar instead of the cast icon, and a long name wrapped into a column that made the bar several lines tall. The name now stays on one line, cut short with an ellipsis; on a phone and in the sidebar layout, where there is no room for it, the icon alone. The button is marked while casting (the accent with a light fill; the bar's contrasting color on a bar in the accent, as with neo-brutalism) - the bar's button style had taken Jellyfin's own color away. CSS only too.
-- TV: a focused button on the item page (Play, Mark played, More...) and in dialogs is filled with the focus color, its text in the contrasting one. The button look's own fill had taken Jellyfin's focus fill away and left dark text on a dim button. The play button, in the accent already, gets a ring. CSS only too.
-- TV, track selections as chips: each field is as wide as its text again, instead of the whole row - the script measures the text in the TV's own font, and again once a font arrives or the choice changes. In *CSS only* the fields keep the whole row, which an older TV cannot get wrong.
-- The mark of an open custom button is no longer put into the CSS in *CSS only* (there are no custom buttons without the script), and on a bar in the accent it takes the bar's contrasting color.
+**Rows from your own library, a place for every home row, and fixes for
+the TV and phones.** New *Jellyfin rows* on the home page: the first kind,
+*New episodes*, lists the series each viewer watches that have an episode
+premiered within the last days they have not seen yet. Every home row -
+Seerr's too - can now go under a section of the home page (Next up,
+Continue watching, one library's Recently added...), wherever each viewer
+has that section. On the TV a focused button stands out again and the
+track selections fit their text; casting from a phone no longer stretches
+the bar.
+
+Updating is enough - the plugin brings the CSS in Branding up to date at
+startup, and open pages pick it up on their own (a browser holding the old
+page in its cache may need one Ctrl+F5). Jellyfin rows start empty: add
+one under *Jellyfin rows* in the plugin's settings; Seerr rows keep their
+place.
+
+### Home rows
+
 - **New: Jellyfin rows** - rows on the home page from the library itself (no Seerr needed), in a section of their own beside the Seerr rows, added the same way. First kind: **New episodes** - the series a viewer watches (some of it seen) with an episode premiered within the last days (7 by default, 1-30, the viewer's today counted) that they have not seen yet, one card per series with a "New episodes" badge, to the series' page. A series leaves once all its new episodes are watched or the days are over; an old episode added now does not bring it, nor a premiere still to come; a row with nothing to show is not shown. Asked each time the home page shows. Needs the script (not in *CSS only*).
 - **New: a row's place under a section** - Seerr rows and Jellyfin rows go at the top, at the bottom, or under a kind of home section (My media, Continue watching, Next up, Recently added - the whole block or one library's part...), wherever the viewer has that section on their home page; a viewer without it gets the row at the top. Rows under one section come in the lists' order (Jellyfin rows first), and both lists have up / down buttons. Existing Seerr rows keep their place.
+
+### TV
+
+- TV: a focused button on the item page (Play, Mark played, More...) and in dialogs is filled with the focus color, its text in the contrasting one. The button look's own fill had taken Jellyfin's focus fill away and left dark text on a dim button. The play button, in the accent already, gets a ring. CSS only too.
+- TV, track selections as chips: each field is as wide as its text again, instead of the whole row - the script measures the text in the TV's own font, and again once a font arrives or the choice changes. In *CSS only* the fields keep the whole row, which an older TV cannot get wrong.
+- Item page, chips (track selections, tags, links): a part the item does not have (a series has no track selections) no longer shows up as an empty block.
+
+### Toolbar and casting
+
+- Casting to another device: Jellyfin shows the device's name in the bar instead of the cast icon, and a long name wrapped into a column that made the bar several lines tall. The name now stays on one line, cut short with an ellipsis; on a phone and in the sidebar layout, where there is no room for it, the icon alone. The button is marked while casting (the accent with a light fill; the bar's contrasting color on a bar in the accent, as with neo-brutalism) - the bar's button style had taken Jellyfin's own color away. CSS only too.
 - Custom toolbar buttons: a button whose overlay is open now shows it, as the current library's link does - an icon in the accent color, a link as the selected link, an entry in the phone menu as the selected entry - and stops when the overlay closes (a click, Esc, leaving the page). A link-placed button no longer takes the look of the selected link when the page was loaded on it.
-- Settings page preview: with "Remember me" unticked at sign-in, the preview asked for the password again - and the client starting in it dropped the stored sign-in, so the next page load asked too. The preview now uses the admin's own sign-in and changes nothing the browser keeps. A small guard (put at the top of index.html by File Transformation; run by the settings page itself otherwise) gives the preview's client automatic sign-in, keeps its writes of the stored sign-in to itself, and refuses signing in or out inside the preview, which used to end the admin's own session. Switching preview pages quickly could sign the admin out as well - fixed.
+- The mark of an open custom button is no longer put into the CSS in *CSS only* (there are no custom buttons without the script), and on a bar in the accent it takes the bar's contrasting color.
+
+### Edit metadata
+
 - Edit metadata: an empty drop-down (Custom rating, 3D format, an unset language or country) no longer shrinks to a sliver with its arrow hanging out of it - in the browsers that draw the list as part of the page (Chrome and Edge 135+).
 - Edit metadata: the overview (and every text field of several lines) no longer cuts its text in the corners when the buttons are rounded a lot. **New setting** *Buttons → Multi-line text field radius*: by default (-1) such a field follows the buttons' radius up to 12 px, so with a pill (999) it now gets 12 px; any other value is used as set.
+
+### Admin pages
+
 - Admin pages on a phone: a user's tabs (Profile, Access, Parental Control, Password) were wider than the screen and Jellyfin cut the row off, so the Password tab could not be reached. The row now scrolls sideways (a Jellyfin bug; fixed wherever the theme reaches the admin pages, so not in *CSS only*).
 - Admin pages: the user cards on the Users page sit apart again. Each card's box hung out of its card, so two rows touched (with a hover effect on) or lost the bottom of their rounded corners (without).
-- Item page, track selections as chips: on the TV each field takes the whole row, as Jellyfin's own fields do there. An older TV measured a chip before its font arrived and cut the text.
-- Item page, chips (track selections, tags, links): a part the item does not have (a series has no track selections) no longer shows up as an empty block.
+
+### Settings page
+
+- Settings page preview: with "Remember me" unticked at sign-in, the preview asked for the password again - and the client starting in it dropped the stored sign-in, so the next page load asked too. The preview now uses the admin's own sign-in and changes nothing the browser keeps. A small guard (put at the top of index.html by File Transformation; run by the settings page itself otherwise) gives the preview's client automatic sign-in, keeps its writes of the stored sign-in to itself, and refuses signing in or out inside the preview, which used to end the admin's own session. Switching preview pages quickly could sign the admin out as well - fixed.
+
+### Development
+
 - Development: the local test instance runs on Linux too - `test/start-jellyfin.sh` builds the plugin, installs it and starts a portable Jellyfin 12 with jellyfin-ffmpeg on port 3004, `test/setup-jellyfin.sh` completes the wizard and adds the libraries. See *Development* in the README.
 
 ## 1.3.3 - 2026-10-07
