@@ -2701,6 +2701,7 @@
                     var was = fields[i].closest('.selectContainer');
                     if (was) {
                         was.classList.remove('jc-fit');
+                        was.style.removeProperty('width');
                     }
                 }
             }
@@ -2733,6 +2734,15 @@
             sel.style.setProperty('width', Math.ceil(w + 4) + 'px', 'important');
             sel.setAttribute('data-jc-fit', text);
             box.classList.add('jc-fit');
+            // The box must hold the field: where an older TV sized it short
+            // (it may leave a part of the label out), the field would run
+            // past it - the arrow, set at the box's right, in the text and
+            // the next box over this one. Measured as laid out, and widened.
+            box.style.removeProperty('width');
+            var over = sel.getBoundingClientRect().right - box.getBoundingClientRect().right;
+            if (over > 1) {
+                box.style.setProperty('width', Math.ceil(box.getBoundingClientRect().width + over) + 'px', 'important');
+            }
         }
     }
 

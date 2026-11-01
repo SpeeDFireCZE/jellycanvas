@@ -2290,6 +2290,11 @@ public static class CssBuilder
                         sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections {{ --jc-fit: 1; }}");
                         sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer.jc-fit {{ flex: 0 0 auto !important; min-width: 0 !important; margin: 0 12px 8px 0 !important; }}");
                         sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer.jc-fit > select {{ flex: 0 0 auto !important; }}");
+                        // Jellyfin's label takes 6.25em by flex-basis; an older TV
+                        // leaves a flex-basis out of the box's own width, so the
+                        // field ran past the box (the arrow, at the box's right,
+                        // in its text; the next box over it). As a width it counts.
+                        sb.AppendLine($"{x.TvScope} #itemDetailPage .trackSelections .selectContainer.jc-fit > .selectLabel {{ width: 6.25em !important; flex: 0 0 auto !important; }}");
                     }
                 }
                 break;

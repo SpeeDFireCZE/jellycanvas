@@ -1016,6 +1016,9 @@ public class CssBuilderTests
         const string fit = "html.layout-tv #itemDetailPage .trackSelections .selectContainer.jc-fit { flex: 0 0 auto !important; min-width: 0 !important; margin: 0 12px 8px 0 !important; }";
 
         Assert.Contains(fit, CssBuilder.Build(cfg), StringComparison.Ordinal);
+        // The label takes 6.25em by Jellyfin's flex-basis; an older TV leaves
+        // a flex-basis out of a box's own width, and the field ran past it.
+        Assert.Contains("html.layout-tv #itemDetailPage .trackSelections .selectContainer.jc-fit > .selectLabel { width: 6.25em !important; flex: 0 0 auto !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
         // the script fits only where the CSS asks it to
         Assert.Contains("html.layout-tv #itemDetailPage .trackSelections { --jc-fit: 1; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
         cfg.CssOnly = true;
