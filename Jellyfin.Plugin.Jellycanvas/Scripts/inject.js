@@ -1771,7 +1771,9 @@
 
     /** Every row with its data and its card: the library's rows first, then Seerr's. */
     function rowEntries() {
-        return jfRows.map(function (r) { return { row: r, items: jfRowsData[r.id], card: jfRowCard }; })
+        var api = window.ApiClient;
+        var user = api && api.getCurrentUserId();
+        return jfRows.map(function (r) { return { row: r, items: jfRowsUser[r.id] === user ? jfRowsData[r.id] : null, card: jfRowCard }; })
             .concat(rows.map(function (r) { return { row: r, items: rowsData[r.id], card: rowCard }; }));
     }
 
@@ -1850,29 +1852,61 @@
         rowsPlace(placed, container);
     }
 
-    // The kinds of the viewer's home sections by position (Jellyfin's
-    // homesection0-9; Jellyfin's defaults where none is set), asked once.
+    // The kinds of the viewer's home sections by position, built the way
+    // Jellyfin builds them: homesection0-9, its default where none is set,
+    // "folders" for the first default; on the TV My media goes first when
+    // the viewer has neither kind of it (every section one further down).
+    // With them the libraries Recently added shows, in its order: the
+    // viewer's libraries, without the ones they left out of it and the
+    // kinds it never shows. Asked when a row has a place under a section,
+    // again each time the home page shows (the order may have changed)
+    // and for another user; the answer in hand serves meanwhile.
     var HOME_SECTIONS = ['smalllibrarytiles', 'resume', 'resumeaudio', 'resumebook', 'livetv', 'nextup', 'latestmedia', 'none', 'none', 'none'];
+    var LATEST_NEVER = ['playlists', 'livetv', 'boxsets', 'channels', 'folders'];
     var homeKinds = null;
-    var homeKindsAsked = false;
+    var homeLatest = [];
+    var homeKindsUser = null;
+    var homeKindsAsking = false;
+    var homeKindsStale = false;
 
     function homeSectionKinds() {
         var api = window.ApiClient;
         var user = api && api.getCurrentUserId();
-        if (homeKinds || homeKindsAsked || !user) {
-            return homeKinds;
+        if (!user) {
+            return null;
         }
-        homeKindsAsked = true;
-        var done = function (prefs) {
-            var custom = (prefs && prefs.CustomPrefs) || {};
-            homeKinds = HOME_SECTIONS.map(function (fallback, i) {
-                var v = custom['homesection' + i];
-                return v ? String(v).toLowerCase() : fallback;
+        if (homeKindsUser !== user) {
+            homeKinds = null;
+        }
+        if ((!homeKinds || homeKindsStale) && !homeKindsAsking) {
+            homeKindsAsking = true;
+            homeKindsStale = false;
+            var prefs = api.getJSON(api.getUrl('DisplayPreferences/usersettings', { userId: user, client: 'emby' }));
+            var views = api.getJSON(api.getUrl('UserViews', { userId: user }));
+            var me = api.getJSON(api.getUrl('Users/' + user));
+            Promise.all([prefs, views, me]).then(function (r) {
+                var custom = (r[0] && r[0].CustomPrefs) || {};
+                var kinds = HOME_SECTIONS.map(function (fallback, i) {
+                    var v = custom['homesection' + i] ? String(custom['homesection' + i]).toLowerCase() : fallback;
+                    return v === 'folders' ? HOME_SECTIONS[0] : v;
+                });
+                if (isTv() && kinds.indexOf('smalllibrarytiles') < 0 && kinds.indexOf('librarybuttons') < 0) {
+                    kinds.unshift('smalllibrarytiles');
+                }
+                var excluded = (r[2] && r[2].Configuration && r[2].Configuration.LatestItemsExcludes) || [];
+                homeLatest = ((r[1] && r[1].Items) || []).filter(function (v) {
+                    return v.Id && excluded.indexOf(v.Id) < 0 && (!v.CollectionType || LATEST_NEVER.indexOf(v.CollectionType) < 0);
+                }).map(function (v) { return String(v.Id).toLowerCase(); });
+                homeKinds = kinds;
+            }, function () {
+                homeKinds = homeKinds || HOME_SECTIONS.slice();
+            }).then(function () {
+                homeKindsUser = user;
+                homeKindsAsking = false;
+                rowsRender();
             });
-            rowsRender();
-        };
-        api.getJSON(api.getUrl('DisplayPreferences/usersettings', { userId: user, client: 'emby' })).then(done, function () { done(null); });
-        return null;
+        }
+        return homeKinds;
     }
 
     /**
@@ -1902,11 +1936,13 @@
         if (!section || !library) {
             return section;
         }
+        // The library's own block in the section: by its link where it has
+        // one; by its place among the libraries otherwise (on the TV the
+        // block's heading has no link, nor has a home videos' one).
         var links = section.querySelectorAll('a[href*="topParentId="]');
         for (var k = 0; k < links.length; k++) {
             var m = /[?&]topParentId=([^&]+)/.exec(links[k].getAttribute('href'));
             if (m && m[1].toLowerCase() === library) {
-                // the library's own block in the section
                 var part = links[k];
                 while (part && part.parentElement !== section) {
                     part = part.parentElement;
@@ -1914,7 +1950,14 @@
                 return part;
             }
         }
-        return null;
+        var nth = homeLatest.indexOf(library);
+        var blocks = [];
+        for (var b = 0; b < section.children.length; b++) {
+            if (section.children[b].classList.contains('verticalSection')) {
+                blocks.push(section.children[b]);
+            }
+        }
+        return nth >= 0 && nth < blocks.length ? blocks[nth] : null;
     }
 
     /**
@@ -1925,7 +1968,7 @@
      * until the viewer's sections are known - one request.
      */
     function rowsPlace(list, container) {
-        var kinds = homeSectionKinds();
+        var kinds = list.some(function (r) { return r.after; }) ? homeSectionKinds() : null;
         var top = [];
         var bottom = [];
         var under = [];
@@ -1995,6 +2038,7 @@
         var shown = !!rowsContainer();
         if (shown && !homeShown) {
             jfRows.forEach(function (r) { jfRowsStale[r.id] = true; });
+            homeKindsStale = true; // (the viewer may have changed the order meanwhile)
         }
         homeShown = shown;
         if (!shown) {
@@ -2018,12 +2062,13 @@
     var jfRowsLoading = {};
     var jfRowsStale = {};
     var jfRowsRetry = {};
+    var jfRowsUser = {}; // whose answer jfRowsData holds - another user's is not shown
     var homeShown = false;
 
     function jfRowsLoad(row) {
         var api = window.ApiClient;
         var user = api && api.getCurrentUserId();
-        var due = jfRowsStale[row.id] || !jfRowsData.hasOwnProperty(row.id) || (jfRowsRetry[row.id] && Date.now() >= jfRowsRetry[row.id]);
+        var due = jfRowsStale[row.id] || !jfRowsData.hasOwnProperty(row.id) || jfRowsUser[row.id] !== user || (jfRowsRetry[row.id] && Date.now() >= jfRowsRetry[row.id]);
         if (!user || jfRowsLoading[row.id] || !due) {
             return;
         }
@@ -2036,24 +2081,20 @@
         var now = new Date();
         var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
         api.getItems(user, {
-            Recursive: true, IncludeItemTypes: 'Episode', IsMissing: false,
+            Recursive: true, IncludeItemTypes: 'Episode', IsMissing: false, IsPlayed: false,
             MinPremiereDate: new Date(today - (row.days - 1) * 86400000).toISOString(),
             MaxPremiereDate: new Date(today + 86400000 - 1000).toISOString(),
             EnableUserData: true, EnableImages: false, EnableTotalRecordCount: false
         }).then(function (result) {
-            // per series: is a new episode still to watch, and the latest premiere
-            var unseen = {};
+            // (unwatched new episodes only) per series: its latest premiere
             var latest = {};
             (result.Items || []).forEach(function (e) {
-                if (!e.SeriesId) {
+                if (!e.SeriesId || (e.UserData && e.UserData.Played)) {
                     return;
                 }
-                if (!(e.UserData && e.UserData.Played)) {
-                    unseen[e.SeriesId] = true;
-                }
-                latest[e.SeriesId] = e.PremiereDate && (!latest[e.SeriesId] || e.PremiereDate > latest[e.SeriesId]) ? e.PremiereDate : latest[e.SeriesId];
+                latest[e.SeriesId] = e.PremiereDate && (!latest[e.SeriesId] || e.PremiereDate > latest[e.SeriesId]) ? e.PremiereDate : (latest[e.SeriesId] || '');
             });
-            var ids = Object.keys(unseen);
+            var ids = Object.keys(latest);
             if (!ids.length) {
                 return [];
             }
@@ -2067,12 +2108,15 @@
             });
         }).then(function (list) {
             jfRowsData[row.id] = list;
+            jfRowsUser[row.id] = user;
             jfRowsLoading[row.id] = false;
             rowsRender();
         }, function () {
-            // offline or forbidden: what was there stays; asked again in a minute
-            if (!jfRowsData.hasOwnProperty(row.id)) {
+            // offline or forbidden: what was there for this user stays (nothing
+            // for another one); asked again in a minute
+            if (jfRowsUser[row.id] !== user || !jfRowsData.hasOwnProperty(row.id)) {
                 jfRowsData[row.id] = [];
+                jfRowsUser[row.id] = user;
             }
             jfRowsRetry[row.id] = Date.now() + 60000;
             jfRowsLoading[row.id] = false;
