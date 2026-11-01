@@ -198,12 +198,18 @@ so the way there and back is: export in the designer, upload on the site
 - **Card badges** (script) - resolution, HDR, codec, sound, audio and
   subtitle languages (flags or codes, preferred languages first, at most
   1-4) in the corners of movie and episode cards; dark, accent, glass, or
-  a color per value from a chosen range. *New episodes* on a series' card
-  while an episode in the library premiered within the last 1-30 days (an
-  old episode added now does not count).
+  a color per value from a chosen range.
 - **Seerr rows** (script) - rows on the home page from Jellyseerr /
   Overseerr: coming soon (requested), recently requested, waiting for
-  approval, now available, trending, popular movies and series.
+  approval, now available, trending, popular movies and series. Each row
+  goes at the top, at the bottom, or under a kind of home section (Next up,
+  Continue watching, Recently added in a library...), wherever the viewer
+  has it; up / down orders rows under one section.
+- **Jellyfin rows** (script) - rows on the home page from the library
+  itself, no Seerr needed. *New episodes*: the series the viewer watches
+  with an episode premiered within the last 1-30 days that they have not
+  seen yet - one card per series; it leaves once the new episodes are
+  watched or the days are over. Placed like the Seerr rows.
 - **Player** (video and music) - the control bar (and the music bar along
   the bottom), the progress slider, button size, the
   "Skip intro / credits" button and the loading ring (six styles, color,
