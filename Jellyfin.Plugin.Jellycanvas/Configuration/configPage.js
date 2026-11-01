@@ -51,7 +51,10 @@
             scriptsNone: 'Toolbar buttons and the home slideshow need JavaScript in the web client. Install the File Transformation plugin (recommended, automatic) or a JavaScript injector plugin to unlock them.',
             chipNav: 'Logo & links', chipIcons: 'Icons', chipUser: 'User', slotTop: 'Top', slotMiddle: 'Middle', slotBottom: 'Bottom', slotLeft: 'Left', slotCenter: 'Center', slotRight: 'Right',
             pluginInstalled: 'Installed', pluginMissing: 'Not installed', pluginFtDesc: 'Injects the client script into the web client automatically. Unlocks: custom toolbar buttons, the home slideshow, card badges (resolution, languages), the close button on the info bar, and the live preview of these.', pluginInjectorDesc: 'An alternative when File Transformation is not wanted: the generated script is copied into it by hand. Unlocks the same features (after pasting).',
-            chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages', chipNewEpisodes: 'New episodes (series)',
+            chipResolution: 'Resolution', chipHdr: 'HDR', chipCodec: 'Video codec', chipSound: 'Sound (DD+ Atmos 5.1, DTS-HD 7.1…)', chipAudio: 'Audio languages', chipSubtitles: 'Subtitle languages',
+            placeTop: 'At the top (under the slideshow)', placeBottom: 'At the bottom', placeUnder: 'Under “{0}”', placeUnderLatestIn: 'Under “Recently added in {0}”', rowUp: 'Up', rowDown: 'Down',
+            sectionSmalllibrarytiles: 'My media', sectionLibrarybuttons: 'My media (small)', sectionResume: 'Continue watching', sectionResumeaudio: 'Continue listening', sectionResumebook: 'Continue reading',
+            sectionNextup: 'Next up', sectionLivetv: 'Live TV', sectionActiverecordings: 'Active recordings', sectionLatestmedia: 'Recently added (the whole block)',
             iconSearch: 'Search icons…', iconNone: 'Nothing found - any Material Icons name can also be typed by hand.', close: 'Close',
             clickTip: '<kbd>Ctrl</kbd> + click an element to open its settings', clickTipOpens: '<kbd>Ctrl</kbd> + click opens: {0}',
             buttonFallback: 'Button', actionOverlay: 'overlay', actionNavigate: 'in place',
@@ -131,7 +134,7 @@
             chipNav: 'Logo a odkazy', chipIcons: 'Ikony', chipUser: 'Uživatel', slotTop: 'Nahoře', slotMiddle: 'Uprostřed', slotBottom: 'Dole',
             sidebarCollapsible: 'Vysouvací panel (jen ikony, rozbalí se při najetí)', sidebarCollapsed: 'Šířka sbaleného panelu', drawerHint: 'Hamburger menu, které se vysouvá zleva v mobilním rozložení (a v úzkém okně). Na desktopu jsou odkazy v horní liště.', lookHeading: 'Vzhled', navHeading: 'Odkazy a ikony', playedHeading: 'Zhlédnuto a rozkoukáno',
             infobarRadius: 'Zaoblení rohů', follow: 'Sledovat nastavení',
-            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache); „Nové díly“ na kartách seriálů. Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', chipNewEpisodes: 'Nové díly (seriály)', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeNewHeading: 'Nové díly (seriály)', badgeNewDays: 'Dní od premiéry', badgeNewHint: 'Přetáhni „Nové díly“ do rohu a karta seriálu ho dostane, dokud nějaký díl v knihovně měl premiéru během posledních dní (včetně dneška). Starý díl přidaný teď ho nepřinese, ani díl, jehož premiéra teprve bude; zmizí sám, až dny uplynou. Smí zasahovat přes svou čtvrtinu karty a leží pod značkami Jellyfinu (počet nezhlédnutých). Jeden dotaz pro všechny seriály, znovu po půl hodině (po obnovení stránky hned).', badgeLookHeading: 'Velikost a zařízení',
+            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache); „Nové díly“ na kartách seriálů. Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', placeTop: 'Nahoře (pod prezentací)', placeBottom: 'Dole', placeUnder: 'Pod „{0}“', placeUnderLatestIn: 'Pod „Nedávno přidané v {0}“', rowUp: 'Nahoru', rowDown: 'Dolů', sectionSmalllibrarytiles: 'Moje média', sectionLibrarybuttons: 'Moje média (malé)', sectionResume: 'Pokračovat ve sledování', sectionResumeaudio: 'Pokračovat v poslechu', sectionResumebook: 'Pokračovat ve čtení', sectionNextup: 'Další díly', sectionLivetv: 'Živá TV', sectionActiverecordings: 'Aktivní nahrávky', sectionLatestmedia: 'Nedávno přidané (celý blok)', jellyfinRows: 'Řádky z Jellyfinu', jellyfinRowsHint: 'Řádky na domovské stránce přímo z knihovny – Seerr není potřeba. Každý divák vidí svoje: Nové díly ukazují seriály, které sleduje a kterým nedávno vyšel díl, jejž ještě neviděl. Řádek, který nemá co ukázat, se neukáže. Potřebuje zapnuté skriptové funkce.', rowPlace: 'Umístění', rowPlaceHint: 'Umístění: pod sekcí jde řádek za ní, ať ji divák má na domovské stránce kdekoli; divák, který tu sekci nemá, ho dostane nahoře. Řádky pod stejnou sekcí jdou v pořadí seznamů – nejdřív řádky z Jellyfinu, pak ze Seerru.', jfKindNewEpisodes: 'Nové díly', jfDays: 'Dní od premiéry (1–30, včetně dneška)', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeLookHeading: 'Velikost a zařízení',
             seerrOpen: 'Otevírat stránku titulu v Seerru', seerrOpenTab: 'V nové záložce', seerrOpenHint: 'Vlastní tlačítko lišty, které míří na Seerr, otevře stránku po svém (v překryvném okně nebo přímo) místo druhé záložky se Seerrem. Tlačítka „nová záložka“ se nenabízejí.', buttonFallback: 'Tlačítko', actionOverlay: 'překryvné okno', actionNavigate: 'přímo v klientovi',
             seerrPublicUrl: 'Adresa Seerru pro odkazy v prohlížeči (prázdné = stejná)', seerrPublicUrlHint: 'Server často vidí Seerr pod jménem, které prohlížeč nezná (název kontejneru, adresa v LAN). Odkazy z plakátů používají tuhle adresu; odkaz otevřený přes vlastní tlačítko použije adresu toho tlačítka.',
             seerr: 'Řádky ze Seerru', seerrHint: 'Řádky na domovské stránce ze Seerru (Jellyseerr / Overseerr): co je požadované a brzy vyjde, poslední požadavky, co je trendy. Se Seerrem mluví server s API klíčem; klíč se do prohlížeče nedostane a není součástí sdíleného tématu. Plakát otevře položku tady, když ji knihovna má, jinak její stránku v Seerru.', seerrUrl: 'Adresa Seerru (jak ji vidí server)', seerrKey: 'API klíč (Seerr → Nastavení → Obecné)', seerrTest: 'Otestovat spojení', seerrTestOk: 'Spojení funguje: {0}', seerrTestFail: 'Nepodařilo se: {0}',
@@ -768,6 +771,7 @@
         ssIconView();
         renderButtons();
         renderSeerrRows();
+        renderJellyfinRows();
         renderSlots();
         renderBadgeZones();
         markOverrides();
@@ -867,7 +871,7 @@
     // corners and an "Off" pool. Stored per corner in
     // Scripts.CardBadges.TopLeft... as comma-separated badge ids.
     // ------------------------------------------------------------------
-    var BADGE_CHIPS = { resolution: { icon: 'hd', key: 'chipResolution' }, hdr: { icon: 'hdr_on', key: 'chipHdr' }, codec: { icon: 'movie', key: 'chipCodec' }, sound: { icon: 'surround_sound', key: 'chipSound' }, audio: { icon: 'volume_up', key: 'chipAudio' }, subtitles: { icon: 'subtitles', key: 'chipSubtitles' }, newepisodes: { icon: 'fiber_new', key: 'chipNewEpisodes' } };
+    var BADGE_CHIPS = { resolution: { icon: 'hd', key: 'chipResolution' }, hdr: { icon: 'hdr_on', key: 'chipHdr' }, codec: { icon: 'movie', key: 'chipCodec' }, sound: { icon: 'surround_sound', key: 'chipSound' }, audio: { icon: 'volume_up', key: 'chipAudio' }, subtitles: { icon: 'subtitles', key: 'chipSubtitles' } };
     var BADGE_CORNERS = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'];
 
     function badgeList(name) {
@@ -1047,6 +1051,119 @@
         sel.value = [].some.call(sel.options, function (o) { return o.value === current; }) ? current : '0';
     }
 
+    // ------------------------------------------------------------------
+    // The two row lists (Seerr rows, Jellyfin rows) share their place
+    // select and their up / down buttons.
+    // ------------------------------------------------------------------
+
+    var SECTION_KINDS = ['smalllibrarytiles', 'librarybuttons', 'resume', 'resumeaudio', 'resumebook', 'nextup', 'livetv', 'activerecordings', 'latestmedia'];
+    var libraries = null; // the server's libraries, for "Under Recently added in ..."
+    ApiClient.getJSON(ApiClient.getUrl('Library/VirtualFolders')).then(function (list) {
+        libraries = (list || []).filter(function (l) { return l.ItemId; }).map(function (l) { return { id: String(l.ItemId).toLowerCase(), name: l.Name }; });
+        // (the settings may not be in yet: they draw the lists, with the libraries, when they are)
+        if (state) {
+            renderSeerrRows();
+            renderJellyfinRows();
+        }
+    }, function () { libraries = []; });
+
+    /** The place select of a row: top, under a kind of section, under a library's recently added, bottom. Writes Position and After together. */
+    function wirePlace(sel, base, row) {
+        var add = function (value, label) {
+            var o = document.createElement('option');
+            o.value = value;
+            o.textContent = label;
+            sel.appendChild(o);
+        };
+        sel.textContent = '';
+        add('top', t('placeTop'));
+        SECTION_KINDS.forEach(function (k) {
+            add(k, t('placeUnder', t('section' + k.charAt(0).toUpperCase() + k.slice(1))));
+        });
+        (libraries || []).forEach(function (l) {
+            add('latestmedia:' + l.id, t('placeUnderLatestIn', l.name));
+        });
+        add('bottom', t('placeBottom'));
+        var current = row.After ? String(row.After).toLowerCase() : (row.Position === 'Bottom' ? 'bottom' : 'top');
+        if (![].some.call(sel.options, function (o) { return o.value === current; })) {
+            add(current, current); // a library that is gone (or not loaded yet): kept as it is
+        }
+        sel.value = current;
+        sel.addEventListener('change', function () {
+            var v = sel.value;
+            // under a section: Top is where the row goes for a viewer without it
+            setPath(state, base + '.Position', v === 'bottom' ? 'Bottom' : 'Top');
+            setPath(state, base + '.After', v === 'top' || v === 'bottom' ? '' : v);
+            scheduleScriptPreview();
+        });
+    }
+
+    /** Up / down: the row swaps with its neighbour (the order of rows under one section). */
+    function wireMove(node, list, i, rerender) {
+        var up = node.querySelector('.jc-btn-up');
+        var down = node.querySelector('.jc-btn-down');
+        up.title = t('rowUp');
+        down.title = t('rowDown');
+        up.disabled = i === 0;
+        down.disabled = i === list.length - 1;
+        var swap = function (j) {
+            var r = list[i];
+            list[i] = list[j];
+            list[j] = r;
+            rerender();
+            scheduleScriptPreview();
+        };
+        up.addEventListener('click', function () { swap(i - 1); });
+        down.addEventListener('click', function () { swap(i + 1); });
+    }
+
+    function renderJellyfinRows() {
+        var box = page.querySelector('#jcJellyfinRows');
+        var tpl = page.querySelector('#jcJellyfinRowTemplate');
+        box.textContent = '';
+        var list = (state.JellyfinRows && state.JellyfinRows.Rows) || [];
+        list.forEach(function (r, i) {
+            var node = tpl.content.firstElementChild.cloneNode(true);
+            node.querySelectorAll('[data-field]').forEach(function (el) {
+                var field = el.getAttribute('data-field');
+                el.setAttribute('data-path', 'JellyfinRows.Rows.' + i + '.' + field);
+                if (el.type === 'checkbox') {
+                    el.checked = !!r[field];
+                } else {
+                    el.value = r[field] == null ? '' : r[field];
+                }
+            });
+            wirePlace(node.querySelector('[data-place]'), 'JellyfinRows.Rows.' + i, r);
+            wireMove(node, list, i, renderJellyfinRows);
+            // the days belong to New episodes
+            var kindSel = node.querySelector('[data-field="Kind"]');
+            var days = node.querySelector('.jc-when-new-episodes');
+            var syncKind = function () { days.hidden = kindSel.value !== 'NewEpisodes'; };
+            kindSel.addEventListener('change', syncKind);
+            syncKind();
+            node.querySelector('.jc-btn-remove').addEventListener('click', function () {
+                state.JellyfinRows.Rows.splice(i, 1);
+                renderJellyfinRows();
+                scheduleScriptPreview();
+            });
+            translate(node);
+            box.appendChild(node);
+        });
+        bindInputs(box);
+    }
+
+    page.querySelector('#jcBtnAddJellyfinRow').addEventListener('click', function () {
+        if (!state.JellyfinRows) {
+            state.JellyfinRows = { Rows: [] };
+        }
+        if (!state.JellyfinRows.Rows) {
+            state.JellyfinRows.Rows = [];
+        }
+        state.JellyfinRows.Rows.push({ Enabled: true, Kind: 'NewEpisodes', Title: '', Position: 'Top', After: '', Limit: 16, Days: 7 });
+        renderJellyfinRows();
+        scheduleScriptPreview();
+    });
+
     function renderSeerrRows() {
         renderSeerrOpenOptions();
         var box = page.querySelector('#jcSeerrRows');
@@ -1086,6 +1203,8 @@
             mediaSel.addEventListener('change', syncTicks);
             kindSel.addEventListener('change', syncTicks);
             syncTicks();
+            wirePlace(node.querySelector('[data-place]'), 'Seerr.Rows.' + i, r);
+            wireMove(node, list, i, renderSeerrRows);
             node.querySelector('.jc-btn-remove').addEventListener('click', function () {
                 state.Seerr.Rows.splice(i, 1);
                 renderSeerrRows();
@@ -1104,7 +1223,7 @@
         if (!state.Seerr.Rows) {
             state.Seerr.Rows = [];
         }
-        state.Seerr.Rows.push({ Enabled: true, Kind: 'Upcoming', Media: 'Both', Title: '', Position: 'Top', Limit: 16, ShowTitle: true, ShowSubtitle: true, ShowDate: true, ShowState: true, ShowType: false, ShowRequester: false });
+        state.Seerr.Rows.push({ Enabled: true, Kind: 'Upcoming', Media: 'Both', Title: '', Position: 'Top', After: '', Limit: 16, ShowTitle: true, ShowSubtitle: true, ShowDate: true, ShowState: true, ShowType: false, ShowRequester: false });
         renderSeerrRows();
         scheduleScriptPreview();
     });
@@ -1339,6 +1458,7 @@
         page.querySelector('#jcScriptsSection').hidden = !available;
         page.querySelector('#jcSlideshowSection').hidden = !available;
         page.querySelector('#jcSeerrSection').hidden = !available;
+        page.querySelector('#jcJellyfinRowsSection').hidden = !available;
         page.querySelector('#jcBadgesSection').hidden = !available;
         page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
         refreshConditions();
@@ -1490,6 +1610,7 @@
         ['#jellycanvasSlideshow .jcs-overview', 'slideshow', '[data-path="Scripts.Slideshow.ShowOverview"]'],
         ['#jellycanvasSlideshow .jcs-btn', 'slideshow', '[data-path="Scripts.Slideshow.ShowButton"]'],
         ['#jellycanvasSlideshow', 'slideshow'],
+        ['[id^="jellycanvasRow-jf"]', 'jellyfinrows'],
         ['.jellycanvas-row', 'seerr', 'seerrRowsHeading'],
         ['[data-jellycanvas]', 'scripts'],
         ['header.MuiAppBar-root, .skinHeader', 'header', 'lookHeading'],
@@ -1688,7 +1809,7 @@
             for (var i = 0; i < boxes.length; i++) {
                 var r = boxes[i].getBoundingClientRect();
                 if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-                    return { section: 'badges', anchor: boxes[i].classList.contains('jellycanvas-badges-under') ? 'badgeNewHeading' : 'badgesCornersHeading', rect: r };
+                    return { section: 'badges', anchor: 'badgesCornersHeading', rect: r };
                 }
             }
             // Jellyfin's own marks - the watched tick and the progress bar -
