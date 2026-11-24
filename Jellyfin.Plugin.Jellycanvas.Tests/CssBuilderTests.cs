@@ -1052,7 +1052,9 @@ public class CssBuilderTests
 
         Assert.Contains("html:not(.jc-overlay-open) " + link + ", html " + link + "[data-jellycanvas] { background: ", css, StringComparison.Ordinal);
         Assert.Contains("html.jc-overlay-open " + link + ":not([data-jellycanvas]) { color: inherit !important; }", css, StringComparison.Ordinal);
-        Assert.Contains("html.jc-overlay-open .MuiDrawer-paper li:not([data-jellycanvas]) .Mui-selected, html.jc-overlay-open .navMenuOption-selected:not([data-jellycanvas]) { background-color: transparent !important; }", css, StringComparison.Ordinal);
+        // (it keeps its hover, as the links not selected have it)
+        Assert.Contains("html.jc-overlay-open .MuiDrawer-paper li:not([data-jellycanvas]) .Mui-selected:not(:hover):not(:focus), html.jc-overlay-open .navMenuOption-selected:not([data-jellycanvas]):not(:hover):not(:focus) { background-color: transparent !important; }", css, StringComparison.Ordinal);
+        Assert.Contains(", html.jc-overlay-open " + link + ":not([data-jellycanvas]):hover { background: ", css, StringComparison.Ordinal);
         // (no overlays without the script)
         cfg.CssOnly = true;
         Assert.DoesNotContain("html.jc-overlay-open", CssBuilder.Build(cfg), StringComparison.Ordinal);

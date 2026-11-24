@@ -71,6 +71,7 @@
             window.removeEventListener('scroll', jcOnScroll, true);
         }
         document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('click', onJellyfinLinkClick, true);
         document.removeEventListener('visibilitychange', onVisible);
         window.removeEventListener('focus', onFocus);
         freshRemove();
@@ -2562,6 +2563,19 @@
         });
     }
 
+    // A click on one of Jellyfin's own links in the bar or the menu leaves
+    // the overlay. Another page's link changes the address (checkUrl closes
+    // it then); the current page's link does not - and while an overlay is
+    // open it looks like any other link, so it is the one people click to
+    // go back.
+    function onJellyfinLinkClick(e) {
+        var a = e.target && e.target.closest ? e.target.closest('a') : null;
+        if (!a || a.closest('[data-jellycanvas]') || !a.closest('header.MuiAppBar-root, .MuiDrawer-paper, .mainDrawer') || !buttons.some(isOpen)) {
+            return;
+        }
+        closeAll();
+    }
+
     function onClick(b, event) {
         if (b.action === 'Overlay') {
             event.preventDefault();
@@ -2710,6 +2724,7 @@
         var f = document.getElementById(frameId(b));
         if (f) {
             f.remove();
+            updateScrollLock(); // (an overlay that was open: the page scrolls and Jellyfin's link is marked again)
         }
     }
 
@@ -3338,6 +3353,7 @@
         }
     }
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('click', onJellyfinLinkClick, true);
 
     var lastUrl = location.href;
     function checkUrl() {

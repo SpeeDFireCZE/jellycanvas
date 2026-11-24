@@ -473,7 +473,9 @@ public static class CssBuilder
             case NavStyle.Pill:
                 sb.AppendLine($"{x.P}{NavLink} {{ border-radius: 999px !important; padding: 4px 14px !important; min-width: 0 !important; }}");
                 sb.AppendLine($"{SelectedNavLink(x)} {{ background: {x.Accent.Hex} !important; color: {x.Accent.ContrastText} !important; }}");
-                sb.AppendLine($"{x.P}{NavLink}:not(.MuiButton-colorPrimary):hover {{ background: {x.Text.Rgba(0.1)} !important; }}");
+                // (Jellyfin's current link too while a custom overlay is open: it looks like the others then)
+                var overlayHover = x.Config.CssOnly ? string.Empty : $", {x.P}{NavLink.Replace("html header", "html.jc-overlay-open header", StringComparison.Ordinal)}.MuiButton-colorPrimary:not([data-jellycanvas]):hover";
+                sb.AppendLine($"{x.P}{NavLink}:not(.MuiButton-colorPrimary):hover{overlayHover} {{ background: {x.Text.Rgba(0.1)} !important; }}");
                 break;
             case NavStyle.Underline:
                 sb.AppendLine($"{x.P}{NavLink} {{ border-radius: 0 !important; border-bottom: 2px solid transparent !important; }}");
@@ -499,7 +501,8 @@ public static class CssBuilder
             // like the others (its color in Jellyfin's own link style; the
             // styles above leave it out), and so does the phone menu's entry.
             sb.AppendLine($"{x.P}{NavLink.Replace("html header", "html.jc-overlay-open header", StringComparison.Ordinal)}.MuiButton-colorPrimary:not([data-jellycanvas]) {{ color: inherit !important; }}");
-            sb.AppendLine($"{x.P}html.jc-overlay-open .MuiDrawer-paper li:not([data-jellycanvas]) .Mui-selected, {x.P}html.jc-overlay-open .navMenuOption-selected:not([data-jellycanvas]) {{ background-color: transparent !important; }}");
+            // (its hover and focus stay, as the other entries have them)
+            sb.AppendLine($"{x.P}html.jc-overlay-open .MuiDrawer-paper li:not([data-jellycanvas]) .Mui-selected:not(:hover):not(:focus), {x.P}html.jc-overlay-open .navMenuOption-selected:not([data-jellycanvas]):not(:hover):not(:focus) {{ background-color: transparent !important; }}");
             sb.AppendLine($"{x.P}html a[data-jellycanvas].MuiButton-colorPrimary {{ color: {mark}; }}");
         }
 
