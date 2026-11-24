@@ -5,11 +5,32 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
-- Info bar: a time window - it shows from a date and time (or right away) until one (or with no end), picked in your own time zone; everyone sees it at the same moment. It appears and goes on an open page too, without a reload; the designer's preview shows it whatever the time, with a line saying when it shows. The client script shows a strip with a time window, so without the script (or with CSS only) such a strip does not show at all, rather than show an announcement past its time. The window stays out of a shared theme, as the text does.
-- Card badges: a look and a color, chosen apart. Looks: Filled, Soft, Outline, Glass, Glow, Gradient, Neo-brutalism, Glowmorphism, Claymorphism, Neumorphism, Neon and Flat (square, no shadow). Colors: the accent, neutral (dark, white text) or a color per value from the chosen palette - any look in any color. Settings and shared themes from before keep their badges exactly as they were (Dark, Accent, Glass and Colorful become their look and color), and a theme exported now still carries the nearest former style for older plugins. An accent the theme or Jellyfin gives in another color space (oklch...) is followed too.
-- Settings page: the badges' color range now shows or hides at once when the color changes (it used to wait for a reload).
-- Custom toolbar buttons: while a button's overlay is open, Jellyfin's current link (Favorites, a library...) no longer looks selected as well - one mark at a time, in the bar (every link style) and in the phone menu. It looks selected again once the overlay closes - also when it is clicked to go back to it, or when the button goes away with its overlay open (the admin pages, the TV, signed out).
-- Card badges: a language written as its English name ("Czech", "slovak", "German"...) or with a region ("cs-CZ", "pt_BR") gets its flag. It showed cut to three letters instead - "CZE", "SLO", "GER".
+Card badges get a look and a color of their own, and the info bar can show in a time window. An open custom button is now the only mark in the bar.
+
+### ✨ Features
+
+- Add a look and a color for card badges, chosen apart
+- Add Neon and Flat badge looks beside the button looks
+- Add a time window to the info bar, from and until
+
+### 🐛 Fixes
+
+- Fix Jellyfin's current link staying marked beside an open overlay
+- Fix the page staying locked when a button goes with its overlay
+- Fix flags for languages written by name, like Czech or Slovak
+- Fix the badges' color range showing only after a reload
+
+### 🔧 Changes
+
+- Close a custom overlay when one of Jellyfin's links is clicked
+- Turn the old badge styles into their look and color
+- Leave the info bar's time window out of shared themes
+
+### 📚 Documentation
+
+- Describe the info bar's time window in the README
+
+**Full Changelog**: https://github.com/SpeeDFireCZE/jellycanvas/compare/1.3.4...main
 
 ## 1.3.4 - 2026-11-01
 

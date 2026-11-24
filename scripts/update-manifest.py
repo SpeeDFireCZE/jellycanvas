@@ -39,6 +39,8 @@ def changelog_for(version: str) -> str:
     if not m:
         return f"Version {version}."
     body = m.group(1).strip()
+    # The link to the whole comparison is for GitHub; the catalog in Jellyfin has no use for it.
+    body = re.sub(r"^\*\*Full Changelog\*\*:.*$\n?", "", body, flags=re.M).strip()
     # Sub-headings become plain lines; the catalog shows the text as is.
     body = re.sub(r"^### ", "", body, flags=re.M)
     return body

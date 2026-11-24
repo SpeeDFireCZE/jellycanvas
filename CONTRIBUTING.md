@@ -31,3 +31,14 @@ check a change.
 Maintainers: bump the version in `build.yaml` and the `.csproj`, move the
 *Unreleased* notes in `CHANGELOG.md` under the new version, tag `X.Y.Z`
 and push the tag. The Release workflow does the rest.
+
+The notes of a version are its GitHub release and its changelog in
+Jellyfin's plugin catalog, so they stay short: an opening line or two
+(and a `**Before you upgrade:**` line when there is something to do), then
+only the sections that have something, in this order - `### ✨ Features`,
+`### 🐛 Fixes` (a security fix starts with `Security:`), `### 🔧 Changes`,
+`### 📚 Documentation`, `### 🌍 Translations`, `### New Contributors` -
+one line per item, short and in the imperative ("Add ...", "Fix ..."),
+with no full stop; a pull request as `#12`, with `by @login` for someone
+else's work. Last comes
+`**Full Changelog**: https://github.com/SpeeDFireCZE/jellycanvas/compare/<previous>...<this>`.
