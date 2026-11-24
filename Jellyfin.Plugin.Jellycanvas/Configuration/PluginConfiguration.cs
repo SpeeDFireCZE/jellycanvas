@@ -567,6 +567,65 @@ public enum CardBadgeStyle
     Colorful,
 }
 
+/// <summary>How a card badge is drawn - the looks the buttons have, and two of their own.</summary>
+public enum BadgeLook
+{
+    /// <summary>As the former <see cref="CardBadgeStyle"/> had it.</summary>
+    Auto,
+
+    /// <summary>A plain fill.</summary>
+    Filled,
+
+    /// <summary>A light tint with the color as the text.</summary>
+    Soft,
+
+    /// <summary>A line around the text in the color.</summary>
+    Outline,
+
+    /// <summary>Frosted glass.</summary>
+    Glass,
+
+    /// <summary>A fill with a glow around.</summary>
+    Glow,
+
+    /// <summary>A fill fading along the badge.</summary>
+    Gradient,
+
+    /// <summary>A fill with a black frame and a hard shadow.</summary>
+    NeoBrutalism,
+
+    /// <summary>Tinted glass with a glow.</summary>
+    Glowmorphism,
+
+    /// <summary>A soft, puffy fill.</summary>
+    Claymorphism,
+
+    /// <summary>A fill raised by a light and a dark shadow.</summary>
+    Neumorphism,
+
+    /// <summary>A dark badge with a glowing line and text.</summary>
+    Neon,
+
+    /// <summary>A plain fill with square corners and no shadow.</summary>
+    Flat,
+}
+
+/// <summary>The color a card badge is drawn in.</summary>
+public enum BadgeColor
+{
+    /// <summary>As the former <see cref="CardBadgeStyle"/> had it.</summary>
+    Auto,
+
+    /// <summary>The accent color.</summary>
+    Accent,
+
+    /// <summary>Dark, with white text.</summary>
+    Neutral,
+
+    /// <summary>A color per value (4K, 1080p, HEVC, Atmos, each language...) from the chosen palette.</summary>
+    PerValue,
+}
+
 /// <summary>
 /// Small badges on movie and episode cards (resolution, HDR, audio and
 /// subtitle languages), read from the items' media streams by the client
@@ -587,8 +646,14 @@ public class CardBadgeSettings
 
     public CardBadgeStyle Style { get; set; } = CardBadgeStyle.Dark;
 
-    /// <summary>Which range of colors the Colorful style draws from.</summary>
+    /// <summary>Which range of colors a color per value draws from.</summary>
     public BadgePalette Palette { get; set; } = BadgePalette.Vivid;
+
+    /// <summary>How a badge is drawn; Auto = as <see cref="Style"/> had it (settings from before the look was a choice).</summary>
+    public BadgeLook Look { get; set; } = BadgeLook.Auto;
+
+    /// <summary>The color it is drawn in; Auto = as <see cref="Style"/> had it.</summary>
+    public BadgeColor Color { get; set; } = BadgeColor.Auto;
 
     /// <summary>Badge size in percent (100 = default).</summary>
     public int Scale { get; set; } = 100;

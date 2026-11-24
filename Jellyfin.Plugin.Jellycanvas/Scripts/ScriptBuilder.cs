@@ -40,6 +40,7 @@ public static class ScriptBuilder
         var ib = c.InfoBar;
         var hasInfoBar = ib.Enabled && ib.Closable && !string.IsNullOrWhiteSpace(ib.Text);
         var cb = s.CardBadges;
+        var badgeLook = BadgeLooks.Of(cb);
         var corners = new Dictionary<string, string[]>
         {
             ["tl"] = BadgeList(cb.TopLeft),
@@ -163,7 +164,9 @@ public static class ScriptBuilder
             ? new
             {
                 corners,
-                style = cb.Style.ToString(),
+                look = badgeLook.Look.ToString(),
+                color = badgeLook.Color.ToString(),
+                lookCss = BadgeLooks.Css(badgeLook.Look),
                 palette = cb.Palette.ToString(),
                 scale = Math.Clamp(cb.Scale, 50, 200),
                 hideOnMobile = cb.HideOnMobile,

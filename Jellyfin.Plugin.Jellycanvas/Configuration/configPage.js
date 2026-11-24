@@ -134,7 +134,7 @@
             chipNav: 'Logo a odkazy', chipIcons: 'Ikony', chipUser: 'Uživatel', slotTop: 'Nahoře', slotMiddle: 'Uprostřed', slotBottom: 'Dole',
             sidebarCollapsible: 'Vysouvací panel (jen ikony, rozbalí se při najetí)', sidebarCollapsed: 'Šířka sbaleného panelu', drawerHint: 'Hamburger menu, které se vysouvá zleva v mobilním rozložení (a v úzkém okně). Na desktopu jsou odkazy v horní liště.', lookHeading: 'Vzhled', navHeading: 'Odkazy a ikony', playedHeading: 'Zhlédnuto a rozkoukáno',
             infobarRadius: 'Zaoblení rohů', follow: 'Sledovat nastavení',
-            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', placeTop: 'Nahoře (pod prezentací)', placeBottom: 'Dole', placeUnder: 'Pod „{0}“', placeUnderLatestIn: 'Pod „Nedávno přidané v {0}“', rowUp: 'Nahoru', rowDown: 'Dolů', sectionSmalllibrarytiles: 'Moje média', sectionLibrarybuttons: 'Moje média (malé)', sectionResume: 'Pokračovat ve sledování', sectionResumeaudio: 'Pokračovat v poslechu', sectionResumebook: 'Pokračovat ve čtení', sectionNextup: 'Další díly', sectionLivetv: 'Živá TV', sectionActiverecordings: 'Aktivní nahrávky', sectionLatestmedia: 'Nedávno přidané (celý blok)', jellyfinRows: 'Řádky z Jellyfinu', jellyfinRowsHint: 'Řádky na domovské stránce přímo z knihovny – Seerr není potřeba. Každý divák vidí svoje: Nové díly ukazují seriály, které sleduje a kterým nedávno vyšel díl, jejž ještě neviděl. Řádek, který nemá co ukázat, se neukáže. Potřebuje zapnuté skriptové funkce.', rowPlace: 'Umístění', rowPlaceHint: 'Umístění: pod sekcí jde řádek za ní, ať ji divák má na domovské stránce kdekoli; divák, který tu sekci nemá (nebo má knihovnu z Nedávno přidaných vyřazenou), ho dostane nahoře. Řádky pod stejnou sekcí jdou v pořadí seznamů – nejdřív řádky z Jellyfinu, pak ze Seerru.', jfKindNewEpisodes: 'Nové díly', jfDays: 'Dní od premiéry (1–30, včetně dneška)', badgeDark: 'Tmavé pilulky', badgeAccent: 'Pilulky ve zvýrazňovací barvě', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeLookHeading: 'Velikost a zařízení',
+            badges: 'Odznaky na kartách (rozlišení, jazyky)', badgesHint: 'Rozlišení, HDR a jazyky zvuku / titulků na kartách filmů a dílů, načtené z mediálních streamů klientským skriptem (jeden dotaz na dávku karet, s cache). Potřebuje zapnuté skriptové funkce. V náhledu se ukáže po Uložit nebo Použít.', badgesEnabled: 'Zobrazit odznaky na kartách', badgesCornersHeading: 'Rohy', badgesCornersHint: 'Přetáhni každý odznak do rohu karty, nebo do „Vypnuto“, když ho nechceš.', cornerTl: 'Vlevo nahoře', cornerTr: 'Vpravo nahoře', cornerBl: 'Vlevo dole', cornerBr: 'Vpravo dole', cornerOff: 'Vypnuto', chipResolution: 'Rozlišení', chipHdr: 'HDR', chipCodec: 'Kodek videa', chipSound: 'Zvuk (DD+ Atmos 5.1, DTS-HD 7.1…)', badgeColorful: 'Barva podle hodnoty (4K, 1080p, HEVC, Atmos, každý jazyk…)', badgePalette: 'Barevný rozsah', paletteVivid: 'Sytá (celé spektrum)', paletteCool: 'Studená (tyrkysová, modrá, fialová)', paletteWarm: 'Teplá (červená, oranžová, žlutá)', palettePastel: 'Pastelová (světlá, tmavý text)', paletteNeon: 'Neonová (zářivá, tmavý text)', badgeStacked: 'Odznaky v rohu skládat pod sebe', chipAudio: 'Jazyky zvuku', chipSubtitles: 'Jazyky titulků', placeTop: 'Nahoře (pod prezentací)', placeBottom: 'Dole', placeUnder: 'Pod „{0}“', placeUnderLatestIn: 'Pod „Nedávno přidané v {0}“', rowUp: 'Nahoru', rowDown: 'Dolů', sectionSmalllibrarytiles: 'Moje média', sectionLibrarybuttons: 'Moje média (malé)', sectionResume: 'Pokračovat ve sledování', sectionResumeaudio: 'Pokračovat v poslechu', sectionResumebook: 'Pokračovat ve čtení', sectionNextup: 'Další díly', sectionLivetv: 'Živá TV', sectionActiverecordings: 'Aktivní nahrávky', sectionLatestmedia: 'Nedávno přidané (celý blok)', jellyfinRows: 'Řádky z Jellyfinu', jellyfinRowsHint: 'Řádky na domovské stránce přímo z knihovny – Seerr není potřeba. Každý divák vidí svoje: Nové díly ukazují seriály, které sleduje a kterým nedávno vyšel díl, jejž ještě neviděl. Řádek, který nemá co ukázat, se neukáže. Potřebuje zapnuté skriptové funkce.', rowPlace: 'Umístění', rowPlaceHint: 'Umístění: pod sekcí jde řádek za ní, ať ji divák má na domovské stránce kdekoli; divák, který tu sekci nemá (nebo má knihovnu z Nedávno přidaných vyřazenou), ho dostane nahoře. Řádky pod stejnou sekcí jdou v pořadí seznamů – nejdřív řádky z Jellyfinu, pak ze Seerru.', jfKindNewEpisodes: 'Nové díly', jfDays: 'Dní od premiéry (1–30, včetně dneška)', badgeLook: 'Vzhled', badgeOutline: 'Obrys', badgeGlow: 'Záře', badgeNeon: 'Neon', badgeFlat: 'Ploché hranaté (bez stínu)', badgeColor: 'Barva', badgeColorAccent: 'Zvýrazňovací barva', badgeColorNeutral: 'Neutrální (tmavá, bílý text)', badgeScale: 'Velikost', badgeLanguages: 'Jazyky zvuku jako', badgeSubLanguages: 'Jazyky titulků jako', badgeLangFlags: 'Jen vlajky (kreslí skript, nic se nestahuje)', badgeLangCodes: 'Kódy (EN, CS, DE)', badgeLangBoth: 'Vlajky i kódy', badgesMobile: 'Schovat na mobilu', badgesTv: 'Schovat na TV', badgeLangPickHeading: 'Které jazyky', badgeLangPickHint: 'Karta ukáže nejvýš tolik jazyků. Preferované jdou první, pokud je položka má (kódy jako CS, EN – v tvém pořadí); zbytek se doplní nejrozšířenějšími z toho, co zbývá.', badgeAudioMax: 'Jazyků zvuku nejvýš', badgeAudioPreferred: 'Preferované jazyky zvuku', badgeSubtitleMax: 'Jazyků titulků nejvýš', badgeSubtitlePreferred: 'Preferované jazyky titulků', badgeLookHeading: 'Velikost a zařízení',
             seerrOpen: 'Otevírat stránku titulu v Seerru', seerrOpenTab: 'V nové záložce', seerrOpenHint: 'Vlastní tlačítko lišty, které míří na Seerr, otevře stránku po svém (v překryvném okně nebo přímo) místo druhé záložky se Seerrem. Tlačítka „nová záložka“ se nenabízejí.', buttonFallback: 'Tlačítko', actionOverlay: 'překryvné okno', actionNavigate: 'přímo v klientovi',
             seerrPublicUrl: 'Adresa Seerru pro odkazy v prohlížeči (prázdné = stejná)', seerrPublicUrlHint: 'Server často vidí Seerr pod jménem, které prohlížeč nezná (název kontejneru, adresa v LAN). Odkazy z plakátů používají tuhle adresu; odkaz otevřený přes vlastní tlačítko použije adresu toho tlačítka.',
             seerr: 'Řádky ze Seerru', seerrHint: 'Řádky na domovské stránce ze Seerru (Jellyseerr / Overseerr): co je požadované a brzy vyjde, poslední požadavky, co je trendy. Se Seerrem mluví server s API klíčem; klíč se do prohlížeče nedostane a není součástí sdíleného tématu. Plakát otevře položku tady, když ji knihovna má, jinak její stránku v Seerru.', seerrUrl: 'Adresa Seerru (jak ji vidí server)', seerrKey: 'API klíč (Seerr → Nastavení → Obecné)', seerrTest: 'Otestovat spojení', seerrTestOk: 'Spojení funguje: {0}', seerrTestFail: 'Nepodařilo se: {0}',
@@ -277,7 +277,34 @@
                 }
             }
         });
+        upgradeBadges(state);
         overridesIntoState();
+    }
+
+    // The badges' one style (Dark, Accent, Glass, Colorful) became a look
+    // and a color; a theme from before ("Auto") shows them as it had them.
+    function upgradeBadges(s) {
+        var cb = s.Scripts && s.Scripts.CardBadges;
+        if (!cb) {
+            return;
+        }
+        if (!cb.Look || cb.Look === 'Auto') {
+            cb.Look = cb.Style === 'Glass' ? 'Glass' : 'Filled';
+        }
+        if (!cb.Color || cb.Color === 'Auto') {
+            cb.Color = cb.Style === 'Accent' ? 'Accent' : cb.Style === 'Colorful' ? 'PerValue' : 'Neutral';
+        }
+    }
+
+    // The former style follows the look and the color as near as it can:
+    // a theme exported now still shows its badges right in a plugin from
+    // before the looks (1.3.4 and older know only the style).
+    function badgeStyleFollows() {
+        var cb = state.Scripts && state.Scripts.CardBadges;
+        if (!cb) {
+            return;
+        }
+        cb.Style = cb.Color === 'PerValue' ? 'Colorful' : cb.Color === 'Accent' ? 'Accent' : cb.Look === 'Glass' ? 'Glass' : 'Dark';
     }
 
     function overridesIntoState() {
@@ -680,6 +707,9 @@
                     writePath(path, val);
                 }
                 followPreview(path);
+                if (path === 'Scripts.CardBadges.Look' || path === 'Scripts.CardBadges.Color') {
+                    badgeStyleFollows();
+                }
                 if (path === 'Misc.ThemeDashboard' && el.checked) {
                     resetDashboardScope();
                 }
@@ -704,6 +734,7 @@
                     page.querySelector('#jcScriptsEnabled').checked = true;
                 }
                 if (path.indexOf('Scripts.') === 0 || path.indexOf('Seerr.') === 0) {
+                    refreshConditions(); // (rows that follow a script setting - the badges' palette - show or go at once)
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();
@@ -2867,6 +2898,12 @@
             return false;
         }
         var keep = { Enabled: state.Enabled, LogoUrl: state.Header.LogoUrl, CssOnly: state.CssOnly, StockDashboard: state.Misc && state.Misc.StockDashboard };
+        // A theme from before the badges had a look and a color: its style decides them.
+        var cb = data.Scripts && data.Scripts.CardBadges;
+        if (cb && typeof cb === 'object' && 'Style' in cb) {
+            cb.Look = 'Look' in cb ? cb.Look : 'Auto';
+            cb.Color = 'Color' in cb ? cb.Color : 'Auto';
+        }
         mergeKnown(state, data);
         overridesFromState();
         upgradeSaved();

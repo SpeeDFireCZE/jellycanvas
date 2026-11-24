@@ -84,9 +84,10 @@
         document.documentElement.classList.remove('jellycanvas-infobar-closed');
         document.documentElement.classList.remove('jc-dashboard');
         badgesRemoveAll();
+        document.documentElement.style.removeProperty('--jcb-accent');
         backdropStop();
         rowsRemoveAll();
-        ['jellycanvasSlideshow', 'jellycanvasSlideshow-style', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style', DASH_ID].forEach(function (id) {
+        ['jellycanvasSlideshow', 'jellycanvasSlideshow-style', 'jellycanvas-inject-style', 'jellycanvasInfoClose', 'jellycanvasRows-style', 'jellycanvas-badge-probe', DASH_ID].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.remove();
@@ -186,22 +187,14 @@
         if (!badges) {
             return '';
         }
-        var look;
-        switch (badges.style) {
-            case 'Accent':
-                look = 'background: var(--jf-palette-primary-main, #00a4dc); color: var(--jf-palette-primary-contrastText, #fff);';
-                break;
-            case 'Glass':
-                look = 'background: rgba(255, 255, 255, 0.18); color: #fff; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.25);';
-                break;
-            case 'Colorful':
-                look = 'background: rgba(0, 0, 0, 0.68); color: #fff;';
-                break;
-            default:
-                look = 'background: rgba(0, 0, 0, 0.68); color: #fff;';
-        }
-        // Colorful: every badge gets its own color from badgeColor() inline.
-        var colorful = '';
+        // The look (from the plugin, BadgeLooks.cs) draws in variables; the
+        // color sets them: here for the accent and neutral dark, on each
+        // badge for a color per value (badgeColor). Neutral dark is also
+        // what a badge without a value color keeps.
+        var vars = badges.color === 'Accent'
+            ? '--jcb: var(--jcb-accent, 0, 164, 220); --jcb-a: 1; --jcb-text: var(--jf-palette-primary-contrastText, #fff); --jcb-ink: var(--jcb-accent, 0, 164, 220);'
+            : '--jcb: 0, 0, 0; --jcb-a: 0.68; --jcb-text: #fff; --jcb-ink: 255, 255, 255;';
+        var look = vars + ' ' + (badges.lookCss || 'background: rgba(var(--jcb), var(--jcb-a)); color: var(--jcb-text);');
         var size = (11 * badges.scale / 100).toFixed(1);
         // Stacked: one badge per line, hugging the corner's side; the flags
         // of a language badge then form a little column like a flag pole.
@@ -219,8 +212,7 @@
             '.jellycanvas-badges-bl { bottom: 0; left: 0; } .jellycanvas-badges-br { bottom: 0; right: 0; justify-content: flex-end; }' +
             stacked + rows +
             '.jellycanvas-badge { display: inline-flex; align-items: center; gap: 0.27em; padding: 0.27em 0.55em; border-radius: 0.36em; letter-spacing: 0.02em; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; ' + look + ' }' +
-            colorful +
-            '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
+            '.jellycanvas-badge.jellycanvas-flagonly { background: transparent !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; text-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' +
             '.jellycanvas-badge.jellycanvas-flagonly .jellycanvas-flag { height: 1.6em; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }' +
             '.jellycanvas-badge .material-icons { font-size: 1.15em; }' +
             '.jellycanvas-badge .jellycanvas-badge-icon { width: 1.15em; height: 1.15em; flex: 0 0 auto; }' +
@@ -521,14 +513,85 @@
     }
 
     function badgeColor(el, id, value) {
-        if (badges.style !== 'Colorful') {
+        if (badges.color !== 'PerValue') {
             return;
         }
         var p = BADGE_PALETTES[badges.palette] || BADGE_PALETTES.Vivid;
         var hue = p.hue(badgeRank(id, value));
         // -1 = neutral grey (SD), so the plain thing does not shout.
-        el.style.background = hue < 0 ? 'hsl(0, 0%, ' + Math.round(p.l * 0.95) + '%)' : 'hsl(' + hue + ', ' + p.s + '%, ' + p.l + '%)';
-        el.style.color = p.text;
+        var rgb = badgeRgb(hue < 0 ? 'hsl(0, 0%, ' + Math.round(p.l * 0.95) + '%)' : 'hsl(' + hue + ', ' + p.s + '%, ' + p.l + '%)', false);
+        // Lines and text on a dark badge (outline, neon...) in a lighter
+        // shade: a deep blue would sink into the dark.
+        var light = Math.max(p.l, 68);
+        var ink = badgeRgb(hue < 0 ? 'hsl(0, 0%, ' + light + '%)' : 'hsl(' + hue + ', ' + p.s + '%, ' + light + '%)', false);
+        if (!rgb || !ink) {
+            return;
+        }
+        el.style.setProperty('--jcb', rgb);
+        el.style.setProperty('--jcb-a', '1');
+        el.style.setProperty('--jcb-text', p.text);
+        el.style.setProperty('--jcb-ink', ink);
+    }
+
+    // A color as the browser draws it, in "r, g, b" (the looks need the
+    // channels for their tints; an older TV knows no color-mix()).
+    var badgeRgbCache = {};
+    function badgeRgb(css, fresh) {
+        if (!fresh && badgeRgbCache.hasOwnProperty(css)) {
+            return badgeRgbCache[css];
+        }
+        var probe = document.getElementById('jellycanvas-badge-probe');
+        if (!probe) {
+            if (!document.body) {
+                return '';
+            }
+            probe = document.createElement('span');
+            probe.id = 'jellycanvas-badge-probe';
+            probe.style.display = 'none';
+            document.body.appendChild(probe);
+        }
+        probe.style.color = '';
+        probe.style.color = css;
+        var computed = getComputedStyle(probe).color || '';
+        var rgb = '';
+        if (/^rgba?\(/.test(computed)) {
+            rgb = computed.match(/[\d.]+/g).slice(0, 3).join(', ');
+        } else if (computed) {
+            // A newer browser keeps a color from another space as it is
+            // (oklch(...), color(display-p3 ...)): painted, it is sRGB.
+            var canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 1;
+            var ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = computed;
+                ctx.fillRect(0, 0, 1, 1);
+                var px = ctx.getImageData(0, 0, 1, 1).data;
+                rgb = px[0] + ', ' + px[1] + ', ' + px[2];
+            }
+        }
+        if (rgb && !fresh) {
+            badgeRgbCache[css] = rgb;
+        }
+        return rgb;
+    }
+
+    // The accent in channels, for the accent color: read from the page, as
+    // the theme or Jellyfin set it (and again when that changes).
+    var badgeAccentAt = 0;
+    function badgeAccentSync() {
+        // (sync runs after every batch of changes on the page; reading a
+        // style forces the browser to work it out - a theme does not change
+        // that often, a look every two seconds is enough)
+        if (!badges || disposed || badges.color !== 'Accent' || Date.now() - badgeAccentAt < 2000) {
+            return;
+        }
+        var rgb = badgeRgb('var(--jf-palette-primary-main, #00a4dc)', true);
+        if (rgb) {
+            badgeAccentAt = Date.now();
+        }
+        if (rgb && document.documentElement.style.getPropertyValue('--jcb-accent') !== rgb) {
+            document.documentElement.style.setProperty('--jcb-accent', rgb);
+        }
     }
 
     function badgeHtml(id, info) {
@@ -2916,6 +2979,7 @@
         ssSync();
         dashboardSync();
         syncInfoBar();
+        badgeAccentSync();
         badgeSync();
         backdropSync();
         rowsSync();
@@ -3583,6 +3647,7 @@
             '[data-jellycanvas].MuiIconButton-root:hover { color: var(--jf-palette-primary-main, #00a4dc) !important; }' +
             badgeCss();
         document.head.appendChild(style);
+        badgeAccentSync();
     }
 
     function start() {

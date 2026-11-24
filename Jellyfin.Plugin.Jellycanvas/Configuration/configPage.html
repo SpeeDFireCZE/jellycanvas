@@ -1067,15 +1067,31 @@
                                 </div>
                                 <h4 class="jc-sub" data-i18n="lookHeading">Look</h4>
                                 <div class="selectContainer">
-                                    <label class="selectLabel" for="jcBadgeStyle" data-i18n="style">Style</label>
-                                    <select is="emby-select" id="jcBadgeStyle" data-path="Scripts.CardBadges.Style" class="emby-select-withcolor emby-select">
-                                        <option value="Dark" data-i18n="badgeDark">Dark pills</option>
-                                        <option value="Accent" data-i18n="badgeAccent">Accent pills</option>
+                                    <label class="selectLabel" for="jcBadgeLook" data-i18n="badgeLook">Look</label>
+                                    <select is="emby-select" id="jcBadgeLook" data-path="Scripts.CardBadges.Look" class="emby-select-withcolor emby-select">
+                                        <option value="Filled" data-i18n="filled">Filled</option>
+                                        <option value="Soft" data-i18n="soft">Soft (tinted)</option>
+                                        <option value="Outline" data-i18n="badgeOutline">Outline</option>
                                         <option value="Glass" data-i18n="glass">Glass</option>
-                                        <option value="Colorful" data-i18n="badgeColorful">A color per value (4K, 1080p, HEVC, Atmos, each language...)</option>
+                                        <option value="Glow" data-i18n="badgeGlow">Glow</option>
+                                        <option value="Gradient" data-i18n="gradient">Gradient</option>
+                                        <option value="NeoBrutalism" data-i18n="neoBrutalism">Neo-brutalism</option>
+                                        <option value="Glowmorphism" data-i18n="glowmorphism">Glowmorphism</option>
+                                        <option value="Claymorphism" data-i18n="claymorphism">Claymorphism</option>
+                                        <option value="Neumorphism" data-i18n="neumorphism">Neumorphism</option>
+                                        <option value="Neon" data-i18n="badgeNeon">Neon</option>
+                                        <option value="Flat" data-i18n="badgeFlat">Flat (square, no shadow)</option>
                                     </select>
                                 </div>
-                                <div class="selectContainer" data-when="Scripts.CardBadges.Style=Colorful">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="jcBadgeColor" data-i18n="badgeColor">Color</label>
+                                    <select is="emby-select" id="jcBadgeColor" data-path="Scripts.CardBadges.Color" class="emby-select-withcolor emby-select">
+                                        <option value="Accent" data-i18n="badgeColorAccent">The accent color</option>
+                                        <option value="Neutral" data-i18n="badgeColorNeutral">Neutral (dark, white text)</option>
+                                        <option value="PerValue" data-i18n="badgeColorful">A color per value (4K, 1080p, HEVC, Atmos, each language...)</option>
+                                    </select>
+                                </div>
+                                <div class="selectContainer" data-when="Scripts.CardBadges.Color=PerValue">
                                     <label class="selectLabel" for="jcBadgePalette" data-i18n="badgePalette">Color range</label>
                                     <select is="emby-select" id="jcBadgePalette" data-path="Scripts.CardBadges.Palette" class="emby-select-withcolor emby-select">
                                         <option value="Vivid" data-i18n="paletteVivid">Vivid (the whole wheel)</option>

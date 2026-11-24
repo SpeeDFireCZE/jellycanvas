@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Jellyfin.Plugin.Jellycanvas.Configuration;
 using Jellyfin.Plugin.Jellycanvas.Scripts;
+using Jellyfin.Plugin.Jellycanvas.Theme;
 using Xunit;
 
 namespace Jellyfin.Plugin.Jellycanvas.Tests;
@@ -32,7 +33,7 @@ public class ScriptBuilderTests
         var js = ScriptBuilder.Build(cfg);
 
         Assert.Contains("\"corners\":{\"tl\":[\"resolution\",\"hdr\"],\"tr\":[],\"bl\":[],\"br\":[\"audio\",\"subtitles\"]}", js, StringComparison.Ordinal);
-        Assert.Contains("\"style\":\"Dark\"", js, StringComparison.Ordinal);
+        Assert.Contains("\"look\":\"Filled\",\"color\":\"Neutral\"", js, StringComparison.Ordinal);
         Assert.Contains("\"languages\":\"Flags\"", js, StringComparison.Ordinal);
         Assert.Contains("\"subtitleLanguages\":\"Codes\"", js, StringComparison.Ordinal);
     }
@@ -97,6 +98,58 @@ public class ScriptBuilderTests
 
         Assert.Contains("\"tl\":[\"resolution\"]", js, StringComparison.Ordinal);
         Assert.DoesNotContain("\"newEpisodesDays\":", js, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(CardBadgeStyle.Dark, "Filled", "Neutral")]
+    [InlineData(CardBadgeStyle.Accent, "Filled", "Accent")]
+    [InlineData(CardBadgeStyle.Glass, "Glass", "Neutral")]
+    [InlineData(CardBadgeStyle.Colorful, "Filled", "PerValue")]
+    public void A_former_badge_style_becomes_a_look_and_a_color(CardBadgeStyle style, string look, string color)
+    {
+        // Settings (and shared themes) from before keep their badges: the
+        // look and the color come from the style until they are chosen.
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true, CardBadges = new CardBadgeSettings { Enabled = true, Style = style } },
+        };
+
+        Assert.Contains($"\"look\":\"{look}\",\"color\":\"{color}\",\"lookCss\":\"", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_chosen_badge_look_and_color_win_over_the_former_style()
+    {
+        var cfg = new PluginConfiguration
+        {
+            Scripts = new ScriptSettings { Enabled = true, CardBadges = new CardBadgeSettings { Enabled = true, Style = CardBadgeStyle.Glass, Look = BadgeLook.Neon, Color = BadgeColor.PerValue } },
+        };
+
+        var js = ScriptBuilder.Build(cfg);
+
+        Assert.Contains("\"look\":\"Neon\",\"color\":\"PerValue\"", js, StringComparison.Ordinal);
+        Assert.Contains("\"lookCss\":" + System.Text.Json.JsonSerializer.Serialize(BadgeLooks.Css(BadgeLook.Neon)), js, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Every_badge_look_has_css_of_its_own_in_the_badge_color()
+    {
+        // The colors are variables the script sets: one look serves the
+        // accent, neutral dark and a color per value alike.
+        var looks = Enum.GetValues<BadgeLook>().Where(l => l != BadgeLook.Auto).ToList();
+        var css = looks.Select(BadgeLooks.Css).ToList();
+
+        Assert.Equal(12, looks.Count);
+        Assert.Equal(looks.Count, css.Distinct().Count());
+        Assert.All(css, c => Assert.Contains("var(--jcb", c, StringComparison.Ordinal));
+        Assert.Contains("border: 1.5px solid rgb(var(--jcb-ink))", BadgeLooks.Css(BadgeLook.Outline), StringComparison.Ordinal);
+        Assert.Contains("linear-gradient(", BadgeLooks.Css(BadgeLook.Gradient), StringComparison.Ordinal);
+        Assert.Contains("border-radius: 0", BadgeLooks.Css(BadgeLook.Flat), StringComparison.Ordinal);
+        Assert.Contains("text-shadow", BadgeLooks.Css(BadgeLook.Neon), StringComparison.Ordinal);
+        // The tinted looks keep a dark base: text in the color stays legible
+        // on a bright poster too.
+        Assert.Contains("rgba(0, 0, 0, 0.45)", BadgeLooks.Css(BadgeLook.Soft), StringComparison.Ordinal);
+        Assert.Contains("text-shadow", BadgeLooks.Css(BadgeLook.Glowmorphism), StringComparison.Ordinal);
     }
 
     [Fact]
