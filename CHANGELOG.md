@@ -5,6 +5,7 @@ All notable changes to Jellycanvas. The format follows
 
 ## Unreleased
 
+- Custom toolbar buttons: while a button's overlay is open, Jellyfin's current link (Favorites, a library...) no longer looks selected as well - one mark at a time, in the bar (every link style) and in the phone menu. It looks selected again once the overlay closes.
 - Card badges: a language written as its English name ("Czech", "slovak", "German"...) or with a region ("cs-CZ", "pt_BR") gets its flag. It showed cut to three letters instead - "CZE", "SLO", "GER".
 
 ## 1.3.4 - 2026-11-01

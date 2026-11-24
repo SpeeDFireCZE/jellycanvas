@@ -340,7 +340,7 @@ public class CssBuilderTests
         var css = CssBuilder.Build(cfg);
 
         Assert.Contains("background-color: #00a4dc !important; background-image: none !important; box-shadow: 4px 4px 0 #000000 !important; border: 3px solid #000000 !important;", css, StringComparison.Ordinal);
-        Assert.Contains(".MuiButton-colorPrimary { text-decoration: underline !important;", css, StringComparison.Ordinal);
+        Assert.Contains(".MuiButton-colorPrimary[data-jellycanvas] { text-decoration: underline !important;", css, StringComparison.Ordinal);
         // The style's own shadow wins over the generic drop shadow.
         Assert.DoesNotContain("0 6px 24px rgba(0, 0, 0, 0.35)", css, StringComparison.Ordinal);
         Assert.Contains("border-bottom: 3px solid #000000;", css, StringComparison.Ordinal);
@@ -1035,6 +1035,27 @@ public class CssBuilderTests
 
         Assert.DoesNotContain("[data-jellycanvas].jc-active", css, StringComparison.Ordinal);
         Assert.DoesNotContain("a[data-jellycanvas].MuiButton-colorPrimary", css, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void While_a_custom_overlay_is_open_jellyfins_link_stops_looking_selected()
+    {
+        // One mark at a time: the script puts jc-overlay-open on the page
+        // while a custom button's overlay is open; Jellyfin's current link
+        // (Favorites, Shows...) then looks like the others - the custom
+        // button keeps its mark. In the bar and in the phone menu.
+        var cfg = new PluginConfiguration();
+        cfg.Header.Nav = NavStyle.Pill;
+        var link = "header.MuiAppBar-root .MuiToolbar-root .MuiStack-root > a.MuiButton-sizeMedium.MuiButton-colorPrimary";
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("html:not(.jc-overlay-open) " + link + ", html " + link + "[data-jellycanvas] { background: ", css, StringComparison.Ordinal);
+        Assert.Contains("html.jc-overlay-open " + link + ":not([data-jellycanvas]) { color: inherit !important; }", css, StringComparison.Ordinal);
+        Assert.Contains("html.jc-overlay-open .MuiDrawer-paper li:not([data-jellycanvas]) .Mui-selected, html.jc-overlay-open .navMenuOption-selected:not([data-jellycanvas]) { background-color: transparent !important; }", css, StringComparison.Ordinal);
+        // (no overlays without the script)
+        cfg.CssOnly = true;
+        Assert.DoesNotContain("html.jc-overlay-open", CssBuilder.Build(cfg), StringComparison.Ordinal);
     }
 
     [Fact]

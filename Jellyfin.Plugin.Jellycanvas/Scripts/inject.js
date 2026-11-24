@@ -2499,6 +2499,8 @@
     function updateScrollLock() {
         var anyOpen = buttons.some(isOpen);
         var root = document.documentElement;
+        // (the theme then shows Jellyfin's current link as not selected: one mark at a time)
+        root.classList.toggle('jc-overlay-open', anyOpen);
         if (anyOpen && savedOverflow === null) {
             savedOverflow = root.style.overflow;
             root.style.overflow = 'hidden';
