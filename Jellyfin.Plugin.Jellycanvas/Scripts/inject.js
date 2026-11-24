@@ -112,6 +112,16 @@
         nor: 'NO', dan: 'DA', fin: 'FI', tur: 'TR', ara: 'AR', hin: 'HI', ukr: 'UK', ell: 'EL', gre: 'EL', rum: 'RO', ron: 'RO',
         bul: 'BG', hrv: 'HR', srp: 'SR', slv: 'SL', tha: 'TH', vie: 'VI', ind: 'ID', heb: 'HE', cat: 'CA', lit: 'LT', lav: 'LV', est: 'ET'
     };
+    // Some libraries name the language instead ("Czech", "slovak"): the
+    // same codes by English name. (Its first three letters will not do:
+    // "slovenian" and "slovak" both start "slo".)
+    var BADGE_LANG_NAMES = {
+        english: 'EN', czech: 'CS', slovak: 'SK', german: 'DE', french: 'FR', spanish: 'ES', italian: 'IT', portuguese: 'PT',
+        russian: 'RU', polish: 'PL', hungarian: 'HU', dutch: 'NL', japanese: 'JA', korean: 'KO', chinese: 'ZH', swedish: 'SV',
+        norwegian: 'NO', danish: 'DA', finnish: 'FI', turkish: 'TR', arabic: 'AR', hindi: 'HI', ukrainian: 'UK', greek: 'EL',
+        romanian: 'RO', bulgarian: 'BG', croatian: 'HR', serbian: 'SR', slovenian: 'SL', slovene: 'SL', thai: 'TH',
+        vietnamese: 'VI', indonesian: 'ID', hebrew: 'HE', catalan: 'CA', lithuanian: 'LT', latvian: 'LV', estonian: 'ET'
+    };
     var BADGE_TYPES = /^(Movie|Episode|Video|MusicVideo|Trailer)$/;
 
     /** Does a card of this type get badges? (A card without a type does - a list row may have none.) */
@@ -219,11 +229,12 @@
     }
 
     function badgeLang(code) {
-        var c = (code || '').toLowerCase();
+        // the language without a region ("cs-CZ", "pt_BR")
+        var c = (code || '').toLowerCase().replace(/^\s+|\s+$/g, '').split(/[-_]/)[0];
         if (!c || c === 'und') {
             return '';
         }
-        return BADGE_LANGS[c] || c.slice(0, 3).toUpperCase();
+        return BADGE_LANGS[c] || BADGE_LANG_NAMES[c] || c.slice(0, 3).toUpperCase();
     }
 
     // What the badges say for one item; null when it has no video stream.

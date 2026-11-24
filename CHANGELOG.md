@@ -3,6 +3,10 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## Unreleased
+
+- Card badges: a language written as its English name ("Czech", "slovak", "German"...) or with a region ("cs-CZ", "pt_BR") gets its flag. It showed cut to three letters instead - "CZE", "SLO", "GER".
+
 ## 1.3.4 - 2026-11-01
 
 **Rows from your own library, a place for every home row, and fixes for
