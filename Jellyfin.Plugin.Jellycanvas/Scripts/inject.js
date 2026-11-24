@@ -603,7 +603,7 @@
         // (sync runs after every batch of changes on the page; reading a
         // style forces the browser to work it out - a theme does not change
         // that often, a look every two seconds is enough)
-        if (!badges || disposed || badges.color !== 'Accent' || Date.now() - badgeAccentAt < 2000) {
+        if (!badges || disposed || badges.color !== 'Accent' || document.hidden || Date.now() - badgeAccentAt < 2000) {
             return;
         }
         var rgb = badgeRgb('var(--jf-palette-primary-main, #00a4dc)', true);
@@ -2687,7 +2687,7 @@
             return;
         }
         var a = e.target && e.target.closest ? e.target.closest('a') : null;
-        if (!a || a.closest('[data-jellycanvas]') || !a.closest('header.MuiAppBar-root, .MuiDrawer-paper, .mainDrawer') || !buttons.some(isOpen)) {
+        if (!a || (a.target && a.target !== '_self') || a.closest('[data-jellycanvas]') || !a.closest('header.MuiAppBar-root, .MuiDrawer-paper, .mainDrawer') || !buttons.some(isOpen)) {
             return;
         }
         closeAll();

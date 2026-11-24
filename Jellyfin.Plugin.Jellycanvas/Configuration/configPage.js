@@ -831,7 +831,14 @@
 
     function utcFromInput(value) {
         var d = value ? new Date(value) : null; // (a date and time without a zone is local time)
-        return d && !isNaN(d.getTime()) ? d.toISOString() : '';
+        // (a year past 9999 would be written "+010000-..." - one the server cannot read)
+        return d && !isNaN(d.getTime()) && d.getFullYear() <= 9999 ? d.toISOString() : '';
+    }
+
+    // A stored time as milliseconds; one that cannot be read is no limit, as on the server.
+    function windowMs(iso) {
+        var ms = iso ? new Date(iso).getTime() : NaN;
+        return isNaN(ms) ? null : ms;
     }
 
     function windowTime(iso) {
@@ -842,8 +849,8 @@
         var ib = state.InfoBar;
         var fromNow = page.querySelector('#jcInfoFromNow');
         var noEnd = page.querySelector('#jcInfoNoEnd');
-        fromNow.checked = !ib.ShowFrom;
-        noEnd.checked = !ib.ShowUntil;
+        fromNow.checked = windowMs(ib.ShowFrom) === null;
+        noEnd.checked = windowMs(ib.ShowUntil) === null;
         page.querySelector('#jcInfoFromBox').hidden = fromNow.checked;
         page.querySelector('#jcInfoUntilBox').hidden = noEnd.checked;
         var from = page.querySelector('#jcInfoFrom');
@@ -856,8 +863,8 @@
         }
         // What the strip does now, in a line under the fields.
         var line = page.querySelector('#jcInfoWindowState');
-        var start = ib.ShowFrom ? new Date(ib.ShowFrom).getTime() : null;
-        var end = ib.ShowUntil ? new Date(ib.ShowUntil).getTime() : null;
+        var start = windowMs(ib.ShowFrom);
+        var end = windowMs(ib.ShowUntil);
         var now = Date.now();
         // (the script shows a strip with a time; without it such a strip does
         // not show at all - said once the plugins' state is known)
@@ -917,7 +924,12 @@
             pair[0].addEventListener('input', onEdit);
             pair[0].addEventListener('change', onEdit);
             pair[0].addEventListener('blur', function () {
-                if (!pair[0].value && state.InfoBar[pair[1]]) {
+                // Emptied: right away / no end. Half-typed (a part deleted
+                // to type it again, the value is empty then too): the time
+                // stays as it was, and the field shows it again.
+                if (pair[0].validity && pair[0].validity.badInput) {
+                    renderInfoWindow();
+                } else if (!pair[0].value && state.InfoBar[pair[1]]) {
                     state.InfoBar[pair[1]] = '';
                     infoWindowChanged();
                 }
