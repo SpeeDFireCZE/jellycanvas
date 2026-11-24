@@ -734,7 +734,9 @@
                     page.querySelector('#jcScriptsEnabled').checked = true;
                 }
                 if (path.indexOf('Scripts.') === 0 || path.indexOf('Seerr.') === 0) {
-                    refreshConditions(); // (rows that follow a script setting - the badges' palette - show or go at once)
+                    if (event === 'change') {
+                        refreshConditions(); // (rows that follow a script choice - the badges' palette - show or go at once)
+                    }
                     scheduleScriptPreview();
                 } else {
                     schedulePreview();

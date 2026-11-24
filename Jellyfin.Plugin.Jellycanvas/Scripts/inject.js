@@ -2632,6 +2632,10 @@
     // open it looks like any other link, so it is the one people click to
     // go back.
     function onJellyfinLinkClick(e) {
+        // (a Ctrl / Cmd / Shift click opens the link elsewhere: this page stays as it is)
+        if (e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) {
+            return;
+        }
         var a = e.target && e.target.closest ? e.target.closest('a') : null;
         if (!a || a.closest('[data-jellycanvas]') || !a.closest('header.MuiAppBar-root, .MuiDrawer-paper, .mainDrawer') || !buttons.some(isOpen)) {
             return;
