@@ -175,7 +175,31 @@ public class ScriptBuilderTests
 
         var js = ScriptBuilder.Build(cfg);
 
-        Assert.Contains("\"infoBar\":{\"text\":\"Hello\",\"remember\":true}", js, StringComparison.Ordinal);
+        Assert.Contains("\"infoBar\":{\"text\":\"Hello\",\"remember\":true,\"closable\":true,\"from\":null,\"until\":null}", js, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_scheduled_info_bar_goes_into_the_script_with_its_window()
+    {
+        // The window as milliseconds since 1970 (UTC): the script compares
+        // them with Date.now(), no date parsing on an older TV. A strip
+        // with a window needs the script even without a close button.
+        var cfg = new PluginConfiguration
+        {
+            Enabled = true, // (the theme on: the script is there for its other work when the strip needs none)
+            Scripts = new ScriptSettings { Enabled = true },
+            InfoBar = new InfoBarSettings { Enabled = true, Text = "Hello", ShowFrom = "2026-11-25T07:00:00.000Z", ShowUntil = "2026-11-26T20:30:00.000Z" },
+        };
+
+        var js = ScriptBuilder.Build(cfg);
+
+        var from = DateTimeOffset.Parse("2026-11-25T07:00:00Z", System.Globalization.CultureInfo.InvariantCulture).ToUnixTimeMilliseconds();
+        var until = DateTimeOffset.Parse("2026-11-26T20:30:00Z", System.Globalization.CultureInfo.InvariantCulture).ToUnixTimeMilliseconds();
+        Assert.Contains($"\"infoBar\":{{\"text\":\"Hello\",\"remember\":true,\"closable\":false,\"from\":{from},\"until\":{until}}}", js, StringComparison.Ordinal);
+        // "Immediately" and no end: nothing for the script to do (no close button either)
+        cfg.InfoBar.ShowFrom = string.Empty;
+        cfg.InfoBar.ShowUntil = string.Empty;
+        Assert.Contains("\"infoBar\":null", ScriptBuilder.Build(cfg), StringComparison.Ordinal);
     }
 
     [Fact]

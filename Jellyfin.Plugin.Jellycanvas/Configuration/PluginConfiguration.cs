@@ -1691,6 +1691,16 @@ public class InfoBarSettings
 
     /// <summary>A closed strip stays closed in that browser until the text changes; off = it is back on the next page load.</summary>
     public bool RememberClose { get; set; } = true;
+
+    /// <summary>
+    /// When the strip starts to show, as an ISO 8601 time in UTC
+    /// ("2026-11-25T07:00:00.000Z"); empty = at once. With a start or an
+    /// end the client script shows the strip inside that window only.
+    /// </summary>
+    public string ShowFrom { get; set; } = string.Empty;
+
+    /// <summary>When the strip stops showing (ISO 8601, UTC); empty = no end.</summary>
+    public string ShowUntil { get; set; } = string.Empty;
 }
 
 /// <summary>Small things that belong nowhere else.</summary>

@@ -96,7 +96,7 @@ Updates appear in the catalog like any other plugin.
 ### Optional: script features
 
 Custom toolbar buttons, the home slideshow, card badges (resolution,
-languages), the info bar's close button and the theme on the admin pages
+languages), the info bar's close button and time window, and the theme on the admin pages
 (Jellyfin 12 renders the Branding CSS on the user-facing pages only) need
 JavaScript in the web client. Install the **File Transformation** plugin
 (available in its own repository, see its README) and the script is
@@ -136,7 +136,7 @@ client with your theme injected.
 - **Share / import** exports the theme as a JSON file and loads one back
   in - pasted, opened from a file or fetched from a link (a raw GitHub
   file, for example). The export holds only the look: custom buttons and
-  their addresses, the info bar text, the login title, the uploaded logo
+  their addresses, the info bar text and time window, the login title, the uploaded logo
   and image links on private addresses never leave your server. Exported
   with *CSS only* on, it is a CSS theme: nothing for the admin pages, and
   the script's features (slideshow, badges, banner) only as switches turned
@@ -188,7 +188,8 @@ so the way there and back is: export in the designer, upload on the site
   filter, view) with its own look next to a sidebar.
 - **Logo** - Jellyfin icon, a custom image (URL or upload), server name.
 - **Info bar** - an announcement strip at the top or bottom, with an
-  optional close button (script).
+  optional close button and an optional time window - from a date and time
+  (or right away) until one (or no end) - both shown by the script.
 - **Cards** - rounding, hover effect, shadow, border, title placement (a
   title over the image fades or slides away for the hover buttons),
   spacing; watched items as a badge, corner badge, dimmed or black &

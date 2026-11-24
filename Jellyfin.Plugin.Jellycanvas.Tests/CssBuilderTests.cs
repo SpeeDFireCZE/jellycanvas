@@ -381,6 +381,33 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_scheduled_info_bar_stays_hidden_until_the_script_shows_it()
+    {
+        // With a time window the strip (and the room kept for it) is hidden
+        // by the theme; the client script shows it inside the window by
+        // putting jellycanvas-infobar-on on the page. No script, no strip -
+        // better than an announcement past its time.
+        var cfg = new PluginConfiguration
+        {
+            InfoBar = new InfoBarSettings { Enabled = true, Text = "Hello", Position = InfoBarPosition.Top, ShowFrom = "2026-11-25T07:00:00.000Z" },
+        };
+
+        var css = CssBuilder.Build(cfg);
+
+        Assert.Contains("{ content: \"Hello\";", css, StringComparison.Ordinal);
+        Assert.Contains("html:not(.jellycanvas-infobar-on) { --jellycanvas-info: 0px; }", css, StringComparison.Ordinal);
+        // (and the TV's strip under its legacy header)
+        Assert.Contains("html:not(.jellycanvas-infobar-on) header.MuiAppBar-root::after, html:not(.jellycanvas-infobar-on) main::before, html:not(.jellycanvas-infobar-on) main::after, html:not(.jellycanvas-infobar-on) .skinHeader .headerTop::after { display: none !important; }", css, StringComparison.Ordinal);
+        // only an end is a window too
+        cfg.InfoBar.ShowFrom = string.Empty;
+        cfg.InfoBar.ShowUntil = "2026-11-26T20:00:00.000Z";
+        Assert.Contains("html:not(.jellycanvas-infobar-on) { --jellycanvas-info: 0px; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+        // no window (or nothing readable as a time): as always, shown by the theme alone
+        cfg.InfoBar.ShowUntil = "next week";
+        Assert.DoesNotContain("jellycanvas-infobar-on", CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Library_row_can_be_styled_and_hidden()
     {
         var css = CssBuilder.Build(new PluginConfiguration { Header = new HeaderSettings { Layout = HeaderLayout.Sidebar, LibraryRow = LibraryRowStyle.Glass, LibraryRowColor = "#123456", LibraryRowOpacity = 60, LibraryRowHeight = 40, LibraryRowRadius = 12 } });

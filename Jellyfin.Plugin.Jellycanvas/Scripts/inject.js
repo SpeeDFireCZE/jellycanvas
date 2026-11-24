@@ -82,6 +82,7 @@
         updateScrollLock();
         ssStop();
         document.documentElement.classList.remove('jellycanvas-infobar-closed');
+        document.documentElement.classList.remove('jellycanvas-infobar-on');
         document.documentElement.classList.remove('jc-dashboard');
         badgesRemoveAll();
         document.documentElement.style.removeProperty('--jcb-accent');
@@ -2256,6 +2257,7 @@
 
     var INFO_KEY = 'jellycanvas.infobar.dismissed';
     var INFO_CLOSED = 'jellycanvas-infobar-closed';
+    var INFO_ON = 'jellycanvas-infobar-on';
 
     // The designer's preview runs this script too, on the same origin as
     // the real site: a close clicked there must not hide the strip for the
@@ -2265,12 +2267,19 @@
         return window.__jellycanvasPreview === true;
     }
 
+    // What a remembered close is for: the text - and the time window, so
+    // the same announcement planned again for another time shows again.
+    // (No window: the text alone, as closes were remembered before.)
+    function infoBarKey() {
+        return infoBar.from == null && infoBar.until == null ? infoBar.text : infoBar.text + '|' + infoBar.from + '|' + infoBar.until;
+    }
+
     function infoDismissed() {
         if (inPreview() || !infoBar.remember) {
             return false;
         }
         try {
-            return localStorage.getItem(INFO_KEY) === infoBar.text;
+            return localStorage.getItem(INFO_KEY) === infoBarKey();
         } catch (e) {
             return false;
         }
@@ -2279,7 +2288,7 @@
     function closeInfoBar() {
         try {
             if (!inPreview() && infoBar.remember) {
-                localStorage.setItem(INFO_KEY, infoBar.text);
+                localStorage.setItem(INFO_KEY, infoBarKey());
             }
         } catch (e) {
             // private mode - closes for this page load only
@@ -2330,17 +2339,38 @@
         return null;
     }
 
+    // A strip with a time window: the theme hides it, it shows here inside
+    // the window (checked on every pass, so it comes and goes on an open
+    // page). The designer's preview shows it whatever the time.
+    function infoBarInWindow() {
+        if (inPreview()) {
+            return true;
+        }
+        var now = Date.now();
+        return (infoBar.from == null || now >= infoBar.from) && (infoBar.until == null || now < infoBar.until);
+    }
+
     function syncInfoBar() {
         if (!infoBar) {
             return;
         }
         var root = document.documentElement;
+        var on = infoBarInWindow();
+        if (root.classList.contains(INFO_ON) !== on) {
+            root.classList.toggle(INFO_ON, on);
+        }
+        var btn = document.getElementById('jellycanvasInfoClose');
+        if (!on || !infoBar.closable) {
+            if (btn) {
+                btn.remove();
+            }
+            return;
+        }
         if (infoDismissed()) {
             root.classList.add(INFO_CLOSED);
             return;
         }
         var box = infoBarBox();
-        var btn = document.getElementById('jellycanvasInfoClose');
         // The overlay of a custom button covers the strip; a close button
         // floating above the overlay would be the one thing left of it.
         var covered = buttons.some(isOpen);

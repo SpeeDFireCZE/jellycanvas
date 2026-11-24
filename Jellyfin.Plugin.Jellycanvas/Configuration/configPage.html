@@ -114,7 +114,7 @@
                 .jc-sub.jc-flash, .jc-row.jc-flash, .checkboxContainer.jc-flash, .jc-color.jc-flash { outline: 2px solid var(--jf-palette-primary-main, #00a4dc); outline-offset: 4px; border-radius: .3em; }
                 .jc-section-body { padding: .5em 1em 1em; }
                 .jc-sub { font-size: .8em; letter-spacing: .06em; text-transform: uppercase; color: #7ec8f2; margin: 1.2em 0 .4em; }
-                .jc-hint { font-size: 85%; opacity: .7; margin: .2em 0 .6em; line-height: 1.4; }
+                .jc-hint { font-size: 85%; opacity: .7; margin: .2em 0 .6em; line-height: 1.4; } .jc-hint.jc-warn { opacity: 1; color: #f59e0b; }
                 .jc-share-site { display: inline-flex; align-items: center; gap: .4em; text-decoration: none; }
 
                 /* Rows */
@@ -547,6 +547,21 @@
                                 <div class="checkboxContainer" data-when="InfoBar.Enabled=true"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.HideOnTv"><span data-i18n="infobarTv">Hide on TV</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Enabled=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.Closable"><span data-i18n="infobarClosable">Close button (needs the client script)</span></label></div>
                                 <div class="checkboxContainer jc-needs-script" data-when="InfoBar.Closable=true" data-when2="InfoBar.Enabled=true" hidden><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" data-path="InfoBar.RememberClose"><span data-i18n="infobarRemember">Remember the close until the text changes (off = the strip is back on every page load)</span></label></div>
+                                <h4 class="jc-sub" data-when="InfoBar.Enabled=true" data-i18n="infobarWhenHeading">When it shows</h4>
+                                <div class="jc-info-window" data-when="InfoBar.Enabled=true">
+                                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="jcInfoFromNow"><span data-i18n="infobarFromNow">Right away</span></label></div>
+                                    <div class="inputContainer" id="jcInfoFromBox">
+                                        <label class="inputLabel inputLabelUnfocused" for="jcInfoFrom" data-i18n="infobarFrom">From</label>
+                                        <input is="emby-input" type="datetime-local" id="jcInfoFrom">
+                                    </div>
+                                    <div class="checkboxContainer"><label class="emby-checkbox-label"><input is="emby-checkbox" type="checkbox" id="jcInfoNoEnd"><span data-i18n="infobarNoEnd">No end (until it is turned off)</span></label></div>
+                                    <div class="inputContainer" id="jcInfoUntilBox">
+                                        <label class="inputLabel inputLabelUnfocused" for="jcInfoUntil" data-i18n="infobarUntil">Until</label>
+                                        <input is="emby-input" type="datetime-local" id="jcInfoUntil">
+                                    </div>
+                                    <div class="jc-hint" id="jcInfoWindowState" data-state="always" hidden></div>
+                                    <div class="jc-hint" data-i18n="infobarWhenHint">Times are in your own time zone; everyone sees the strip at the same moment. A strip with a start or an end is shown by the client script (File Transformation or a JS injector, script features on) - without it, or with CSS only, it does not show at all.</div>
+                                </div>
                                 <div class="jc-hint" data-i18n="infobarHint">Plain text only - CSS cannot render links. The close button comes from the client script, so it needs File Transformation or a JS injector.</div>
                             </div>
                         </details>

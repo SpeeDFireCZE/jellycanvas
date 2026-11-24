@@ -42,6 +42,7 @@
         en: {
             statusOn: 'Theme is enabled and written to Branding.', statusOff: 'Theme is not applied on the server yet - preview only.',
             statusMissing: 'Theme is enabled but missing from Branding (removed by hand?). Click Apply.',
+            infobarStateNow: 'Showing now.', infobarStateNowUntil: 'Showing now, until {0}.', infobarStateLater: 'Shows from {0}.', infobarStateOver: 'Ended {0} - the strip no longer shows.', infobarStateBad: 'The end is before the start - the strip will not show.', infobarStateNoScript: 'Without the client script (script features off, CSS only, or no File Transformation / JS injector) a strip with a time does not show at all.',
             statusForeign: 'Branding also holds other CSS ({0} chars) - it will be preserved.',
             applied: 'Theme applied. Browsers pick it up on reload - the web client caches the branding for up to a minute.', saved: 'Draft saved.', removed: 'Theme removed from the server.',
             confirmDisable: 'Remove the theme from Branding? Your settings stay saved.', confirmReset: 'Reset everything to Jellyfin defaults?',
@@ -126,7 +127,7 @@
             themeFilesHeading: 'Soubory témat na serveru', themeFilesHint: 'Témata Jellyfinu 12 (web/themes/*/theme.css) čtou proměnné --jf-*, které tohle téma nastavuje. Server aktualizovaný z 10.x může mít staré soubory, které je nečtou; Jellycanvas chybějící pravidla nese ve vlastním CSS, takže téma funguje i tak – tady je to jen pro informaci.',
             themeRepair: 'Opravit staré soubory', themeRepairHint: 'Připojí chybějící pravidla na konec každého starého theme.css (kopie zůstane jako theme.css.jellycanvas-bak). Potřebuje právo zápisu do složky webu – balíčková instalace ho obvykle nemá; správná oprava je přeinstalovat balíček jellyfin-web.',
             themeCurrent: 'aktuální', themeOld: 'starý (formát před 12, {0} znaků) – vygenerované CSS to dorovnává', themePatched: 'starý, opravený Jellycanvasem', themeNone: 'V {0} nejsou žádné soubory témat.', themeRepairDone: 'Soubory témat opraveny.', themeRepairFailed: 'Nešlo zapsat: {0}',
-            infobar: 'Informační lišta', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarTv: 'Schovat na TV', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript)', infobarRemember: 'Pamatovat si zavření do změny textu (vypnuto = lišta se ukáže při každém načtení stránky)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
+            infobar: 'Informační lišta', infobarWhenHeading: 'Kdy se ukáže', infobarFromNow: 'Ihned', infobarFrom: 'Od', infobarNoEnd: 'Bez konce (dokud ji nevypneš)', infobarUntil: 'Do', infobarWhenHint: 'Časy jsou v tvém časovém pásmu, všichni lištu uvidí ve stejný okamžik. Lištu se začátkem nebo koncem ukazuje klientský skript (File Transformation nebo JS injector, zapnuté skriptové funkce) – bez něj, nebo při „Jen CSS“, se neukáže vůbec.', infobarStateNow: 'Teď se ukazuje.', infobarStateNowUntil: 'Teď se ukazuje, do {0}.', infobarStateLater: 'Ukáže se {0}.', infobarStateOver: 'Skončila {0} – lišta se už neukazuje.', infobarStateBad: 'Konec je dřív než začátek – lišta se neukáže.', infobarStateNoScript: 'Bez klientského skriptu (vypnuté skriptové funkce, „Jen CSS“ nebo chybí File Transformation / JS injector) se lišta s časem neukáže vůbec.', infobarEnabled: 'Zobrazit oznamovací proužek', infobarText: 'Text', infobarPosition: 'Umístění', infobarTop: 'Nahoře (pod horní lištou / nad obsahem u postranního panelu)', infobarBottom: 'Dolní okraj', infobarColor: 'Pozadí (prázdné = zvýraznění)', infobarTextColor: 'Barva textu (prázdné = automaticky)', infobarHeight: 'Výška', infobarMobile: 'Schovat na mobilu', infobarTv: 'Schovat na TV', infobarClosable: 'Křížek pro zavření (potřebuje klientský skript)', infobarRemember: 'Pamatovat si zavření do změny textu (vypnuto = lišta se ukáže při každém načtení stránky)', infobarHint: 'Jen prostý text – CSS neumí odkazy. Křížek dodává klientský skript, takže potřebuje File Transformation nebo JS injector.',
             logoUploaded: 'Logo nahráno.', logoDeleted: 'Nahrané logo smazáno.', copied: 'Zkopírováno do schránky.',
             scripts: 'Vlastní tlačítka v liště',
             groupStart: 'Začátek', groupBars: 'Lišty a navigace', groupContent: 'Obsah', groupPages: 'Pozadí a stránky', groupDevices: 'Zařízení', groupAdvanced: 'Pokročilé',
@@ -710,6 +711,9 @@
                 if (path === 'Scripts.CardBadges.Look' || path === 'Scripts.CardBadges.Color') {
                     badgeStyleFollows();
                 }
+                if (path === 'Scripts.Enabled' || path === 'CssOnly') {
+                    renderInfoWindow(); // (a strip with a time needs the script)
+                }
                 if (path === 'Misc.ThemeDashboard' && el.checked) {
                     resetDashboardScope();
                 }
@@ -807,7 +811,124 @@
         renderJellyfinRows();
         renderSlots();
         renderBadgeZones();
+        renderInfoWindow();
         markOverrides();
+    }
+
+    // ------------------------------------------------------------------
+    // The info bar's time window: "right away" or a start, "no end" or an
+    // end - picked in the admin's local time, kept in UTC (ISO 8601), so
+    // everyone sees the strip at the same moment.
+    // ------------------------------------------------------------------
+    function localInput(iso) {
+        var d = new Date(iso);
+        if (!iso || isNaN(d.getTime())) {
+            return '';
+        }
+        var p = function (n) { return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+
+    function utcFromInput(value) {
+        var d = value ? new Date(value) : null; // (a date and time without a zone is local time)
+        return d && !isNaN(d.getTime()) ? d.toISOString() : '';
+    }
+
+    function windowTime(iso) {
+        return new Date(iso).toLocaleString(lang === 'cs' ? 'cs-CZ' : 'en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderInfoWindow() {
+        var ib = state.InfoBar;
+        var fromNow = page.querySelector('#jcInfoFromNow');
+        var noEnd = page.querySelector('#jcInfoNoEnd');
+        fromNow.checked = !ib.ShowFrom;
+        noEnd.checked = !ib.ShowUntil;
+        page.querySelector('#jcInfoFromBox').hidden = fromNow.checked;
+        page.querySelector('#jcInfoUntilBox').hidden = noEnd.checked;
+        var from = page.querySelector('#jcInfoFrom');
+        var until = page.querySelector('#jcInfoUntil');
+        if (document.activeElement !== from) {
+            from.value = localInput(ib.ShowFrom);
+        }
+        if (document.activeElement !== until) {
+            until.value = localInput(ib.ShowUntil);
+        }
+        // What the strip does now, in a line under the fields.
+        var line = page.querySelector('#jcInfoWindowState');
+        var start = ib.ShowFrom ? new Date(ib.ShowFrom).getTime() : null;
+        var end = ib.ShowUntil ? new Date(ib.ShowUntil).getTime() : null;
+        var now = Date.now();
+        // (the script shows a strip with a time; without it such a strip does
+        // not show at all - said once the plugins' state is known)
+        var scriptless = (!!status && !scriptOk()) || !!state.CssOnly || !(state.Scripts && state.Scripts.Enabled);
+        var st = start === null && end === null ? 'always'
+            : scriptless ? 'noscript'
+            : start !== null && end !== null && end <= start ? 'bad'
+            : start !== null && now < start ? 'later'
+            : end !== null && now >= end ? 'over' : 'now';
+        line.setAttribute('data-state', st);
+        line.hidden = st === 'always';
+        line.classList.toggle('jc-warn', st === 'bad' || st === 'over' || st === 'noscript');
+        line.textContent = st === 'always' ? ''
+            : st === 'noscript' ? t('infobarStateNoScript')
+            : st === 'bad' ? t('infobarStateBad')
+            : st === 'later' ? t('infobarStateLater', windowTime(ib.ShowFrom))
+            : st === 'over' ? t('infobarStateOver', windowTime(ib.ShowUntil))
+            : end !== null ? t('infobarStateNowUntil', windowTime(ib.ShowUntil)) : t('infobarStateNow');
+    }
+
+    function infoWindowChanged() {
+        renderInfoWindow();
+        schedulePreview(); // (with a window the theme hides the strip, the script shows it)
+        scheduleScriptPreview();
+    }
+
+    function wireInfoWindow() {
+        var fromNow = page.querySelector('#jcInfoFromNow');
+        var noEnd = page.querySelector('#jcInfoNoEnd');
+        var from = page.querySelector('#jcInfoFrom');
+        var until = page.querySelector('#jcInfoUntil');
+        var nextHour = function () {
+            var d = new Date();
+            d.setMinutes(0, 0, 0);
+            d.setHours(d.getHours() + 1);
+            return d;
+        };
+        fromNow.addEventListener('change', function () {
+            // (a start picked: the next full hour to begin with)
+            state.InfoBar.ShowFrom = fromNow.checked ? '' : nextHour().toISOString();
+            infoWindowChanged();
+        });
+        noEnd.addEventListener('change', function () {
+            // (an end picked: a day after the start to begin with)
+            var base = state.InfoBar.ShowFrom ? new Date(state.InfoBar.ShowFrom) : nextHour();
+            state.InfoBar.ShowUntil = noEnd.checked ? '' : new Date(base.getTime() + 24 * 3600 * 1000).toISOString();
+            infoWindowChanged();
+        });
+        [[from, 'ShowFrom'], [until, 'ShowUntil']].forEach(function (pair) {
+            var onEdit = function () {
+                var v = utcFromInput(pair[0].value);
+                if (v && v !== state.InfoBar[pair[1]]) {
+                    state.InfoBar[pair[1]] = v;
+                    infoWindowChanged();
+                }
+            };
+            pair[0].addEventListener('input', onEdit);
+            pair[0].addEventListener('change', onEdit);
+            pair[0].addEventListener('blur', function () {
+                if (!pair[0].value && state.InfoBar[pair[1]]) {
+                    state.InfoBar[pair[1]] = '';
+                    infoWindowChanged();
+                }
+            });
+        });
+        // (the state line keeps up with the time while the page is open)
+        setInterval(function () {
+            if (state && page.isConnected && !page.querySelector('#jcInfoWindowState').closest('[hidden]')) {
+                renderInfoWindow();
+            }
+        }, 15000);
     }
 
     // ------------------------------------------------------------------
@@ -1498,6 +1619,9 @@
         page.querySelector('#jcBadgesSection').hidden = !available;
         page.querySelectorAll('.jc-needs-script:not([data-when])').forEach(function (el) { el.hidden = !available; });
         refreshConditions();
+        if (state) {
+            renderInfoWindow(); // (the strip's state line: with a time it needs the script)
+        }
         // (CSS only is a choice, not a missing plugin: no warning then)
         page.querySelector('#jcScriptsMissing').hidden = available || !!(state && state.CssOnly);
         page.querySelector('#jcDashToggle').hidden = editDevice !== 'Dashboard' || !available;
@@ -2826,6 +2950,9 @@
         }
         if (copy.InfoBar) {
             delete copy.InfoBar.Text;
+            // (when this server's announcement shows is not part of a look)
+            delete copy.InfoBar.ShowFrom;
+            delete copy.InfoBar.ShowUntil;
         }
         if (copy.Login) {
             delete copy.Login.Title;
@@ -3096,6 +3223,7 @@
     }
 
     bindInputs(page);
+    wireInfoWindow();
 
     function init() {
         Dashboard.showLoadingMsg();

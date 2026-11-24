@@ -38,7 +38,7 @@ public static class ScriptBuilder
         var hasButtons = s.ToolbarButtons.Any(b => b.Enabled && CleanUrl(b.Url).Length > 0);
         var hasSlideshow = s.Slideshow.Enabled;
         var ib = c.InfoBar;
-        var hasInfoBar = ib.Enabled && ib.Closable && !string.IsNullOrWhiteSpace(ib.Text);
+        var hasInfoBar = ib.Enabled && (ib.Closable || InfoBarSchedule.Scheduled(ib)) && !string.IsNullOrWhiteSpace(ib.Text);
         var cb = s.CardBadges;
         var badgeLook = BadgeLooks.Of(cb);
         var corners = new Dictionary<string, string[]>
@@ -158,7 +158,9 @@ public static class ScriptBuilder
 
         // The text identifies a dismissal: a new announcement shows again
         // (when the dismissal is remembered at all).
-        var infoBar = hasInfoBar ? new { text = ib.Text.Trim(), remember = ib.RememberClose } : null;
+        var infoBar = hasInfoBar
+            ? new { text = ib.Text.Trim(), remember = ib.RememberClose, closable = ib.Closable, from = InfoBarSchedule.From(ib), until = InfoBarSchedule.Until(ib) }
+            : null;
 
         var badges = hasBadges
             ? new

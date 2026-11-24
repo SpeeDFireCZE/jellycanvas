@@ -961,6 +961,14 @@ public static class CssBuilder
         }
 
         sb.AppendLine($"{x.P}html.jellycanvas-infobar-closed {{ --jellycanvas-info: 0px; }}");
+        if (InfoBarSchedule.Scheduled(i))
+        {
+            // Shown in a time window only: hidden here, the client script
+            // shows it inside the window (no script - no strip, rather than
+            // an announcement past its time).
+            sb.AppendLine($"{x.P}html:not(.jellycanvas-infobar-on) {{ --jellycanvas-info: 0px; }}");
+            sb.AppendLine($"{x.P}html:not(.jellycanvas-infobar-on) header.MuiAppBar-root::after, {x.P}html:not(.jellycanvas-infobar-on) main::before, {x.P}html:not(.jellycanvas-infobar-on) main::after, {x.P}html:not(.jellycanvas-infobar-on) .skinHeader .headerTop::after {{ display: none !important; }}");
+        }
         sb.AppendLine($"{x.P}html.jellycanvas-infobar-closed header.MuiAppBar-root::after, {x.P}html.jellycanvas-infobar-closed main::before, {x.P}html.jellycanvas-infobar-closed main::after {{ display: none !important; }}");
 
         if (i.Position == InfoBarPosition.Bottom)
