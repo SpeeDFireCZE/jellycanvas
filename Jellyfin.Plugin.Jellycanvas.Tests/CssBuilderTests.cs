@@ -381,6 +381,28 @@ public class CssBuilderTests
     }
 
     [Fact]
+    public void A_library_link_that_wraps_keeps_the_bar_its_height()
+    {
+        // A row of library links short of room (a window where Jellyfin still
+        // shows them all, the pills' padding, the name of a cast target)
+        // wraps a label onto two lines: at a tight line height they fit in
+        // the bar, which no longer grows. Not in the sidebar - no row there.
+        var cfg = new PluginConfiguration();
+        cfg.Header.Layout = HeaderLayout.Full;
+        var rule = "header.MuiAppBar-root .MuiToolbar-root .MuiStack-root > a.MuiButton-sizeMedium { line-height: 1.1 !important; }";
+
+        Assert.Contains(rule, CssBuilder.Build(cfg), StringComparison.Ordinal);
+        // a one-line label as tall as at MUI's line height (1.75em) plus the style's padding and border
+        Assert.Contains("a.MuiButton-sizeMedium { min-height: calc(1.75em + 12px) !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.Header.Nav = NavStyle.Pill;
+        Assert.Contains("a.MuiButton-sizeMedium { min-height: calc(1.75em + 8px) !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.Header.Nav = NavStyle.Underline;
+        Assert.Contains("a.MuiButton-sizeMedium { min-height: calc(1.75em + 14px) !important; }", CssBuilder.Build(cfg), StringComparison.Ordinal);
+        cfg.Header.Layout = HeaderLayout.Sidebar;
+        Assert.DoesNotContain(rule, CssBuilder.Build(cfg), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void A_scheduled_info_bar_stays_hidden_until_the_script_shows_it()
     {
         // With a time window the strip (and the room kept for it) is hidden

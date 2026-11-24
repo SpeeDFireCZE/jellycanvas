@@ -468,6 +468,25 @@ public static class CssBuilder
         }
 
         // Navigation links (Favorites, Movies...). The active one carries MuiButton-colorPrimary.
+        // A row of them short of room - Jellyfin moves links into "More" by
+        // the window's width only, and the pills' padding or the name of a
+        // cast target take some of it - wraps a label onto two lines: at a
+        // tight line height those fit in the bar, which then keeps its
+        // height. A one-line label keeps the height it had at MUI's line
+        // height (1.75em) with the style's padding and border - nothing
+        // stretches it when the logo is hidden.
+        if (h.Layout != HeaderLayout.Sidebar)
+        {
+            var box = h.Nav switch
+            {
+                NavStyle.Pill => 8, // 4px above and below
+                NavStyle.Underline => 14, // MUI's 6px above and below, the 2px line
+                _ => 12, // MUI's 6px above and below
+            };
+            sb.AppendLine($"{x.P}{NavLink} {{ line-height: 1.1 !important; }}");
+            sb.AppendLine($"{x.P}{NavLink} {{ min-height: calc(1.75em + {box}px) !important; }}");
+        }
+
         switch (h.Nav)
         {
             case NavStyle.Pill:
