@@ -20,6 +20,7 @@ Card badges get a look and a color of their own, and the info bar can show in a 
 - Fix flags for languages written by name, like Czech or Slovak
 - Fix the badges' color range showing only after a reload
 - Fix the top bar growing when its library links run short of room
+- Fix flags for longer language names, like Brazilian Portuguese
 
 ### 🔧 Changes
 

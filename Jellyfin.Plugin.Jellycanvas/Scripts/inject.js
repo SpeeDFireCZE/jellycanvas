@@ -122,7 +122,7 @@
         english: 'EN', czech: 'CS', slovak: 'SK', german: 'DE', french: 'FR', spanish: 'ES', italian: 'IT', portuguese: 'PT',
         russian: 'RU', polish: 'PL', hungarian: 'HU', dutch: 'NL', japanese: 'JA', korean: 'KO', chinese: 'ZH', swedish: 'SV',
         norwegian: 'NO', danish: 'DA', finnish: 'FI', turkish: 'TR', arabic: 'AR', hindi: 'HI', ukrainian: 'UK', greek: 'EL',
-        romanian: 'RO', bulgarian: 'BG', croatian: 'HR', serbian: 'SR', slovenian: 'SL', slovene: 'SL', thai: 'TH',
+        romanian: 'RO', bulgarian: 'BG', croatian: 'HR', serbian: 'SR', slovenian: 'SL', slovene: 'SL', 'serbo-croatian': 'SH', thai: 'TH',
         vietnamese: 'VI', indonesian: 'ID', hebrew: 'HE', catalan: 'CA', lithuanian: 'LT', latvian: 'LV', estonian: 'ET'
     };
     var BADGE_TYPES = /^(Movie|Episode|Video|MusicVideo|Trailer)$/;
@@ -222,13 +222,33 @@
             '.jellycanvas-lang { display: inline-flex; align-items: center; gap: 0.27em; }';
     }
 
+    // A value of the table itself, never one an object has of its own
+    // ("constructor" is a word a stream's language could be).
+    function ownValue(table, key) {
+        return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : '';
+    }
+
     function badgeLang(code) {
+        var full = (code || '').toLowerCase().replace(/^\s+|\s+$/g, '');
         // the language without a region ("cs-CZ", "pt_BR")
-        var c = (code || '').toLowerCase().replace(/^\s+|\s+$/g, '').split(/[-_]/)[0];
+        var c = full.split(/[-_]/)[0];
         if (!c || c === 'und') {
             return '';
         }
-        return BADGE_LANGS[c] || BADGE_LANG_NAMES[c] || c.slice(0, 3).toUpperCase();
+        var known = ownValue(BADGE_LANGS, c) || ownValue(BADGE_LANG_NAMES, full) || ownValue(BADGE_LANG_NAMES, c);
+        if (known) {
+            return known;
+        }
+        // A name of more words: the language in it ("Brazilian Portuguese",
+        // "Portuguese (Brazil)").
+        var words = full.split(/[^a-z]+/);
+        for (var i = 0; i < words.length; i++) {
+            known = ownValue(BADGE_LANG_NAMES, words[i]);
+            if (known) {
+                return known;
+            }
+        }
+        return c.slice(0, 3).toUpperCase();
     }
 
     // What the badges say for one item; null when it has no video stream.
