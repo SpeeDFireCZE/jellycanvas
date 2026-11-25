@@ -3,7 +3,7 @@
 All notable changes to Jellycanvas. The format follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## Unreleased
+## 1.3.5 - 2026-11-25
 
 Card badges get a look and a color of their own, and the info bar can show in a time window. An open custom button is now the only mark in the bar.
 
@@ -32,7 +32,7 @@ Card badges get a look and a color of their own, and the info bar can show in a 
 
 - Describe the info bar's time window in the README
 
-**Full Changelog**: https://github.com/SpeeDFireCZE/jellycanvas/compare/1.3.4...main
+**Full Changelog**: https://github.com/SpeeDFireCZE/jellycanvas/compare/1.3.4...1.3.5
 
 ## 1.3.4 - 2026-11-01
 
